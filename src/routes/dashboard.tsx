@@ -29,7 +29,8 @@ type Gps = { motorista_codigo: string; lat: number; lng: number; criado_em: stri
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
+  const [authState, setAuthState] = useState<AuthState>("checking");
+  const ready = authState === "ready";
   const [email, setEmail] = useState<string>("");
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
   const [corridas, setCorridas] = useState<Corrida[]>([]);
@@ -37,11 +38,23 @@ function DashboardPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) { navigate({ to: "/login", replace: true }); return; }
+      if (!data.session) {
+        setAuthState("redirecting");
+        toast.error("Sessão expirada. Faça login para continuar.");
+        setTimeout(() => {
+          navigate({
+            to: "/login",
+            replace: true,
+            search: { reason: "unauthenticated", from: "/dashboard" } as never,
+          });
+        }, 900);
+        return;
+      }
       setEmail(data.session.user.email ?? "");
-      setReady(true);
+      setAuthState("ready");
     });
   }, [navigate]);
+
 
   const carregar = async () => {
     const [m, c, g] = await Promise.all([

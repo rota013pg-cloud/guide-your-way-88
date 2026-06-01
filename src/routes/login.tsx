@@ -77,11 +77,13 @@ function LoginPage() {
         </div>
         {reason && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {reason === "expired"
-              ? "Sua sessão expirou. Entre novamente para continuar."
-              : "Você precisa estar autenticado para acessar o painel."}
+            {reason === "expired" && "Sua sessão expirou. Entre novamente para continuar."}
+            {reason === "unauthenticated" && "Você precisa estar autenticado para acessar o painel."}
+            {reason === "session_error" && "Não foi possível verificar sua sessão. Faça login novamente."}
+            {reason === "timeout" && "A verificação da sessão demorou demais. Tente entrar novamente."}
           </div>
         )}
+
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>

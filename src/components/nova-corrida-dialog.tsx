@@ -24,7 +24,7 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
   const [destino, setDestino] = useState("");
   const [distancia, setDistancia] = useState("");
   const [tarifaId, setTarifaId] = useState<string>("");
-  const [pagamento, setPagamento] = useState("Dinheiro");
+  const [pagamento, setPagamento] = useState<"Dinheiro" | "Pix" | "Cartão" | "Maquininha" | "Conta">("Dinheiro");
   const [obs, setObs] = useState("");
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
 
   const reset = () => {
     setCliente(""); setTelefone(""); setOrigem(""); setDestino("");
-    setDistancia(""); setPagamento("Dinheiro"); setObs("");
+    setDistancia(""); setPagamento("Dinheiro" as const); setObs("");
   };
 
   const onPickCliente = (codigo: string) => {
@@ -141,13 +141,14 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
             </div>
             <div className="grid gap-1.5">
               <Label>Pagamento</Label>
-              <Select value={pagamento} onValueChange={setPagamento}>
+              <Select value={pagamento} onValueChange={(v) => setPagamento(v as typeof pagamento)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Dinheiro">Dinheiro</SelectItem>
                   <SelectItem value="Pix">Pix</SelectItem>
                   <SelectItem value="Cartão">Cartão</SelectItem>
-                  <SelectItem value="Cortesia">Cortesia</SelectItem>
+                  <SelectItem value="Maquininha">Maquininha</SelectItem>
+                  <SelectItem value="Conta">Conta</SelectItem>
                 </SelectContent>
               </Select>
             </div>

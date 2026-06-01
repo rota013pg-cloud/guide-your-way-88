@@ -51,7 +51,8 @@ vi.mock("@/components/nova-corrida-dialog", () => ({
   NovaCorridaDialog: () => <button>Nova Corrida</button>,
 }));
 
-import { DashboardPage } from "./dashboard";
+import { Route as DashboardRoute } from "./dashboard";
+const DashboardPage = (DashboardRoute.options as any).component as React.FC;
 
 beforeEach(() => {
   document.body.innerHTML = "";

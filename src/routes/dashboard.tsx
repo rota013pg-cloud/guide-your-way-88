@@ -51,7 +51,7 @@ function DashboardPage() {
   useEffect(() => {
     const applyDecision = (decision: DashboardAuthDecision) => {
       if (decision.kind === "redirect") {
-        setRedirectReason(decision.search.reason as never);
+        setRedirectReason(decision.search.reason);
         setRedirectMessage(decision.message);
         setAuthState("redirecting");
         toast.error(decision.message);

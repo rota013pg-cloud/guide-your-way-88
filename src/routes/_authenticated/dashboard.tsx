@@ -24,7 +24,7 @@ type Corrida = {
 };
 type Gps = { motorista_codigo: string; lat: number; lng: number; criado_em: string };
 
-export function DashboardPage() {
+function DashboardPage() {
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
   const [corridas, setCorridas] = useState<Corrida[]>([]);
   const [gps, setGps] = useState<Gps[]>([]);

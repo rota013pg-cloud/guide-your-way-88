@@ -7,13 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
+type LoginSearch = { reason?: "unauthenticated" | "expired"; from?: string };
+
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Rota 013 Beta" }] }),
+  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+    reason: search.reason === "unauthenticated" || search.reason === "expired" ? search.reason : undefined,
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { reason } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [modo, setModo] = useState<"login" | "signup">("login");
@@ -28,6 +35,7 @@ function LoginPage() {
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
+
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();

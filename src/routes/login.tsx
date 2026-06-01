@@ -71,6 +71,14 @@ function LoginPage() {
           <h1 className="text-2xl font-bold">Rota 013 Beta</h1>
           <p className="text-sm text-muted-foreground mt-1">Painel do operador</p>
         </div>
+        {reason && (
+          <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {reason === "expired"
+              ? "Sua sessão expirou. Entre novamente para continuar."
+              : "Você precisa estar autenticado para acessar o painel."}
+          </div>
+        )}
+
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <Label htmlFor="email">E-mail</Label>

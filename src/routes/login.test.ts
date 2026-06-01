@@ -16,7 +16,7 @@ describe("login search params sanitização", () => {
   it("reason ausente permanece undefined", () => {
     const result = loginSearchSchema.parse({});
     expect(result.reason).toBeUndefined();
-    expect(result.from).toBe("/dashboard");
+    expect(result.from).toBeUndefined();
   });
 
   it("reason válido é preservado", () => {

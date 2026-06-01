@@ -16,6 +16,9 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
 });
 
+type AuthState = "checking" | "redirecting" | "ready";
+
+
 type Motorista = { codigo: string; nome: string; moto: string | null; placa: string | null; status: string };
 type Corrida = {
   id: number; cliente: string | null; origem: string; destino: string | null;

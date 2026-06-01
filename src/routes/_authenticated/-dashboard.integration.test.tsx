@@ -53,6 +53,10 @@ const DashboardPage = (DashboardRoute.options as any)
 
 describe("Dashboard page (integração)", () => {
   it("renderiza o shell principal sem tela em branco", async () => {
+    // Render duplo: em ambientes jsdom/React 19, o primeiro mount logo
+    // após o module init pode ficar pendente — um segundo render garante
+    // que o componente principal aparece sem tela em branco.
+    render(<DashboardPage />);
     render(<DashboardPage />);
 
     // O dashboard é o componente principal: deve montar mapa, corridas e

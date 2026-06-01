@@ -95,7 +95,7 @@ function DashboardPage() {
     const mot = motoristas.find((m) => m.codigo === motoristaCodigo);
     if (!mot) return;
     const { error } = await supabase.from("corridas").update({
-      motorista_codigo: mot.codigo, motorista: mot.nome, status: "Em andamento",
+      motorista_codigo: mot.codigo, motorista: mot.nome, status: "Aceita",
     }).eq("id", id);
     if (error) toast.error(error.message); else toast.success(`Atribuída a ${mot.nome}`);
   };
@@ -114,10 +114,10 @@ function DashboardPage() {
 
   const corStatus = (s: string) => {
     if (s === "Pendente") return "bg-warning text-warning-foreground";
-    if (s === "Em andamento") return "bg-primary text-primary-foreground";
+    if (s === "Ofertada") return "bg-warning text-warning-foreground";
     if (s === "Finalizada") return "bg-success text-success-foreground";
     if (s === "Cancelada") return "bg-destructive text-destructive-foreground";
-    return "bg-secondary text-secondary-foreground";
+    return "bg-primary text-primary-foreground";
   };
 
   return (

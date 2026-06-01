@@ -1,100 +1,77 @@
-## Migração Rota 013 Beta — Plano Faseado
+# Portar Rota 013 Beta 2.0 para TanStack Start + Lovable Cloud
 
-Migrar o sistema completo (painel operador + app motorista + admin + financeiro) do stack **Express + Postgres + Socket.io + HTML/JS vanilla** para **React (TanStack Start) + Lovable Cloud**, preservando todas as regras de negócio do `CONTEXTO_ATUAL.md`.
+## Estado atual
 
-### Stack final no Lovable
-- **Frontend**: React + TanStack Router + Tailwind (preserva dark theme #0f0f0f)
-- **Backend**: Lovable Cloud (Postgres + Auth + Realtime + Storage)
-- **Mapa**: Leaflet (já usado no projeto original)
-- **Google Maps Places**: mantém com a key existente
-- **PWA**: manifest + service worker para o app motorista
-- **Realtime**: Supabase Realtime no lugar de Socket.io (mesmo modelo pub/sub)
+**Backend (Supabase) — já portado:**
+- Tabelas: `motoristas`, `corridas`, `corrida_ofertas`, `clientes`, `financeiro`, `tarifas`, `app_config`, `motorista_auth`, `motorista_sessoes`, `motorista_gps`, `push_subscriptions`, `user_roles`.
+- Roles `admin` / `operador` via `has_role()` / `is_operador()`.
+- RLS ativa em todas as tabelas.
+- Função `dia_operacional()` (corte às 06h America/Sao_Paulo) para diárias.
 
-### Fase 0 — Fundação (1 iteração)
-- Ativar Lovable Cloud
-- Criar schema completo no Postgres: `motoristas`, `clientes`, `corridas`, `financeiro`, `app_config`, `corrida_ofertas`, `motorista_gps`, `push_subscriptions`, `motorista_sessoes`, `motorista_auth`
-- RLS policies (operador autenticado vê tudo; motorista só vê suas próprias corridas/dados)
-- Função SQL para o "dia operacional 6h-5h59"
-- Constraint única `uniq_diaria_dia` no financeiro (idempotência)
-- Seed com 5 motoristas, 10 clientes, 20 corridas fictícias, config padrão
-- Design system: dark theme, amarelo Rota013, tipografia
+**Frontend (React/TanStack) — já existe:**
+- `__root.tsx`, `index.tsx`, `login.tsx`, `dashboard.tsx`.
+- Componentes: `map-leaflet`, `nova-corrida-dialog`.
+- Auth + redirecionamento + testes (trabalho recente).
 
-### Fase 1 — Painel Operador: Dashboard + Corridas
-- Login do operador (email/senha via Lovable Cloud Auth)
-- Dashboard layout 2 colunas: Mapa Leaflet (62%) + Ações rápidas/Motoristas online (38%)
-- Linha inferior: Histórico corridas + Corridas ativas
-- FAB amarelo "＋" → modal de nova corrida
-- Autocomplete Google Places para origem/destino
-- Cálculo de tarifa por distância
-- Criar/editar/cancelar corrida
-- Lista de motoristas online com pin no mapa
-- Realtime: motoristas online aparecem/somem instantaneamente
+**Backup legado (`/mnt/user-uploads/rota013-beta-backup.tar.gz`)** contém o que falta portar: módulos do painel operador beta, app do motorista (PWA) e regras de negócio do `server-beta/`.
 
-### Fase 2 — App Motorista (PWA mobile)
-- Login único por dispositivo (deviceId no localStorage, bloqueio backend)
-- Tela principal: topbar com logo + nome/moto + avatar + ⚙️
-- Toggle online/offline (.toggle-track + .is-online)
-- Bottom nav: 🏠 Início | 🚗 Corrida (condicional) | 👤 Perfil
-- Receber oferta de corrida (Realtime) → aceitar/recusar
-- Tela de corrida ativa: dados origem/destino, botões "🧭 Ir" → Waze
-- Atualizar status: A caminho → Chegou → Em viagem → Finalizada
-- Wake Lock (3 camadas: API nativa, vídeo mudo, ping DOM)
-- GPS contínuo enviando para `motorista_gps` (Realtime → painel)
-- Manifest PWA + Service Worker v6
+## Fases propostas
 
-### Fase 3 — Fluxo de Ofertas + Realtime de Corrida
-- `dispararOfertas()` server function (cria registros em `corrida_ofertas`)
-- Realtime broadcast da oferta para o motorista
-- Aceite → atualiza corrida.motorista_codigo → notifica painel
-- Mudança de status: motorista → backend → Realtime → painel atualiza
-- Pin do motorista se move no mapa do painel em tempo real
+### Fase 1 — Layout do painel + navegação (esta entrega)
+- Criar layout `_authenticated.tsx` (sidebar + topo com relógio, perfil, logout).
+- Rotas vazias dos módulos: `corridas`, `motoristas`, `clientes`, `financeiro`, `tarifas`, `historico`, `configuracoes`, `mensagens`.
+- Mover `dashboard` para dentro de `_authenticated/dashboard.tsx`.
+- Hook `useRole()` para esconder itens admin-only.
 
-### Fase 4 — Sistema Financeiro / Diária
-- Tela financeiro no painel (`renderFinanceiro` em React)
-- Cálculo: limiar = 50% do `valorDiaria` configurado
-- Motor: ao atingir limiar → motorista vê tela de bloqueio
-- Motorista clica "Já enviei" → Realtime → painel mostra pendência
-- Operador confirma → INSERT em `financeiro` com `ON CONFLICT DO NOTHING` → libera motorista via Realtime
-- Histórico de diárias por dia operacional
+### Fase 2 — Módulo Corridas (núcleo operacional)
+- Listagem em tempo real (Supabase Realtime em `corridas` + `corrida_ofertas`).
+- Filtros: status, data, motorista.
+- Dialog Nova Corrida (já existe — integrar com tarifas + autocomplete Google Places).
+- Ações: aceitar/cancelar/finalizar, atribuir motorista, disparar oferta.
+- Server fn `dispararOferta` (porta da lógica de `routes/beta-corridas.js`).
 
-### Fase 5 — Admin (Gestão de Motoristas/Clientes/Config)
-- CRUD motoristas com upload de foto (perfil, moto, CNH, CRLV, comprovante endereço) → Lovable Storage
-- Ficha completa do motorista (`ver-motorista.js` reescrito em React)
-- Modal de acesso 🔑: ver senha atual, bloquear/liberar, resetar dispositivo
-- CRUD clientes
-- Configurações: empresa, whatsappCentral, valorDiaria, cidadeBase, pixChave
-- CRUD tarifas
+### Fase 3 — Motoristas + Clientes + Tarifas
+- CRUD completo de cada um.
+- Upload de fotos/documentos para Supabase Storage (bucket `motoristas`).
+- Geração de senha do motorista (`motorista_auth`) + link/QR de acesso.
+- Tabela de tarifas com bandeirada/por km/mínimo.
 
-### Fase 6 — Histórico, Ranking, Relatórios
-- Histórico de corridas com filtros (data, motorista, cliente, status)
-- Ranking de motoristas (por corridas/faturamento)
-- Relatório PDF (mantém lib do projeto original adaptada)
-- Mensagens WhatsApp (`mensagens.js` → React)
+### Fase 4 — Financeiro
+- Marcar diária paga (com constraint única `uniq_diaria_dia` que já existe).
+- Liberar pagamento (idempotente).
+- Relatório por período (PDF via `pdf-lib` no cliente).
+- Ranking de motoristas.
 
-### Fase 7 — Polimento e Deploy
-- PWA do motorista testada em mobile real
-- Service Worker com cache estratégico
-- Notificações push (Web Push API + Lovable Cloud)
-- Export do código para VPS (instruções `npm run build` + Nginx servir `dist/` + manter ou substituir backend Express)
+### Fase 5 — Configurações + Mensagens
+- `app_config` (empresa, WhatsApp central, valor diária, pixChave) — admin-only.
+- Templates de mensagens WhatsApp.
+- Histórico operacional (logs).
 
-### Recomendação de ritmo
-Cada fase = 1 iteração no chat. Você testa no preview, valida com dados de seed, pede ajustes, e só depois passamos pra próxima. **Não vou tentar fazer todas as fases no mesmo turno** — qualidade > velocidade num projeto desse tamanho.
+### Fase 6 — App do Motorista (PWA separada)
+- Rota pública `/motorista` (login por código + senha, fora do `_authenticated`).
+- Status online/offline, aceitar corridas, GPS via `navigator.geolocation` → server fn → `motorista_gps`.
+- Service worker + manifest (PWA).
+- Push notifications via Web Push API (já existe `push_subscriptions`).
 
-### O que entrego no primeiro turno (se aprovar)
-**Fase 0 + início da Fase 1**:
-- Lovable Cloud ativado
-- Schema completo migrado
-- Seed populado
-- Design system (dark + amarelo Rota013)
-- Login do operador funcionando
-- Layout do dashboard com mapa e listas (ainda sem criar corrida — vem na próxima)
+### Fase 7 — Realtime + mapa
+- Mapa Leaflet com marcadores GPS em tempo real.
+- Notificações sonoras quando corrida aceita/finalizada.
+- Indicador "motorista online" na sidebar.
 
-### Detalhes técnicos
-- **Tabelas em snake_case** (preserva nomenclatura do banco original)
-- **Códigos de motorista** mantidos como string (ex: "M001") — não trocar por UUID
-- **Foto/docs** vão pro Lovable Storage (bucket `motoristas`), URL pública assinada
-- **GPS**: insere em `motorista_gps` a cada 5s, publica via Realtime channel `gps:{codigo}`
-- **Ofertas**: broadcast Realtime channel `motorista:{codigo}:ofertas`
-- **Diária idempotente**: PostgreSQL constraint + `ON CONFLICT DO NOTHING`
-- **Dia operacional**: função SQL `dia_operacional()` retorna data baseada na regra 6h
-- **Type safety**: TypeScript + tipos gerados do schema do Cloud
+## Detalhes técnicos
+
+- **Reads**: `createServerFn` + `requireSupabaseAuth` + TanStack Query (`ensureQueryData` no loader, `useSuspenseQuery` no componente).
+- **Writes**: `createServerFn` com `inputValidator(zod)`; invalidação via `queryClient.invalidateQueries`.
+- **Realtime**: hook `useRealtimeTable(table)` que usa `supabase.channel()` no cliente e invalida queries no evento.
+- **Storage**: bucket `motoristas` (privado, RLS por `is_operador`).
+- **Google Maps**: secret `GOOGLE_MAPS_KEY` (precisarei pedir).
+- **PWA do motorista**: `vite-plugin-pwa` + manifest separado em `/motorista`.
+
+## O que peço pra começar agora (Fase 1)
+
+Confirmação para:
+1. Criar layout autenticado + skeletons das 8 rotas.
+2. Mover `dashboard.tsx` para `_authenticated/dashboard.tsx` (mantendo testes).
+3. Adicionar `GOOGLE_MAPS_KEY` como secret (necessário a partir da Fase 2).
+
+Posso ir entregando fase por fase, ou se preferir, executo Fases 1–3 numa sequência longa.

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
 /**
@@ -51,39 +51,34 @@ import { Route as DashboardRoute } from "./dashboard";
 const DashboardPage = (DashboardRoute.options as any)
   .component as React.ComponentType;
 
-afterEach(() => {
-  cleanup();
-});
-
 describe("Dashboard page (integração)", () => {
-  it("o componente está exportado pela rota /dashboard", () => {
-    expect(DashboardPage).toBeTypeOf("function");
-  });
-
-  it("renderiza o shell principal sem tela em branco", () => {
-    const { container } = render(<DashboardPage />);
-    // Render síncrono já produz o shell — o h1 "Dashboard" deve estar lá.
-    const h1 = container.querySelector("h1");
-    expect(h1?.textContent).toMatch(/dashboard/i);
-    expect(container.textContent?.length ?? 0).toBeGreaterThan(20);
-  });
-
-  it("monta as seções principais (mapa, corridas, motoristas)", async () => {
+  it("renderiza o shell principal sem tela em branco", async () => {
     render(<DashboardPage />);
 
+    // O dashboard é o componente principal: deve montar mapa, corridas e
+    // motoristas. Se a tela ficasse em branco nenhum desses textos apareceria.
     await waitFor(() => {
       expect(screen.getByText(/mapa em tempo real/i)).toBeInTheDocument();
       expect(screen.getByText(/corridas ativas/i)).toBeInTheDocument();
       expect(screen.getByText(/motoristas online/i)).toBeInTheDocument();
     });
 
+    // Título principal renderizado.
+    expect(
+      screen.getByRole("heading", { level: 1, name: /dashboard/i }),
+    ).toBeInTheDocument();
+
+    // Componentes pesados (mockados) aparecem montados.
     expect(screen.getByTestId("map-leaflet")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /nova corrida/i }),
     ).toBeInTheDocument();
+
+    // Sanidade: o body tem conteúdo (uma tela branca seria vazia).
+    expect(document.body.textContent?.length ?? 0).toBeGreaterThan(50);
   });
 
-  it("mostra os estados vazios quando não há dados", async () => {
+  it("mostra os estados vazios quando o Supabase retorna sem dados", async () => {
     render(<DashboardPage />);
 
     expect(

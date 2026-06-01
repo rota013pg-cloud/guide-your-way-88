@@ -96,7 +96,7 @@ function DashboardPage() {
           <p className="text-sm text-muted-foreground">Verificando sessão...</p>
         </div>
         <div className="h-1.5 w-48 rounded-full bg-muted overflow-hidden">
-          <div className="h-full bg-primary rounded-full animate-[shimmer_1.5s_infinite]" style={{ width: "60%", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          <div className="h-full bg-primary rounded-full w-2/3 animate-[pulse_1.2s_ease-in-out_infinite]" />
         </div>
       </div>
     );

@@ -1,16 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { z } from "zod";
-import { fallback } from "@tanstack/zod-adapter";
-
-const loginSearchSchema = z.object({
-  reason: fallback(
-    z.enum(["unauthenticated", "expired", "session_error", "timeout"]).optional(),
-    "unauthenticated",
-  ),
-  from: fallback(z.string().max(500).optional(), "/dashboard"),
-});
-
-type LoginSearch = z.infer<typeof loginSearchSchema>;
+import { loginSearchSchema } from "@/routes/login";
 
 describe("login search params sanitização", () => {
   it("reason ausente permanece undefined", () => {
@@ -39,9 +28,8 @@ describe("login search params sanitização", () => {
     expect(result.from).toBe("/dashboard");
   });
 
-  it("from muito longo é truncado pelo max(500)", () => {
+  it("from muito longo é rejeitado e cai em '/dashboard'", () => {
     const long = "a".repeat(501);
-    // z.string().max(500) falha, então fallback entra
     const result = loginSearchSchema.parse({ from: long });
     expect(result.from).toBe("/dashboard");
   });

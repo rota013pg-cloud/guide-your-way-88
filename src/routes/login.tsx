@@ -11,10 +11,10 @@ import { toast } from "sonner";
 
 const loginSearchSchema = z.object({
   reason: fallback(
-    z.enum(["unauthenticated", "expired", "session_error", "timeout"]),
+    z.enum(["unauthenticated", "expired", "session_error", "timeout"]).optional(),
     "unauthenticated",
-  ).default("unauthenticated"),
-  from: fallback(z.string().max(500), "/dashboard").default("/dashboard"),
+  ),
+  from: fallback(z.string().max(500).optional(), "/dashboard"),
 });
 
 export const Route = createFileRoute("/login")({

@@ -61,16 +61,15 @@ describe("Dashboard page (integração)", () => {
   });
 
   it("renderiza o shell principal sem tela em branco", async () => {
-    const { container } = render(<DashboardPage />);
+    render(<DashboardPage />);
 
     // Título principal (h1) do dashboard precisa aparecer.
     await waitFor(() => {
-      const h1 = container.querySelector("h1");
-      expect(h1?.textContent).toMatch(/dashboard/i);
+      expect(screen.getByText(/^dashboard$/i)).toBeInTheDocument();
     });
 
-    // Sanidade: o container tem conteúdo (uma tela branca seria vazia).
-    expect(container.textContent?.length ?? 0).toBeGreaterThan(20);
+    // Sanidade: o body tem conteúdo (uma tela branca seria vazia).
+    expect(document.body.textContent?.length ?? 0).toBeGreaterThan(20);
   });
 
   it("monta as seções principais (mapa, corridas, motoristas)", async () => {

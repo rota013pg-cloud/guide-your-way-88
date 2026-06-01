@@ -44,8 +44,9 @@ function DashboardPage() {
   const [corridas, setCorridas] = useState<Corrida[]>([]);
   const [gps, setGps] = useState<Gps[]>([]);
 
-  const [redirectReason, setRedirectReason] = useState<DashboardAuthDecision extends { kind: "redirect"; search: { reason: infer R } } ? R : never | null>(null as never);
+  const [redirectReason, setRedirectReason] = useState<"unauthenticated" | "session_error" | "timeout" | null>(null);
   const [redirectMessage, setRedirectMessage] = useState<string>("");
+
 
   useEffect(() => {
     const applyDecision = (decision: DashboardAuthDecision) => {

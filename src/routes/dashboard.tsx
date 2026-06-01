@@ -44,10 +44,14 @@ function DashboardPage() {
   const [corridas, setCorridas] = useState<Corrida[]>([]);
   const [gps, setGps] = useState<Gps[]>([]);
 
+  const [redirectReason, setRedirectReason] = useState<DashboardAuthDecision extends { kind: "redirect"; search: { reason: infer R } } ? R : never | null>(null as never);
+  const [redirectMessage, setRedirectMessage] = useState<string>("");
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const decision = decideDashboardAuth(data.session);
+    const applyDecision = (decision: DashboardAuthDecision) => {
       if (decision.kind === "redirect") {
+        setRedirectReason(decision.search.reason as never);
+        setRedirectMessage(decision.message);
         setAuthState("redirecting");
         toast.error(decision.message);
         setTimeout(() => {
@@ -61,9 +65,21 @@ function DashboardPage() {
       }
       setEmail(decision.email);
       setAuthState("ready");
-    });
+    };
 
+    withSessionTimeout(supabase.auth.getSession())
+      .then(({ data, error }) => {
+        if (error) {
+          applyDecision(decideDashboardAuthError(error));
+          return;
+        }
+        applyDecision(decideDashboardAuth(data.session));
+      })
+      .catch((err) => {
+        applyDecision(decideDashboardAuthError(err));
+      });
   }, [navigate]);
+
 
 
   const carregar = async () => {

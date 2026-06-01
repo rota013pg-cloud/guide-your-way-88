@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -121,7 +122,9 @@ function DashboardPage() {
               <Badge variant="secondary">{mapaMotoristas.length} no mapa</Badge>
             </div>
             <div className="h-[400px] md:h-[480px]">
-              <MapLeaflet motoristas={mapaMotoristas} />
+              <ErrorBoundary label="o mapa">
+                <MapLeaflet motoristas={mapaMotoristas} />
+              </ErrorBoundary>
             </div>
           </Card>
 

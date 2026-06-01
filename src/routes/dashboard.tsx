@@ -85,7 +85,22 @@ function DashboardPage() {
       .filter((x): x is MapMotorista => x !== null);
   }, [gps, online]);
 
-  if (!ready) return null;
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary font-black text-primary-foreground text-2xl animate-pulse">
+          R
+        </div>
+        <div className="text-center space-y-2">
+          <h2 className="font-bold text-lg">Rota 013 Beta</h2>
+          <p className="text-sm text-muted-foreground">Verificando sessão...</p>
+        </div>
+        <div className="h-1.5 w-48 rounded-full bg-muted overflow-hidden">
+          <div className="h-full bg-primary rounded-full w-2/3 animate-[pulse_1.2s_ease-in-out_infinite]" />
+        </div>
+      </div>
+    );
+  }
 
   const sair = async () => {
     await supabase.auth.signOut();

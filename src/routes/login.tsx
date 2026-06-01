@@ -1,4 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,17 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
-type LoginReason = "unauthenticated" | "expired" | "session_error" | "timeout";
-type LoginSearch = { reason?: LoginReason; from?: string };
-
-const VALID_REASONS: LoginReason[] = ["unauthenticated", "expired", "session_error", "timeout"];
+const loginSearchSchema = z.object({
+  reason: fallback(
+    z.enum(["unauthenticated", "expired", "session_error", "timeout"]),
+    "unauthenticated",
+  ).default("unauthenticated"),
+  from: fallback(z.string().max(500), "/dashboard").default("/dashboard"),
+});
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Rota 013 Beta" }] }),
-  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
-    reason: VALID_REASONS.includes(search.reason as LoginReason) ? (search.reason as LoginReason) : undefined,
-    from: typeof search.from === "string" ? search.from : undefined,
-  }),
+  validateSearch: zodValidator(loginSearchSchema),
   component: LoginPage,
 });
 

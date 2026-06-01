@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
 import { LogOut, MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus } from "lucide-react";
+import { decideDashboardAuth } from "@/lib/auth-redirect";
+
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,

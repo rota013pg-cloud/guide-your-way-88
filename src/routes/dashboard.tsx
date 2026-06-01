@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
 import { LogOut, MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus } from "lucide-react";
+import { decideDashboardAuth } from "@/lib/auth-redirect";
+
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -38,21 +40,23 @@ function DashboardPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
+      const decision = decideDashboardAuth(data.session);
+      if (decision.kind === "redirect") {
         setAuthState("redirecting");
-        toast.error("Sessão expirada. Faça login para continuar.");
+        toast.error(decision.message);
         setTimeout(() => {
           navigate({
-            to: "/login",
-            replace: true,
-            search: { reason: "unauthenticated", from: "/dashboard" } as never,
+            to: decision.to,
+            replace: decision.replace,
+            search: decision.search as never,
           });
-        }, 900);
+        }, decision.delayMs);
         return;
       }
-      setEmail(data.session.user.email ?? "");
+      setEmail(decision.email);
       setAuthState("ready");
     });
+
   }, [navigate]);
 
 

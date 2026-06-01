@@ -102,21 +102,29 @@ function DashboardPage() {
   }, [gps, online]);
 
   if (!ready) {
+    const redirecting = authState === "redirecting";
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary font-black text-primary-foreground text-2xl animate-pulse">
-          R
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 px-6">
+        <div className={`flex h-16 w-16 items-center justify-center rounded-full font-black text-2xl ${redirecting ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground animate-pulse"}`}>
+          {redirecting ? "!" : "R"}
         </div>
-        <div className="text-center space-y-2">
-          <h2 className="font-bold text-lg">Rota 013 Beta</h2>
-          <p className="text-sm text-muted-foreground">Verificando sessão...</p>
+        <div className="text-center space-y-2 max-w-sm">
+          <h2 className="font-bold text-lg">
+            {redirecting ? "Sessão não encontrada" : "Rota 013 Beta"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {redirecting
+              ? "Você precisa entrar para acessar o painel. Redirecionando para o login..."
+              : "Verificando sessão..."}
+          </p>
         </div>
         <div className="h-1.5 w-48 rounded-full bg-muted overflow-hidden">
-          <div className="h-full bg-primary rounded-full w-2/3 animate-[pulse_1.2s_ease-in-out_infinite]" />
+          <div className={`h-full rounded-full w-2/3 animate-[pulse_1.2s_ease-in-out_infinite] ${redirecting ? "bg-destructive" : "bg-primary"}`} />
         </div>
       </div>
     );
   }
+
 
   const sair = async () => {
     await supabase.auth.signOut();

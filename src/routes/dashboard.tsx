@@ -38,21 +38,23 @@ function DashboardPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
+      const decision = decideDashboardAuth(data.session);
+      if (decision.kind === "redirect") {
         setAuthState("redirecting");
-        toast.error("Sessão expirada. Faça login para continuar.");
+        toast.error(decision.message);
         setTimeout(() => {
           navigate({
-            to: "/login",
-            replace: true,
-            search: { reason: "unauthenticated", from: "/dashboard" } as never,
+            to: decision.to,
+            replace: decision.replace,
+            search: decision.search as never,
           });
-        }, 900);
+        }, decision.delayMs);
         return;
       }
-      setEmail(data.session.user.email ?? "");
+      setEmail(decision.email);
       setAuthState("ready");
     });
+
   }, [navigate]);
 
 

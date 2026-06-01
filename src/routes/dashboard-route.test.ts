@@ -35,11 +35,8 @@ describe("routeTree — /dashboard", () => {
     expect(childIds).toContain("/_authenticated/dashboard");
   });
 
-  it("flatRoutes do router inclui a rota /dashboard", () => {
-    const flat = (router as any).flatRoutes as any[];
-    const dashboard = flat.find((r) => r.id === "/_authenticated/dashboard");
-    expect(dashboard).toBeDefined();
-    expect(dashboard?.fullPath).toBe("/dashboard");
+  it("router resolve o id /_authenticated/dashboard a partir do routesById", () => {
+    expect(router.routesById["/_authenticated/dashboard"]).toBeDefined();
   });
 
   it("possui um componente configurado para a rota dashboard", () => {

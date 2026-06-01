@@ -36,7 +36,7 @@ describe("routeTree — /dashboard", () => {
   });
 
   it("flatRoutes do router inclui a rota /dashboard", () => {
-    const flat = router.flatRoutes as any[];
+    const flat = (router as any).flatRoutes as any[];
     const dashboard = flat.find((r) => r.id === "/_authenticated/dashboard");
     expect(dashboard).toBeDefined();
     expect(dashboard?.fullPath).toBe("/dashboard");

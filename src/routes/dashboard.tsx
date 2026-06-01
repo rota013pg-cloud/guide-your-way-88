@@ -11,6 +11,7 @@ import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
 import { LogOut, MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Painel — Rota 013 Beta" }] }),
   component: DashboardPage,
 });

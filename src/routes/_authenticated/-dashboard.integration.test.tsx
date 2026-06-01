@@ -64,17 +64,14 @@ describe("Dashboard page (integração)", () => {
     const { container } = render(<DashboardPage />);
 
     // Título principal (h1) do dashboard precisa aparecer.
-    expect(
-      await screen.findByRole(
-        "heading",
-        { level: 1, name: /dashboard/i },
-        { timeout: 5000 },
-      ),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      const h1 = container.querySelector("h1");
+      expect(h1?.textContent).toMatch(/dashboard/i);
+    });
 
     // Sanidade: o container tem conteúdo (uma tela branca seria vazia).
     expect(container.textContent?.length ?? 0).toBeGreaterThan(20);
-  }, 10000);
+  });
 
   it("monta as seções principais (mapa, corridas, motoristas)", async () => {
     render(<DashboardPage />);

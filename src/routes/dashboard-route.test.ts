@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRouter } from "@tanstack/react-router";
+import { QueryClient } from "@tanstack/react-query";
 import { routeTree } from "@/routeTree.gen";
 
 /**
@@ -8,7 +9,10 @@ import { routeTree } from "@/routeTree.gen";
  * e se o router consegue resolvê-la a partir da URL pública /dashboard.
  */
 describe("routeTree — /dashboard", () => {
-  const router = createRouter({ routeTree });
+  const router = createRouter({
+    routeTree,
+    context: { queryClient: new QueryClient() },
+  });
   const routesById = router.routesById as Record<string, any>;
 
   it("registra a rota /_authenticated/dashboard no routeTree", () => {

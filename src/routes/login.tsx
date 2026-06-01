@@ -7,13 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
+type LoginSearch = { reason?: "unauthenticated" | "expired"; from?: string };
+
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Rota 013 Beta" }] }),
+  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+    reason: search.reason === "unauthenticated" || search.reason === "expired" ? search.reason : undefined,
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { reason } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [modo, setModo] = useState<"login" | "signup">("login");
@@ -28,6 +35,7 @@ function LoginPage() {
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
+
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -63,6 +71,14 @@ function LoginPage() {
           <h1 className="text-2xl font-bold">Rota 013 Beta</h1>
           <p className="text-sm text-muted-foreground mt-1">Painel do operador</p>
         </div>
+        {reason && (
+          <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {reason === "expired"
+              ? "Sua sessão expirou. Entre novamente para continuar."
+              : "Você precisa estar autenticado para acessar o painel."}
+          </div>
+        )}
+
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <Label htmlFor="email">E-mail</Label>

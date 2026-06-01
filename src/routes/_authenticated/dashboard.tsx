@@ -122,7 +122,9 @@ function DashboardPage() {
               <Badge variant="secondary">{mapaMotoristas.length} no mapa</Badge>
             </div>
             <div className="h-[400px] md:h-[480px]">
-              <MapLeaflet motoristas={mapaMotoristas} />
+              <ErrorBoundary label="o mapa">
+                <MapLeaflet motoristas={mapaMotoristas} />
+              </ErrorBoundary>
             </div>
           </Card>
 

@@ -54,9 +54,6 @@ vi.mock("@/components/nova-corrida-dialog", () => ({
 import { Route as DashboardRoute } from "./dashboard";
 const DashboardPage = (DashboardRoute.options as any).component as React.FC;
 
-beforeEach(() => {
-  document.body.innerHTML = "";
-});
 
 describe("Dashboard page (integração)", () => {
   it("renderiza o título principal sem tela em branco", async () => {

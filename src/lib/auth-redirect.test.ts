@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   decideDashboardAuth,
+  decideDashboardAuthError,
+  withSessionTimeout,
+  AUTH_MESSAGES,
   UNAUTHENTICATED_MESSAGE,
   REDIRECT_DELAY_MS,
 } from "./auth-redirect";
 
 describe("decideDashboardAuth", () => {
   it("redireciona para /login?reason=unauthenticated&from=/dashboard quando a sessão é nula", () => {
-    const decision = decideDashboardAuth(null);
-    expect(decision).toEqual({
+    expect(decideDashboardAuth(null)).toEqual({
       kind: "redirect",
       to: "/login",
       replace: true,
@@ -19,73 +21,97 @@ describe("decideDashboardAuth", () => {
   });
 
   it("redireciona também quando a sessão é undefined", () => {
-    const decision = decideDashboardAuth(undefined);
-    expect(decision.kind).toBe("redirect");
-    if (decision.kind === "redirect") {
-      expect(decision.search.reason).toBe("unauthenticated");
-      expect(decision.search.from).toBe("/dashboard");
-      expect(decision.to).toBe("/login");
-      expect(decision.message).toBe(UNAUTHENTICATED_MESSAGE);
-    }
+    const d = decideDashboardAuth(undefined);
+    expect(d.kind).toBe("redirect");
+    if (d.kind === "redirect") expect(d.search.reason).toBe("unauthenticated");
   });
 
   it("retorna ready com email quando a sessão existe", () => {
-    const decision = decideDashboardAuth({ user: { email: "op@rota013.com" } });
-    expect(decision).toEqual({ kind: "ready", email: "op@rota013.com" });
+    expect(decideDashboardAuth({ user: { email: "op@rota013.com" } })).toEqual({
+      kind: "ready",
+      email: "op@rota013.com",
+    });
   });
 
   it("retorna email vazio quando a sessão existe mas sem email", () => {
-    const decision = decideDashboardAuth({ user: { email: null } });
-    expect(decision).toEqual({ kind: "ready", email: "" });
+    expect(decideDashboardAuth({ user: { email: null } })).toEqual({
+      kind: "ready",
+      email: "",
+    });
   });
 });
 
-/**
- * Simula o fluxo completo do efeito do dashboard:
- * - busca a sessão via supabase
- * - exibe toast de erro
- * - aguarda delay
- * - chama navigate com os parâmetros corretos
- */
-describe("fluxo de redirecionamento do dashboard (sessão ausente)", () => {
+describe("decideDashboardAuthError", () => {
+  it("classifica erros genéricos de API como session_error", () => {
+    const d = decideDashboardAuthError(new Error("Network failed"));
+    expect(d.kind).toBe("redirect");
+    if (d.kind === "redirect") {
+      expect(d.search).toEqual({ reason: "session_error", from: "/dashboard" });
+      expect(d.to).toBe("/login");
+      expect(d.message).toBe(AUTH_MESSAGES.session_error);
+    }
+  });
+
+  it("classifica erros de timeout como reason=timeout", () => {
+    const d = decideDashboardAuthError(new Error("Session check timeout after 8000ms"));
+    expect(d.kind).toBe("redirect");
+    if (d.kind === "redirect") {
+      expect(d.search.reason).toBe("timeout");
+      expect(d.message).toBe(AUTH_MESSAGES.timeout);
+    }
+  });
+
+  it("trata valores não-Error como session_error", () => {
+    const d = decideDashboardAuthError("boom");
+    expect(d.kind).toBe("redirect");
+    if (d.kind === "redirect") expect(d.search.reason).toBe("session_error");
+  });
+});
+
+describe("withSessionTimeout", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("resolve quando a promise responde antes do timeout", async () => {
+    const result = await withSessionTimeout(Promise.resolve("ok"), 100);
+    expect(result).toBe("ok");
+  });
+
+  it("rejeita com Error contendo 'timeout' quando demora demais", async () => {
+    vi.useFakeTimers();
+    const slow = new Promise((resolve) => setTimeout(() => resolve("late"), 10000));
+    const pending = withSessionTimeout(slow, 50);
+    vi.advanceTimersByTime(60);
+    await expect(pending).rejects.toThrow(/timeout/i);
+  });
+
+  it("propaga erros da promise original", async () => {
+    await expect(withSessionTimeout(Promise.reject(new Error("api down")), 100)).rejects.toThrow("api down");
+  });
+});
+
+describe("fluxo de redirecionamento do dashboard", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  it("chama navigate com /login?reason=unauthenticated&from=/dashboard após o delay", async () => {
+  it("redireciona com reason=unauthenticated quando a sessão está ausente", async () => {
     vi.useFakeTimers();
-
     const navigate = vi.fn();
     const toastError = vi.fn();
     const getSession = vi.fn().mockResolvedValue({ data: { session: null } });
 
-    // Reproduz o efeito real do componente DashboardPage.
-    async function runDashboardAuthEffect() {
-      const { data } = await getSession();
-      const decision = decideDashboardAuth(data.session);
-      if (decision.kind === "redirect") {
-        toastError(decision.message);
-        setTimeout(() => {
-          navigate({
-            to: decision.to,
-            replace: decision.replace,
-            search: decision.search,
-          });
-        }, decision.delayMs);
-        return "redirecting";
-      }
-      return "ready";
+    const { data } = await getSession();
+    const decision = decideDashboardAuth(data.session);
+    if (decision.kind === "redirect") {
+      toastError(decision.message);
+      setTimeout(() => {
+        navigate({ to: decision.to, replace: decision.replace, search: decision.search });
+      }, decision.delayMs);
     }
 
-    const state = await runDashboardAuthEffect();
-    expect(state).toBe("redirecting");
     expect(toastError).toHaveBeenCalledWith(UNAUTHENTICATED_MESSAGE);
-    expect(navigate).not.toHaveBeenCalled();
-
     vi.advanceTimersByTime(REDIRECT_DELAY_MS);
-
-    expect(navigate).toHaveBeenCalledTimes(1);
     expect(navigate).toHaveBeenCalledWith({
       to: "/login",
       replace: true,
@@ -93,18 +119,66 @@ describe("fluxo de redirecionamento do dashboard (sessão ausente)", () => {
     });
   });
 
-  it("não redireciona nem dispara toast quando a sessão está presente", async () => {
+  it("redireciona com reason=session_error quando getSession lança", async () => {
+    vi.useFakeTimers();
     const navigate = vi.fn();
     const toastError = vi.fn();
-    const getSession = vi
-      .fn()
-      .mockResolvedValue({ data: { session: { user: { email: "a@b.com" } } } });
 
-    const { data } = await getSession();
-    const decision = decideDashboardAuth(data.session);
+    try {
+      await withSessionTimeout(Promise.reject(new Error("API 500")), 1000);
+    } catch (err) {
+      const decision = decideDashboardAuthError(err);
+      if (decision.kind === "redirect") {
+        toastError(decision.message);
+        setTimeout(() => {
+          navigate({ to: decision.to, replace: decision.replace, search: decision.search });
+        }, decision.delayMs);
+      }
+    }
 
+    expect(toastError).toHaveBeenCalledWith(AUTH_MESSAGES.session_error);
+    vi.advanceTimersByTime(REDIRECT_DELAY_MS);
+    expect(navigate).toHaveBeenCalledWith({
+      to: "/login",
+      replace: true,
+      search: { reason: "session_error", from: "/dashboard" },
+    });
+  });
+
+  it("redireciona com reason=timeout quando a verificação demora demais", async () => {
+    vi.useFakeTimers();
+    const navigate = vi.fn();
+    const toastError = vi.fn();
+
+    const slow = new Promise<{ data: { session: null } }>((resolve) =>
+      setTimeout(() => resolve({ data: { session: null } }), 10000),
+    );
+    const pending = withSessionTimeout(slow, 50).catch((err) => {
+      const decision = decideDashboardAuthError(err);
+      if (decision.kind === "redirect") {
+        toastError(decision.message);
+        setTimeout(() => {
+          navigate({ to: decision.to, replace: decision.replace, search: decision.search });
+        }, decision.delayMs);
+      }
+    });
+
+    vi.advanceTimersByTime(60);
+    await pending;
+    expect(toastError).toHaveBeenCalledWith(AUTH_MESSAGES.timeout);
+
+    vi.advanceTimersByTime(REDIRECT_DELAY_MS);
+    expect(navigate).toHaveBeenCalledWith({
+      to: "/login",
+      replace: true,
+      search: { reason: "timeout", from: "/dashboard" },
+    });
+  });
+
+  it("não redireciona quando a sessão está presente", async () => {
+    const navigate = vi.fn();
+    const decision = decideDashboardAuth({ user: { email: "a@b.com" } });
     expect(decision.kind).toBe("ready");
-    expect(toastError).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
   });
 });

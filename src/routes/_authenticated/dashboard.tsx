@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,24 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
-import { LogOut, MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus } from "lucide-react";
-import {
-  decideDashboardAuth,
-  decideDashboardAuthError,
-  withSessionTimeout,
-  type DashboardAuthDecision,
-} from "@/lib/auth-redirect";
+import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus } from "lucide-react";
 
-
-
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
   head: () => ({ meta: [{ title: "Painel — Rota 013 Beta" }] }),
   component: DashboardPage,
 });
-
-type AuthState = "checking" | "redirecting" | "ready";
-
 
 type Motorista = { codigo: string; nome: string; moto: string | null; placa: string | null; status: string };
 type Corrida = {
@@ -36,52 +25,9 @@ type Corrida = {
 type Gps = { motorista_codigo: string; lat: number; lng: number; criado_em: string };
 
 function DashboardPage() {
-  const navigate = useNavigate();
-  const [authState, setAuthState] = useState<AuthState>("checking");
-  const ready = authState === "ready";
-  const [email, setEmail] = useState<string>("");
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
   const [corridas, setCorridas] = useState<Corrida[]>([]);
   const [gps, setGps] = useState<Gps[]>([]);
-
-  const [redirectReason, setRedirectReason] = useState<"unauthenticated" | "session_error" | "timeout" | null>(null);
-  const [redirectMessage, setRedirectMessage] = useState<string>("");
-
-
-  useEffect(() => {
-    const applyDecision = (decision: DashboardAuthDecision) => {
-      if (decision.kind === "redirect") {
-        setRedirectReason(decision.search.reason);
-        setRedirectMessage(decision.message);
-        setAuthState("redirecting");
-        toast.error(decision.message);
-        setTimeout(() => {
-          navigate({
-            to: decision.to,
-            replace: decision.replace,
-            search: decision.search as never,
-          });
-        }, decision.delayMs);
-        return;
-      }
-      setEmail(decision.email);
-      setAuthState("ready");
-    };
-
-    withSessionTimeout(supabase.auth.getSession())
-      .then(({ data, error }) => {
-        if (error) {
-          applyDecision(decideDashboardAuthError(error));
-          return;
-        }
-        applyDecision(decideDashboardAuth(data.session));
-      })
-      .catch((err) => {
-        applyDecision(decideDashboardAuthError(err));
-      });
-  }, [navigate]);
-
-
 
   const carregar = async () => {
     const [m, c, g] = await Promise.all([
@@ -95,7 +41,6 @@ function DashboardPage() {
   };
 
   useEffect(() => {
-    if (!ready) return;
     carregar();
     const ch = supabase
       .channel("dashboard")
@@ -104,7 +49,7 @@ function DashboardPage() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "motorista_gps" }, carregar)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [ready]);
+  }, []);
 
   const online = useMemo(() => motoristas.filter((m) => m.status === "Online" || m.status === "Em corrida"), [motoristas]);
   const offline = useMemo(() => motoristas.filter((m) => m.status === "Offline"), [motoristas]);
@@ -116,9 +61,7 @@ function DashboardPage() {
 
   const mapaMotoristas: MapMotorista[] = useMemo(() => {
     const ultimoPorCodigo = new Map<string, Gps>();
-    for (const g of gps) {
-      if (!ultimoPorCodigo.has(g.motorista_codigo)) ultimoPorCodigo.set(g.motorista_codigo, g);
-    }
+    for (const g of gps) if (!ultimoPorCodigo.has(g.motorista_codigo)) ultimoPorCodigo.set(g.motorista_codigo, g);
     return online
       .map((m) => {
         const p = ultimoPorCodigo.get(m.codigo);
@@ -127,42 +70,6 @@ function DashboardPage() {
       })
       .filter((x): x is MapMotorista => x !== null);
   }, [gps, online]);
-
-  if (!ready) {
-    const redirecting = authState === "redirecting";
-    const titulo =
-      redirectReason === "timeout"
-        ? "Verificação demorou demais"
-        : redirectReason === "session_error"
-        ? "Falha ao verificar sessão"
-        : redirecting
-        ? "Sessão não encontrada"
-        : "Rota 013 Beta";
-    const subtitulo = redirecting
-      ? `${redirectMessage} Redirecionando para o login...`
-      : "Verificando sessão...";
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 px-6">
-        <div className={`flex h-16 w-16 items-center justify-center rounded-full font-black text-2xl ${redirecting ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground animate-pulse"}`}>
-          {redirecting ? "!" : "R"}
-        </div>
-        <div className="text-center space-y-2 max-w-sm">
-          <h2 className="font-bold text-lg">{titulo}</h2>
-          <p className="text-sm text-muted-foreground">{subtitulo}</p>
-        </div>
-        <div className="h-1.5 w-48 rounded-full bg-muted overflow-hidden">
-          <div className={`h-full rounded-full w-2/3 animate-[pulse_1.2s_ease-in-out_infinite] ${redirecting ? "bg-destructive" : "bg-primary"}`} />
-        </div>
-      </div>
-    );
-  }
-
-
-
-  const sair = async () => {
-    await supabase.auth.signOut();
-    navigate({ to: "/login", replace: true });
-  };
 
   const atribuir = async (id: number, motoristaCodigo: string) => {
     const mot = motoristas.find((m) => m.codigo === motoristaCodigo);
@@ -186,40 +93,25 @@ function DashboardPage() {
   };
 
   const corStatus = (s: string) => {
-    if (s === "Pendente") return "bg-warning text-warning-foreground";
-    if (s === "Ofertada") return "bg-warning text-warning-foreground";
+    if (s === "Pendente" || s === "Ofertada") return "bg-warning text-warning-foreground";
     if (s === "Finalizada") return "bg-success text-success-foreground";
     if (s === "Cancelada") return "bg-destructive text-destructive-foreground";
     return "bg-primary text-primary-foreground";
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border bg-card sticky top-0 z-30">
-        <div className="flex items-center justify-between px-4 md:px-6 py-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-black text-primary-foreground text-lg">R</div>
-            <div>
-              <h1 className="font-bold leading-tight">Rota 013 Beta</h1>
-              <p className="text-xs text-muted-foreground">Painel do operador</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-1.5"><Users className="h-4 w-4 text-success" /><span className="font-semibold">{online.length}</span><span className="text-muted-foreground">online</span></div>
-              <div className="flex items-center gap-1.5"><ListChecks className="h-4 w-4 text-primary" /><span className="font-semibold">{ativas.length}</span><span className="text-muted-foreground">ativas</span></div>
-              <div className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /><span className="font-semibold">{finalizadasHoje.length}</span><span className="text-muted-foreground">hoje</span></div>
-            </div>
-            <Button variant="outline" size="sm" onClick={sair}>
-              <LogOut className="h-4 w-4 md:mr-2" /><span className="hidden md:inline">Sair</span>
-            </Button>
-          </div>
+    <div className="p-4 md:p-6 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-1.5"><Users className="h-4 w-4 text-success" /><span className="font-semibold">{online.length}</span><span className="text-muted-foreground">online</span></div>
+          <div className="flex items-center gap-1.5"><ListChecks className="h-4 w-4 text-primary" /><span className="font-semibold">{ativas.length}</span><span className="text-muted-foreground">ativas</span></div>
+          <div className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /><span className="font-semibold">{finalizadasHoje.length}</span><span className="text-muted-foreground">hoje</span></div>
         </div>
-      </header>
+      </div>
 
-      <main className="p-4 md:p-6 grid gap-4 md:gap-6 lg:grid-cols-[1fr_400px]">
-        {/* Coluna esquerda — Mapa + ações */}
-        <div className="space-y-4 md:space-y-6">
+      <div className="grid gap-4 lg:grid-cols-[1fr_400px]">
+        <div className="space-y-4">
           <Card className="p-0 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <div className="flex items-center gap-2">
@@ -253,8 +145,7 @@ function DashboardPage() {
           </Card>
         </div>
 
-        {/* Coluna direita — Ações + listas */}
-        <div className="space-y-4 md:space-y-6">
+        <div className="space-y-4">
           <Card className="p-4">
             <NovaCorridaDialog onCriada={carregar} />
           </Card>
@@ -296,10 +187,8 @@ function DashboardPage() {
               </div>
             </Card>
           )}
-
-          <p className="text-xs text-muted-foreground text-center">Conectado como <span className="text-foreground">{email}</span></p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

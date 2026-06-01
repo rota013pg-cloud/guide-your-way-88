@@ -7,16 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
-type LoginSearch = { reason?: "unauthenticated" | "expired"; from?: string };
+type LoginReason = "unauthenticated" | "expired" | "session_error" | "timeout";
+type LoginSearch = { reason?: LoginReason; from?: string };
+
+const VALID_REASONS: LoginReason[] = ["unauthenticated", "expired", "session_error", "timeout"];
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Rota 013 Beta" }] }),
   validateSearch: (search: Record<string, unknown>): LoginSearch => ({
-    reason: search.reason === "unauthenticated" || search.reason === "expired" ? search.reason : undefined,
+    reason: VALID_REASONS.includes(search.reason as LoginReason) ? (search.reason as LoginReason) : undefined,
     from: typeof search.from === "string" ? search.from : undefined,
   }),
   component: LoginPage,
 });
+
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -73,11 +77,13 @@ function LoginPage() {
         </div>
         {reason && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {reason === "expired"
-              ? "Sua sessão expirou. Entre novamente para continuar."
-              : "Você precisa estar autenticado para acessar o painel."}
+            {reason === "expired" && "Sua sessão expirou. Entre novamente para continuar."}
+            {reason === "unauthenticated" && "Você precisa estar autenticado para acessar o painel."}
+            {reason === "session_error" && "Não foi possível verificar sua sessão. Faça login novamente."}
+            {reason === "timeout" && "A verificação da sessão demorou demais. Tente entrar novamente."}
           </div>
         )}
+
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>

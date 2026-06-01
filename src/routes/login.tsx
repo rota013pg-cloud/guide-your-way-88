@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
-const loginSearchSchema = z.object({
+export const loginSearchSchema = z.object({
   reason: fallback(
     z.enum(["unauthenticated", "expired", "session_error", "timeout"]).optional(),
     "unauthenticated",

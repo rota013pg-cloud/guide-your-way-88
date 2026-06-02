@@ -217,6 +217,59 @@ export const dispararOfertas = createServerFn({ method: "POST" })
       .eq("id", corridaId);
     await registrarLog(corridaId, `Ofertada (${corrida.despacho})`);
 
+// ─── Expirar oferta (chamado pelo app do motorista após 30s) ──────
+// Se não restar nenhuma oferta pendente para a corrida, dispara automaticamente
+// uma nova rodada (reoferta) para os próximos motoristas mais próximos.
+export const expirarOferta = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      ofertaId: z.number().int().positive(),
+      corridaId: z.number().int().positive(),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    // marca esta oferta como expirada (só se ainda estiver pendente)
+    await supabaseAdmin
+      .from("corrida_ofertas")
+      .update({ status: "expirada" })
+      .eq("id", data.ofertaId)
+      .eq("status", "pendente");
+
+    // verifica estado atual da corrida e se restam ofertas pendentes
+    const { data: corrida } = await supabaseAdmin
+      .from("corridas")
+      .select("id, status, rodada_atual")
+      .eq("id", data.corridaId)
+      .maybeSingle();
+    if (!corrida) return { ok: true, reofertou: false };
+    if (corrida.status !== "Ofertada" && corrida.status !== "Pendente") {
+      return { ok: true, reofertou: false };
+    }
+
+    const { count } = await supabaseAdmin
+      .from("corrida_ofertas")
+      .select("id", { count: "exact", head: true })
+      .eq("corrida_id", data.corridaId)
+      .eq("status", "pendente");
+
+    if ((count ?? 0) > 0) return { ok: true, reofertou: false };
+
+    // Nenhuma pendente: dispara próxima rodada automaticamente
+    try {
+      await supabaseAdmin
+        .from("corridas")
+        .update({ rodada_atual: (corrida.rodada_atual ?? 1) + 1, status: "Pendente" })
+        .eq("id", data.corridaId);
+
+      // chama lógica interna de oferta reaproveitando o handler
+      await (dispararOfertas as any)({ data: { corridaId: data.corridaId, reofertar: true } });
+      return { ok: true, reofertou: true };
+    } catch {
+      return { ok: true, reofertou: false };
+    }
+  });
+
+
     return { ok: true, ofertados: rows.length, modo: corrida.despacho };
   });
 

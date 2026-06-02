@@ -51,16 +51,17 @@ export function CobrancaNotifier() {
     const lista = (data as Cobranca[]) ?? [];
     setTravados(lista);
     const codigos = lista.map((c) => c.motorista_codigo);
+    let mapaNomes: Record<string, string> = nomes;
     if (codigos.length) {
       const { data: mots } = await supabase
         .from("motoristas")
         .select("codigo,nome")
         .in("codigo", codigos);
-      const map: Record<string, string> = {};
+      mapaNomes = {};
       for (const m of (mots ?? []) as { codigo: string; nome: string }[]) {
-        map[m.codigo] = m.nome;
+        mapaNomes[m.codigo] = m.nome;
       }
-      setNomes(map);
+      setNomes(mapaNomes);
     }
 
     // detectar novos

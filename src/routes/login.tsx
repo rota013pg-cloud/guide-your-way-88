@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useState, type FormEvent } from "react";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export const loginSearchSchema = z.object({
@@ -23,14 +24,21 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
+// Login sem '@' é tratado como usuário interno e mapeado para email sintético.
+const LOGIN_SUFIXO = "@painel.local";
+const toAuthEmail = (input: string) => {
+  const v = input.trim();
+  return v.includes("@") ? v : `${v}${LOGIN_SUFIXO}`;
+};
 
 function LoginPage() {
   const navigate = useNavigate();
   const { reason } = Route.useSearch();
-  const [email, setEmail] = useState("");
+  const [identificador, setIdentificador] = useState(""); // email ou usuário
   const [senha, setSenha] = useState("");
   const [modo, setModo] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -42,11 +50,11 @@ function LoginPage() {
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
+      const email = toAuthEmail(identificador);
       if (modo === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
         if (error) throw error;
@@ -86,14 +94,32 @@ function LoginPage() {
           </div>
         )}
 
-
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="email">E-mail</Label>
-            <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Label htmlFor="identificador">E-mail ou usuário</Label>
+            <Input
+              id="identificador"
+              type="text"
+              required
+              autoComplete="username"
+              placeholder="seu@email.com  ou  joao.silva"
+              value={identificador}
+              onChange={(e) => setIdentificador(e.target.value)}
+            />
           </div>
           <div>
-            <Label htmlFor="senha">Senha</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="senha">Senha</Label>
+              {modo === "login" && (
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => setForgotOpen(true)}
+                >
+                  Esqueceu a senha?
+                </button>
+              )}
+            </div>
             <Input id="senha" type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
@@ -111,6 +137,70 @@ function LoginPage() {
           O primeiro usuário cadastrado vira <strong>admin</strong> automaticamente.
         </p>
       </Card>
+
+      <EsqueciSenhaDialog open={forgotOpen} onClose={() => setForgotOpen(false)} initial={identificador} />
     </div>
   );
 }
+
+function EsqueciSenhaDialog({ open, onClose, initial }: { open: boolean; onClose: () => void; initial: string }) {
+  const [valor, setValor] = useState(initial);
+  const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => { setValor(initial); }, [initial, open]);
+
+  const enviar = async (e: FormEvent) => {
+    e.preventDefault();
+    setEnviando(true);
+    try {
+      const email = toAuthEmail(valor);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Se a conta existir, um e-mail de redefinição foi enviado.");
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível enviar o e-mail.");
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Redefinir senha</DialogTitle>
+          <DialogDescription>
+            Informe seu e-mail (ou usuário) cadastrado. Enviaremos um link de redefinição.
+            Se você só tem usuário interno (sem e-mail), peça ao administrador para resetar sua senha pelo módulo Usuários.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={enviar} className="space-y-3">
+          <div>
+            <Label htmlFor="reset-id">E-mail ou usuário</Label>
+            <Input
+              id="reset-id"
+              type="text"
+              required
+              autoFocus
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              placeholder="seu@email.com"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={enviando}>
+              {enviando ? "Enviando..." : "Enviar link"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Link export para satisfazer linter quando re-utilizado por outras telas.
+export { Link };

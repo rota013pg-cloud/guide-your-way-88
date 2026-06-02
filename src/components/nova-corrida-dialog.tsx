@@ -97,8 +97,12 @@ export function NovaCorridaDialog({
   const [agendadaPara, setAgendadaPara] = useState("");
   const [despacho, setDespacho] = useState<Despacho>("Automatico");
   const [motoristasManuais, setMotoristasManuais] = useState<string[]>([]);
+  const [agendadaMotorista, setAgendadaMotorista] = useState<string>(""); // codigo do motorista pré-vinculado
   const [pagamento, setPagamento] = useState<Pagamento>("Dinheiro");
   const [obs, setObs] = useState("");
+  const [buscandoCli, setBuscandoCli] = useState(false);
+  const [cliNaoEncontrado, setCliNaoEncontrado] = useState(false);
+
 
   const [salvando, setSalvando] = useState(false);
   const [whatsappOpen, setWhatsappOpen] = useState<{ texto: string; tel?: string } | null>(null);
@@ -190,24 +194,33 @@ export function NovaCorridaDialog({
   const valorBase = tarifa && km > 0 ? Math.max(km * tarifa.valorKm, tarifa.tarifaMinima) : 0;
   const { total, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
 
-  const buscarCliente = async () => {
+  // Busca automática de cliente com debounce (apenas Nome + Telefone, não toca endereço)
+  useEffect(() => {
     const cod = codigoBusca.trim().toUpperCase();
-    if (!cod) return;
-    const { data } = await supabase
-      .from("clientes")
-      .select("codigo,nome,telefone,endereco")
-      .eq("codigo", cod)
-      .maybeSingle();
-    if (!data) {
-      toast.error(`Cliente ${cod} não encontrado`);
-      return;
-    }
-    setClienteCodigo(data.codigo);
-    setCliente(data.nome);
-    setTelefone(maskTelefone(data.telefone ?? ""));
-    if (data.endereco && !origem.text) setOrigem({ text: data.endereco });
-    toast.success(`Cliente ${data.codigo} carregado`);
-  };
+    if (!cod || cod === clienteCodigo) return;
+    if (cod.length < 2) { setCliNaoEncontrado(false); return; }
+    let cancel = false;
+    setBuscandoCli(true);
+    const t = window.setTimeout(async () => {
+      const { data } = await supabase
+        .from("clientes")
+        .select("codigo,nome,telefone")
+        .eq("codigo", cod)
+        .maybeSingle();
+      if (cancel) return;
+      setBuscandoCli(false);
+      if (!data) {
+        setCliNaoEncontrado(true);
+        return;
+      }
+      setCliNaoEncontrado(false);
+      setClienteCodigo(data.codigo);
+      setCliente(data.nome);
+      setTelefone(maskTelefone(data.telefone ?? ""));
+    }, 400);
+    return () => { cancel = true; window.clearTimeout(t); };
+  }, [codigoBusca, clienteCodigo]);
+
 
   const limpar = () => {
     setCodigoBusca("");
@@ -222,6 +235,8 @@ export function NovaCorridaDialog({
     setAgendadaPara("");
     setDespacho("Automatico");
     setMotoristasManuais([]);
+    setAgendadaMotorista("");
+    setCliNaoEncontrado(false);
     setPagamento("Dinheiro");
     setObs("");
   };
@@ -286,6 +301,10 @@ export function NovaCorridaDialog({
         despacho,
         paradas: paradasJson as any,
         motoristas_manuais: despacho === "Manual" ? motoristasManuais : [],
+        motorista_codigo: modelo === "Agendada" && agendadaMotorista ? agendadaMotorista : null,
+        motorista: modelo === "Agendada" && agendadaMotorista
+          ? (motoristas.find((m) => m.codigo === agendadaMotorista)?.nome ?? null)
+          : null,
       })
       .select("id")
       .single();
@@ -371,18 +390,18 @@ export function NovaCorridaDialog({
         {/* Cliente */}
         <div className="grid gap-2 rounded-lg border p-3 bg-muted/30">
           <Label>Cliente</Label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Input
               placeholder="Código (ex: C0001)"
               value={codigoBusca}
               onChange={(e) => setCodigoBusca(e.target.value.toUpperCase())}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); buscarCliente(); } }}
               className="font-mono"
             />
-            <Button type="button" variant="secondary" onClick={buscarCliente}>
-              <Search className="h-4 w-4 mr-1" /> Buscar
-            </Button>
+            {buscandoCli && <span className="text-xs text-muted-foreground">buscando…</span>}
+            {cliNaoEncontrado && !buscandoCli && <span className="text-xs text-destructive">não encontrado</span>}
+            {clienteCodigo && <Search className="h-4 w-4 text-primary" />}
           </div>
+
           <div className="grid grid-cols-2 gap-2">
             <Input placeholder="Nome" value={cliente} onChange={(e) => setCliente(e.target.value)} />
             <Input
@@ -478,15 +497,27 @@ export function NovaCorridaDialog({
         </div>
 
         {modelo === "Agendada" && (
-          <div className="grid gap-1.5">
+          <div className="grid gap-2">
             <Label>Data e hora do agendamento</Label>
             <Input
               type="datetime-local"
               value={agendadaPara}
               onChange={(e) => setAgendadaPara(e.target.value)}
             />
+            <Label className="mt-2">Vincular motorista (opcional)</Label>
+            <Select value={agendadaMotorista || "__none"} onValueChange={(v) => setAgendadaMotorista(v === "__none" ? "" : v)}>
+              <SelectTrigger><SelectValue placeholder="Nenhum (lançar para todos no horário)" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">Nenhum (lançar para todos)</SelectItem>
+                {motoristas.map((m) => (
+                  <SelectItem key={m.codigo} value={m.codigo}>
+                    {m.codigo} · {m.nome} ({m.status})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-muted-foreground">
-              Corridas agendadas ficam aguardando — o operador inicia manualmente no horário.
+              O operador será alertado antes do horário e poderá lançar a corrida manualmente.
             </p>
           </div>
         )}

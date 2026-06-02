@@ -13,7 +13,9 @@ import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedTarifasRouteImport } from './routes/_authenticated/tarifas'
+import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedMotoristasRouteImport } from './routes/_authenticated/motoristas'
 import { Route as AuthenticatedMensagensRouteImport } from './routes/_authenticated/mensagens'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -43,9 +45,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedTarifasRoute = AuthenticatedTarifasRouteImport.update({
   id: '/tarifas',
   path: '/tarifas',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMuralRoute = AuthenticatedMuralRouteImport.update({
+  id: '/mural',
+  path: '/mural',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMotoristasRoute = AuthenticatedMotoristasRouteImport.update({
@@ -108,7 +120,9 @@ export interface FileRoutesByFullPath {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/mensagens': typeof AuthenticatedMensagensRoute
   '/motoristas': typeof AuthenticatedMotoristasRoute
+  '/mural': typeof AuthenticatedMuralRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,7 +137,9 @@ export interface FileRoutesByTo {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/mensagens': typeof AuthenticatedMensagensRoute
   '/motoristas': typeof AuthenticatedMotoristasRoute
+  '/mural': typeof AuthenticatedMuralRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,7 +156,9 @@ export interface FileRoutesById {
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/mensagens': typeof AuthenticatedMensagensRoute
   '/_authenticated/motoristas': typeof AuthenticatedMotoristasRoute
+  '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/tarifas': typeof AuthenticatedTarifasRoute
+  '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,7 +175,9 @@ export interface FileRouteTypes {
     | '/historico'
     | '/mensagens'
     | '/motoristas'
+    | '/mural'
     | '/tarifas'
+    | '/usuarios'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,7 +192,9 @@ export interface FileRouteTypes {
     | '/historico'
     | '/mensagens'
     | '/motoristas'
+    | '/mural'
     | '/tarifas'
+    | '/usuarios'
   id:
     | '__root__'
     | '/'
@@ -188,7 +210,9 @@ export interface FileRouteTypes {
     | '/_authenticated/historico'
     | '/_authenticated/mensagens'
     | '/_authenticated/motoristas'
+    | '/_authenticated/mural'
     | '/_authenticated/tarifas'
+    | '/_authenticated/usuarios'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -228,11 +252,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/usuarios': {
+      id: '/_authenticated/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/tarifas': {
       id: '/_authenticated/tarifas'
       path: '/tarifas'
       fullPath: '/tarifas'
       preLoaderRoute: typeof AuthenticatedTarifasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/mural': {
+      id: '/_authenticated/mural'
+      path: '/mural'
+      fullPath: '/mural'
+      preLoaderRoute: typeof AuthenticatedMuralRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/motoristas': {
@@ -311,7 +349,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedMensagensRoute: typeof AuthenticatedMensagensRoute
   AuthenticatedMotoristasRoute: typeof AuthenticatedMotoristasRoute
+  AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedTarifasRoute: typeof AuthenticatedTarifasRoute
+  AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -324,7 +364,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedMensagensRoute: AuthenticatedMensagensRoute,
   AuthenticatedMotoristasRoute: AuthenticatedMotoristasRoute,
+  AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedTarifasRoute: AuthenticatedTarifasRoute,
+  AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

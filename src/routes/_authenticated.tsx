@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
 import {
   decideDashboardAuth,
   decideDashboardAuthError,
@@ -26,6 +27,8 @@ function AuthenticatedLayout() {
   const [redirectReason, setRedirectReason] = useState<"unauthenticated" | "session_error" | "timeout" | null>(null);
 
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
+  useAlertasAgendadas(15);
+
 
   useEffect(() => {
     const apply = (decision: DashboardAuthDecision) => {

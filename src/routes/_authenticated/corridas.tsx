@@ -1,17 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Rocket } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
-import { listarCorridasRecentes } from "@/lib/corridas.functions";
+import { listarCorridasRecentes, lancarCorridaAgendada, dispararOfertas } from "@/lib/corridas.functions";
 import { CorridaTimeline } from "@/components/corrida-timeline";
+import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
 
 export const Route = createFileRoute("/_authenticated/corridas")({
   ssr: false,

@@ -148,6 +148,8 @@ export type Database = {
       corridas: {
         Row: {
           agendada_para: string | null
+          alerta_antes_min: number
+          alerta_disparado: boolean
           atualizado_em: string
           cliente: string | null
           cliente_codigo: string | null
@@ -178,6 +180,8 @@ export type Database = {
         }
         Insert: {
           agendada_para?: string | null
+          alerta_antes_min?: number
+          alerta_disparado?: boolean
           atualizado_em?: string
           cliente?: string | null
           cliente_codigo?: string | null
@@ -208,6 +212,8 @@ export type Database = {
         }
         Update: {
           agendada_para?: string | null
+          alerta_antes_min?: number
+          alerta_disparado?: boolean
           atualizado_em?: string
           cliente?: string | null
           cliente_codigo?: string | null
@@ -486,6 +492,36 @@ export type Database = {
         }
         Relationships: []
       }
+      mural_recados: {
+        Row: {
+          autor_nome: string
+          autor_user_id: string
+          criado_em: string
+          fixado: boolean
+          id: number
+          lido_por: Json
+          texto: string
+        }
+        Insert: {
+          autor_nome: string
+          autor_user_id: string
+          criado_em?: string
+          fixado?: boolean
+          id?: number
+          lido_por?: Json
+          texto: string
+        }
+        Update: {
+          autor_nome?: string
+          autor_user_id?: string
+          criado_em?: string
+          fixado?: boolean
+          id?: number
+          lido_por?: Json
+          texto?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           criado_em: string
@@ -562,6 +598,45 @@ export type Database = {
           criado_em?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      usuarios_painel: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          email: string
+          id: string
+          login: string
+          motivo_bloqueio: string | null
+          nome: string
+          senha_plain: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          email: string
+          id?: string
+          login: string
+          motivo_bloqueio?: string | null
+          nome: string
+          senha_plain?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          email?: string
+          id?: string
+          login?: string
+          motivo_bloqueio?: string | null
+          nome?: string
+          senha_plain?: string | null
+          status?: string
           user_id?: string
         }
         Relationships: []

@@ -20,6 +20,7 @@ export type AppConfig = {
   pixChave: string;
   valorDiaria: number;
   valorParadaExtra: number;
+  alertaAgendadaMin: number;
   templates: MensagemTemplate[];
 };
 
@@ -30,6 +31,7 @@ const CONFIG_DEFAULT: AppConfig = {
   pixChave: "",
   valorDiaria: 19.9,
   valorParadaExtra: 3,
+  alertaAgendadaMin: 15,
   templates: [],
 };
 
@@ -46,6 +48,7 @@ const ConfigSchema = z.object({
   pixChave: z.string().max(120),
   valorDiaria: z.number().positive().max(9999),
   valorParadaExtra: z.number().min(0).max(999),
+  alertaAgendadaMin: z.number().int().min(1).max(180),
   templates: z.array(TemplateSchema).max(50).optional().default([]),
 });
 

@@ -89,8 +89,8 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md p-8">
         <div className="mb-6 text-center">
-          <div className="text-5xl font-black italic tracking-tighter leading-none mb-3">
-            Rota<span style={{ color: "#f7c600" }}>013</span>
+          <div className="logo-r013 text-6xl leading-none mb-3">
+            R<span>013</span>
           </div>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Beta 2.0 · Painel do operador</p>
         </div>

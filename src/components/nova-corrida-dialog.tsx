@@ -474,19 +474,28 @@ export function NovaCorridaDialog({
             <Label>Distância (km){calcRota ? " …" : ""}</Label>
             <Input inputMode="decimal" value={distancia} onChange={(e) => setDistancia(e.target.value)} placeholder="0,0" />
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid gap-1.5 min-w-0">
             <Label>Tarifa</Label>
             <Select value={tarifaId} onValueChange={setTarifaId}>
-              <SelectTrigger><SelectValue placeholder="Tarifa" /></SelectTrigger>
+              <SelectTrigger className="min-w-0">
+                <SelectValue placeholder="Tarifa">
+                  {tarifaId ? abreviarTarifa(tarifas.find((t) => t.id === tarifaId)?.nome ?? "") : null}
+                </SelectValue>
+              </SelectTrigger>
               <SelectContent>
-                {tarifas.map((t) => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
+                {tarifas.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    <span className="font-mono mr-2">{abreviarTarifa(t.nome)}</span>
+                    <span className="text-xs text-muted-foreground">{t.nome}</span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid gap-1.5 min-w-0">
             <Label>Pagamento</Label>
             <Select value={pagamento} onValueChange={(v) => setPagamento(v as Pagamento)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="min-w-0"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Dinheiro">Dinheiro</SelectItem>
                 <SelectItem value="Pix">Pix</SelectItem>
@@ -495,6 +504,29 @@ export function NovaCorridaDialog({
             </Select>
           </div>
         </div>
+
+        {/* Desconto e Cobrança Adicional */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-1.5">
+            <Label>Desconto (R$)</Label>
+            <Input
+              inputMode="decimal"
+              value={desconto}
+              onChange={(e) => setDesconto(e.target.value)}
+              placeholder="0,00"
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label>Cobrança adicional (R$)</Label>
+            <Input
+              inputMode="decimal"
+              value={extra}
+              onChange={(e) => setExtra(e.target.value)}
+              placeholder="0,00"
+            />
+          </div>
+        </div>
+
 
         {/* Modelo / Despacho */}
         <div className="grid grid-cols-2 gap-3">

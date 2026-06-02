@@ -215,6 +215,45 @@ export const motoristaAceitarOferta = createServerFn({ method: "POST" })
       .update({ status: "Em corrida" })
       .eq("codigo", data.codigo);
 
+    // ── Auto-baixa de diária via crédito adiantado ──
+    // Na 1ª corrida do dia operacional, se o motorista tiver créditos,
+    // consome 1 e registra a diária como paga automaticamente.
+    try {
+      const { data: motCred } = await supabaseAdmin
+        .from("motoristas")
+        .select("creditos_diaria, nome")
+        .eq("codigo", data.codigo)
+        .maybeSingle();
+
+      if (motCred && (motCred.creditos_diaria ?? 0) > 0) {
+        const { data: cfg } = await supabaseAdmin
+          .from("app_config").select("config_json").eq("id", 1).maybeSingle();
+        const valorDiaria = Number(
+          ((cfg?.config_json ?? {}) as { valorDiaria?: number }).valorDiaria ?? 19.9,
+        );
+
+        const { error: insErr } = await supabaseAdmin
+          .from("financeiro")
+          .insert({
+            motorista_codigo: data.codigo,
+            motorista: motCred.nome,
+            valor: valorDiaria,
+            tipo: "Diária",
+            operador: "AUTO (crédito adiantado)",
+          });
+
+        // Só decrementa se a inserção foi nova (não conflito de uniq_diaria_dia)
+        if (!insErr) {
+          await supabaseAdmin
+            .from("motoristas")
+            .update({ creditos_diaria: motCred.creditos_diaria - 1 })
+            .eq("codigo", data.codigo);
+        }
+      }
+    } catch (e) {
+      console.error("[creditos-diaria] falhou auto-baixa:", e);
+    }
+
     return { corrida };
   });
 

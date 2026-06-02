@@ -358,6 +358,7 @@ export type Database = {
           cor: string | null
           corridas: number
           cpf: string | null
+          creditos_diaria: number
           criado_em: string
           doc_cnh: string | null
           doc_endereco: string | null
@@ -381,6 +382,7 @@ export type Database = {
           cor?: string | null
           corridas?: number
           cpf?: string | null
+          creditos_diaria?: number
           criado_em?: string
           doc_cnh?: string | null
           doc_endereco?: string | null
@@ -404,6 +406,7 @@ export type Database = {
           cor?: string | null
           corridas?: number
           cpf?: string | null
+          creditos_diaria?: number
           criado_em?: string
           doc_cnh?: string | null
           doc_endereco?: string | null

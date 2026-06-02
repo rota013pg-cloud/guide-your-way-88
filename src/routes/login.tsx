@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { LogoRota013 } from "@/components/logo-rota013";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";

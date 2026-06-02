@@ -497,15 +497,27 @@ export function NovaCorridaDialog({
         </div>
 
         {modelo === "Agendada" && (
-          <div className="grid gap-1.5">
+          <div className="grid gap-2">
             <Label>Data e hora do agendamento</Label>
             <Input
               type="datetime-local"
               value={agendadaPara}
               onChange={(e) => setAgendadaPara(e.target.value)}
             />
+            <Label className="mt-2">Vincular motorista (opcional)</Label>
+            <Select value={agendadaMotorista || "__none"} onValueChange={(v) => setAgendadaMotorista(v === "__none" ? "" : v)}>
+              <SelectTrigger><SelectValue placeholder="Nenhum (lançar para todos no horário)" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">Nenhum (lançar para todos)</SelectItem>
+                {motoristas.map((m) => (
+                  <SelectItem key={m.codigo} value={m.codigo}>
+                    {m.codigo} · {m.nome} ({m.status})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-muted-foreground">
-              Corridas agendadas ficam aguardando — o operador inicia manualmente no horário.
+              O operador será alertado antes do horário e poderá lançar a corrida manualmente.
             </p>
           </div>
         )}

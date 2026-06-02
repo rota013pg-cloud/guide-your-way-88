@@ -938,12 +938,7 @@ const cssMotorista = `
   background:var(--card); border-bottom:1px solid var(--line); flex-shrink:0;
 }
 .moto-app .header-dark { background:#111; }
-.moto-app .app-logo {
-  font-family:"Saira Condensed", system-ui, sans-serif;
-  font-weight:900; font-style:italic; font-size:24px; color:#fff;
-  text-decoration:none; letter-spacing:-1px;
-}
-.moto-app .app-logo span { color:var(--gold); }
+.moto-app .app-logo { text-decoration:none; }
 .moto-app .header-center { flex:1; text-align:center; padding:0 8px; }
 .moto-app .header-nome { font-weight:700; font-size:15px; }
 .moto-app .header-moto { font-size:12px; color:var(--muted); margin-top:2px; }

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authen
 import { Route as AuthenticatedCoberturaRouteImport } from './routes/_authenticated/cobertura'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 
+const MotoristaRoute = MotoristaRouteImport.update({
+  id: '/motorista',
+  path: '/motorista',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -92,6 +98,7 @@ const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/motorista': typeof MotoristaRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/motorista': typeof MotoristaRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/motorista': typeof MotoristaRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/cobertura': typeof AuthenticatedCoberturaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/motorista'
     | '/clientes'
     | '/cobertura'
     | '/configuracoes'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/motorista'
     | '/clientes'
     | '/cobertura'
     | '/configuracoes'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/motorista'
     | '/_authenticated/clientes'
     | '/_authenticated/cobertura'
     | '/_authenticated/configuracoes'
@@ -183,10 +195,18 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  MotoristaRoute: typeof MotoristaRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/motorista': {
+      id: '/motorista'
+      path: '/motorista'
+      fullPath: '/motorista'
+      preLoaderRoute: typeof MotoristaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -315,6 +335,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  MotoristaRoute: MotoristaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

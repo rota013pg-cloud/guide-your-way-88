@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import { dispararOfertas } from "@/lib/corridas.functions";
 
 type Tarifa = { id: number; nome: string; bandeirada: number; minimo: number; por_km: number };
 type ClienteMini = { codigo: string; nome: string; telefone: string | null };

@@ -91,6 +91,7 @@ function CoveragePage() {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("lines");
   const [asc, setAsc] = useState(true);
+  const [selectedFile, setSelectedFile] = useState<string>("");
 
   useEffect(() => {
     fetch("/coverage-summary.json")
@@ -114,6 +115,12 @@ function CoveragePage() {
       return next;
     });
   }
+
+  const filesWithUncovered = useMemo(() => {
+    return Object.keys(uncovered)
+      .filter((k) => uncovered[k].length > 0)
+      .sort((a, b) => a.localeCompare(b));
+  }, [uncovered]);
 
   const rows = useMemo(() => {
     if (!data) return [];

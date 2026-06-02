@@ -126,6 +126,7 @@ function UsuariosPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">Foto</TableHead>
               <TableHead>Login</TableHead>
               <TableHead>Nome</TableHead>
               <TableHead className="hidden md:table-cell">E-mail</TableHead>
@@ -136,10 +137,26 @@ function UsuariosPage() {
           </TableHeader>
           <TableBody>
             {usuarios.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum usuário.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Nenhum usuário.</TableCell></TableRow>
             )}
-            {usuarios.map((u: any) => (
+            {usuarios.map((u: any) => {
+              const iniciais = (u.nome || "U").split(" ").map((p: string) => p[0]).slice(0, 2).join("").toUpperCase();
+              return (
               <TableRow key={u.user_id}>
+                <TableCell>
+                  <label className="relative group cursor-pointer block h-9 w-9" title="Alterar foto">
+                    <div className="h-9 w-9 rounded-full overflow-hidden bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold ring-1 ring-border">
+                      {u.foto ? <img src={u.foto} alt={u.nome} className="h-full w-full object-cover" /> : iniciais}
+                    </div>
+                    <span className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] text-white transition">Editar</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      const f = e.target.files?.[0]; e.target.value = "";
+                      if (!f) return;
+                      const url = await uploadFotoUsuario(u.user_id, f);
+                      if (url) { await fotoFn({ data: { userId: u.user_id, foto: url } }); toast.success("Foto atualizada"); refresh(); }
+                    }} />
+                  </label>
+                </TableCell>
                 <TableCell className="font-mono text-xs">{u.login}</TableCell>
                 <TableCell>{u.nome}</TableCell>
                 <TableCell className="hidden md:table-cell text-sm">{u.email}</TableCell>

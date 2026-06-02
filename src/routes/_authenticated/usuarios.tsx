@@ -22,7 +22,9 @@ import { useRole } from "@/hooks/use-role";
 import {
   listarUsuarios, criarUsuario, alterarSenhaUsuario, alterarRoleUsuario,
   bloquearUsuario, desbloquearUsuario, excluirUsuario, verSenhaUsuario,
+  atualizarFotoUsuario,
 } from "@/lib/usuarios.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   ssr: false,
@@ -42,6 +44,16 @@ function UsuariosPage() {
   const excluirFn = useServerFn(excluirUsuario);
   const verSenhaFn = useServerFn(verSenhaUsuario);
   const roleFn = useServerFn(alterarRoleUsuario);
+  const fotoFn = useServerFn(atualizarFotoUsuario);
+
+  async function uploadFotoUsuario(userId: string, file: File): Promise<string | null> {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `usuarios-painel/${userId}/foto-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("motoristas-docs").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) { toast.error(error.message); return null; }
+    const { data: signed } = await supabase.storage.from("motoristas-docs").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+    return signed?.signedUrl ?? null;
+  }
 
   const { data: usuarios = [] } = useQuery({
     queryKey: ["usuarios-painel"],

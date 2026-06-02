@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatNotifier } from "@/components/chat-notifier";
+import { CobrancaNotifier } from "@/components/cobranca-notifier";
 import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
 import {
   decideDashboardAuth,
@@ -96,6 +97,7 @@ function AuthenticatedLayout() {
           <header className="h-12 flex items-center gap-2 border-b border-border bg-card px-3 sticky top-0 z-30">
             <SidebarTrigger />
             <div className="flex-1" />
+            <CobrancaNotifier />
             <ChatNotifier />
             {email && !email.endsWith("@painel.local") && (
               <span className="text-xs text-muted-foreground truncate max-w-[40ch]">{email}</span>

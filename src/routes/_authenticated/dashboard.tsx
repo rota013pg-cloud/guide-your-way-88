@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus } from "lucide-react";
+import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus, DollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -29,16 +29,22 @@ function DashboardPage() {
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
   const [corridas, setCorridas] = useState<Corrida[]>([]);
   const [gps, setGps] = useState<Gps[]>([]);
+  const [travadosPagto, setTravadosPagto] = useState<{ status: string }[]>([]);
 
   const carregar = async () => {
-    const [m, c, g] = await Promise.all([
+    const hojeOp = new Date();
+    if (hojeOp.getHours() < 6) hojeOp.setDate(hojeOp.getDate() - 1);
+    const dia = hojeOp.toISOString().slice(0, 10);
+    const [m, c, g, cob] = await Promise.all([
       supabase.from("motoristas").select("codigo,nome,moto,placa,status").order("nome"),
       supabase.from("corridas").select("id,cliente,origem,destino,status,valor_final,motorista,motorista_codigo,criado_em").order("criado_em", { ascending: false }).limit(50),
       supabase.from("motorista_gps").select("motorista_codigo,lat,lng,criado_em").order("criado_em", { ascending: false }).limit(200),
+      supabase.from("motorista_cobranca").select("status").eq("dia_op", dia).in("status", ["Pendente", "Aguardando", "Bloqueado"]),
     ]);
     if (m.data) setMotoristas(m.data as Motorista[]);
     if (c.data) setCorridas(c.data as Corrida[]);
     if (g.data) setGps(g.data as Gps[]);
+    if (cob.data) setTravadosPagto(cob.data as { status: string }[]);
   };
 
   useEffect(() => {
@@ -48,6 +54,7 @@ function DashboardPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "corridas" }, carregar)
       .on("postgres_changes", { event: "*", schema: "public", table: "motoristas" }, carregar)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "motorista_gps" }, carregar)
+      .on("postgres_changes", { event: "*", schema: "public", table: "motorista_cobranca" }, carregar)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
@@ -108,6 +115,11 @@ function DashboardPage() {
           <div className="flex items-center gap-1.5"><Users className="h-4 w-4 text-success" /><span className="font-semibold">{online.length}</span><span className="text-muted-foreground">online</span></div>
           <div className="flex items-center gap-1.5"><ListChecks className="h-4 w-4 text-primary" /><span className="font-semibold">{ativas.length}</span><span className="text-muted-foreground">ativas</span></div>
           <div className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /><span className="font-semibold">{finalizadasHoje.length}</span><span className="text-muted-foreground">hoje</span></div>
+          <div className="flex items-center gap-1.5" title="Apps de motorista travados na tela de pagamento da diária">
+            <DollarSign className={`h-4 w-4 ${travadosPagto.length ? "text-warning" : "text-muted-foreground"}`} />
+            <span className="font-semibold">{travadosPagto.length}</span>
+            <span className="text-muted-foreground">app{travadosPagto.length === 1 ? "" : "s"} pagto.</span>
+          </div>
         </div>
       </div>
 

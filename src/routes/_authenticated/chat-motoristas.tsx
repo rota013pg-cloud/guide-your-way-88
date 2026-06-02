@@ -178,11 +178,26 @@ function ChatMotoristasPage() {
             </div>
           ) : (
             <>
-              <div className="px-4 py-3 border-b border-border">
-                <div className="font-semibold">{conversaAtual?.motorista_nome}</div>
-                <div className="text-xs text-muted-foreground">
-                  {selecionado} {conversaAtual?.telefone ? `• ${conversaAtual.telefone}` : ""}
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <div>
+                  <div className="font-semibold">{conversaAtual?.motorista_nome}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {selecionado} {conversaAtual?.telefone ? `• ${conversaAtual.telefone}` : ""}
+                  </div>
                 </div>
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={apagarConversa}
+                    disabled={apagandoConversa}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    title="Apagar conversa completa"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    {apagandoConversa ? "Apagando..." : "Apagar conversa"}
+                  </Button>
+                )}
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-muted/20">
                 {mensagens.length === 0 && (

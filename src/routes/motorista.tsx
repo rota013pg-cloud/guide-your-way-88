@@ -18,6 +18,7 @@ import {
   motoristaSolicitarLiberacao,
 } from "@/lib/cobranca.functions";
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
+import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 
 export const Route = createFileRoute("/motorista")({
   ssr: false,

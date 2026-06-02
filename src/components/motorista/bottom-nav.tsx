@@ -158,7 +158,14 @@ export function MotoristaBottomNav({
           {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
           {tab === "historico" && <HistoricoTab corridas={corridasHoje} />}
           {tab === "faturamento" && <FaturamentoTab corridas={corridasHoje} cobranca={cobranca} />}
-          {tab === "pagamentos" && <PagamentosTab cobranca={cobranca} onAbrirCobranca={() => { onAbrirCobranca(); fechar(); }} />}
+          {tab === "pagamentos" && (
+            <PagamentosTab
+              codigo={motorista.codigo}
+              token={token}
+              cobranca={cobranca}
+              onAbrirCobranca={() => { onAbrirCobranca(); fechar(); }}
+            />
+          )}
         </SheetWrap>
       )}
 

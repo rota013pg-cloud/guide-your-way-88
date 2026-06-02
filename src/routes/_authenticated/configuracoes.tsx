@@ -179,9 +179,22 @@ function ConfiguracoesPage() {
                   Minutos antes do horário em que o operador é notificado.
                 </p>
               </div>
-
-
-
+              <div className="space-y-1.5">
+                <Label htmlFor="percentBloqueio">% gatilho de bloqueio do app</Label>
+                <Input
+                  id="percentBloqueio"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="500"
+                  value={form.percentualBloqueio}
+                  disabled={!isAdmin}
+                  onChange={(e) => upd("percentualBloqueio", Math.max(0, Number(e.target.value) || 50))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Quando o faturamento do motorista atingir <b>valor da diária × (1 + %)</b> sem pagar, o app trava com aviso de pagamento. Padrão: 50%.
+                </p>
+              </div>
             </div>
 
             {data?.atualizadoEm && (

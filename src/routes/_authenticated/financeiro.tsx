@@ -216,14 +216,14 @@ function FinanceiroPage() {
                   </TableCell>
                 </TableRow>
               )}
-              {!isLoading && data?.linhas.length === 0 && (
+              {!isLoading && linhasFiltradas.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    Nenhum motorista cadastrado.
+                    {busca.trim() ? "Nenhum motorista encontrado." : "Nenhum motorista cadastrado."}
                   </TableCell>
                 </TableRow>
               )}
-              {data?.linhas.map((l) => {
+              {linhasFiltradas.map((l) => {
                 const online = ["Online", "Em corrida"].includes(l.status);
                 return (
                   <TableRow key={l.codigo}>

@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { useWakeLock } from "@/hooks/use-wake-lock";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -81,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "viewport",
         content:
-          "width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no",
+          "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover",
       },
       { title: "Rota 013" },
       { name: "description", content: "App do motorista Rota 013 — corridas, faturamento e chat em tempo real." },
@@ -146,6 +147,8 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useWakeLock();
+
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { playChatBeep } from "@/lib/notification-sound";
 
 type Msg = {
   id: number;

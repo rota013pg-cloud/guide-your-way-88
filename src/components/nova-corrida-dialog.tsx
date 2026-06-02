@@ -257,6 +257,8 @@ export function NovaCorridaDialog({
     setAgendadaMotorista("");
     setCliNaoEncontrado(false);
     setPagamento("Dinheiro");
+    setDesconto("");
+    setExtra("");
     setObs("");
   };
 

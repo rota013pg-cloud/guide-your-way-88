@@ -102,6 +102,36 @@ function DashboardPage() {
     if (error) toast.error(error.message); else toast("Corrida cancelada");
   };
 
+  const ofertasFn = useServerFn(dispararOfertas);
+  const lancarFn = useServerFn(lancarCorridaAgendada);
+
+  const reofertar = async (id: number) => {
+    const resp = window.prompt("Oferecer novamente para quantos motoristas mais próximos?", "5");
+    if (resp === null) return;
+    const qtd = parseInt(resp, 10);
+    if (!Number.isFinite(qtd) || qtd < 1 || qtd > 50) {
+      toast.error("Informe um número entre 1 e 50.");
+      return;
+    }
+    try {
+      const r: any = await ofertasFn({ data: { corridaId: id, quantidade: qtd, reofertar: true } });
+      if (r?.ofertados > 0) toast.success(`Reofertada para ${r.ofertados} motorista(s).`);
+      else toast.warning(r?.motivo ?? "Nenhum motorista disponível.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao reofertar.");
+    }
+  };
+
+  const lancarAgora = async (id: number) => {
+    try {
+      await lancarFn({ data: { corridaId: id } });
+      await ofertasFn({ data: { corridaId: id } }).catch(() => {});
+      toast.success("Corrida lançada.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao lançar.");
+    }
+  };
+
   const corStatus = (s: string) => {
     if (s === "Pendente" || s === "Ofertada") return "bg-warning text-warning-foreground";
     if (s === "Finalizada") return "bg-success text-success-foreground";

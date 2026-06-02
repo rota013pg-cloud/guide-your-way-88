@@ -9,6 +9,7 @@ import {
   History,
   Settings,
   MessageSquare,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 import {

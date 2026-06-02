@@ -80,13 +80,13 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
   };
 
   const salvar = async () => {
-    if (!origem.trim()) { toast.error("Informe a origem."); return; }
+    if (!origem.text.trim()) { toast.error("Informe a origem."); return; }
     setSalvando(true);
     const { data: inserted, error } = await supabase.from("corridas").insert({
       cliente: cliente || null,
       telefone_cliente: telefone || null,
-      origem,
-      destino: destino || null,
+      origem: origem.text,
+      destino: destino.text || null,
       distancia_km: km || null,
       valor_final: valor,
       pagamento,

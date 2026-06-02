@@ -91,3 +91,35 @@
 .leaflet-top,
 .leaflet-bottom { z-index: 0 !important; }
 .leaflet-container { z-index: 0 !important; }
+
+/* Pin customizado de moto com ID */
+.moto-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+.moto-marker .moto-id {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  border: 1.5px solid white;
+  line-height: 1;
+}
+.moto-marker .moto-pin {
+  width: 32px;
+  height: 32px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+.moto-marker .moto-pin svg {
+  transform: rotate(45deg);
+}

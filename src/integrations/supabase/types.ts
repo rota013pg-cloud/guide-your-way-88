@@ -40,6 +40,7 @@ export type Database = {
           corridas: number
           criado_em: string
           endereco: string | null
+          indicacao: string | null
           nome: string
           observacoes: string | null
           telefone: string | null
@@ -51,6 +52,7 @@ export type Database = {
           corridas?: number
           criado_em?: string
           endereco?: string | null
+          indicacao?: string | null
           nome: string
           observacoes?: string | null
           telefone?: string | null
@@ -62,6 +64,7 @@ export type Database = {
           corridas?: number
           criado_em?: string
           endereco?: string | null
+          indicacao?: string | null
           nome?: string
           observacoes?: string | null
           telefone?: string | null
@@ -241,6 +244,7 @@ export type Database = {
           criado_em: string
           device_id: string | null
           device_nome: string | null
+          motivo_bloqueio: string | null
           motorista_codigo: string
           senha_hash: string
           senha_plain: string | null
@@ -252,6 +256,7 @@ export type Database = {
           criado_em?: string
           device_id?: string | null
           device_nome?: string | null
+          motivo_bloqueio?: string | null
           motorista_codigo: string
           senha_hash: string
           senha_plain?: string | null
@@ -263,6 +268,7 @@ export type Database = {
           criado_em?: string
           device_id?: string | null
           device_nome?: string | null
+          motivo_bloqueio?: string | null
           motorista_codigo?: string
           senha_hash?: string
           senha_plain?: string | null
@@ -518,6 +524,10 @@ export type Database = {
         Returns: boolean
       }
       is_operador: { Args: { _user_id: string }; Returns: boolean }
+      preview_proximo_codigo_cliente: { Args: never; Returns: string }
+      preview_proximo_codigo_motorista: { Args: never; Returns: string }
+      proximo_codigo_cliente: { Args: never; Returns: string }
+      proximo_codigo_motorista: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "admin" | "operador"

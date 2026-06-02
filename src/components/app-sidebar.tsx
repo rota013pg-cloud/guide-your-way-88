@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { LogoRota013 } from "@/components/logo-rota013";
 import {
   LayoutDashboard,
   ListChecks,

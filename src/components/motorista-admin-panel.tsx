@@ -74,6 +74,15 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const resetDevMut = useMutation({
+    mutationFn: () => resetarDispositivoFn({ data: { codigo: motorista.codigo } }),
+    onSuccess: () => {
+      toast.success("Dispositivo liberado. O motorista pode entrar em outro aparelho.");
+      qc.invalidateQueries({ queryKey: ["motoristas"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">

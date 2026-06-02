@@ -1047,12 +1047,12 @@ const cssMotorista = `
 }
 .moto-app .form-group input {
   width:100%; background:var(--card); border:1.5px solid var(--line);
-  border-radius:12px; padding:14px 16px; color:var(--text); outline:none;
+  border-radius:16px; padding:14px 16px; color:var(--text); outline:none;
 }
 .moto-app .form-group input:focus { border-color:var(--gold); }
 .moto-app .btn-primary {
   width:100%; background:var(--gold); color:#111; font-weight:700;
-  font-size:15px; border:none; border-radius:14px; padding:16px; cursor:pointer;
+  font-size:15px; border:none; border-radius:16px; padding:16px; cursor:pointer;
   margin-top:8px;
 }
 .moto-app .btn-primary:disabled { opacity:.6; }
@@ -1091,7 +1091,7 @@ const cssMotorista = `
 .moto-app .status-dot.offline { background:var(--muted); }
 .moto-app .status-texto { font-size:13px; color:var(--muted); flex:1; }
 .moto-app .btn-status {
-  background:var(--gold); color:#111; border:none; border-radius:10px;
+  background:var(--gold); color:#111; border:none; border-radius:12px;
   padding:8px 16px; font-weight:700; font-size:13px; cursor:pointer; flex-shrink:0;
 }
 .moto-app .btn-status.is-online {
@@ -1103,7 +1103,7 @@ const cssMotorista = `
   padding:14px 14px 6px; flex-shrink:0;
 }
 .moto-app .card-mini {
-  background:var(--card); border-radius:16px; padding:14px 10px;
+  background:var(--card); border-radius:18px; padding:14px 10px;
   text-align:center; border:1px solid var(--line);
 }
 .moto-app .card-num { font-size:20px; font-weight:800; }
@@ -1115,7 +1115,7 @@ const cssMotorista = `
 
 .moto-app .btn-retomar {
   margin:8px 14px 0; padding:12px; background:#1c3a2a; color:#4ade80;
-  border:1px solid #2a5a3a; border-radius:12px; font-weight:700; cursor:pointer;
+  border:1px solid #2a5a3a; border-radius:14px; font-weight:700; cursor:pointer;
 }
 
 .moto-app .home-scroll {
@@ -1130,7 +1130,7 @@ const cssMotorista = `
 .moto-app .empty-msg { text-align:center; color:var(--muted); padding:32px 0; }
 .moto-app .corrida-item {
   background:var(--card); border:1px solid var(--line);
-  border-radius:16px; padding:14px; margin-bottom:10px;
+  border-radius:18px; padding:14px; margin-bottom:10px;
 }
 .moto-app .corrida-item-header {
   display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
@@ -1141,7 +1141,7 @@ const cssMotorista = `
 .moto-app .btn-sair {
   margin:20px 14px; padding:14px; width:calc(100% - 28px);
   background:transparent; border:1.5px solid rgba(239,68,68,.5);
-  color:var(--red); border-radius:12px; font-weight:700; cursor:pointer;
+  color:var(--red); border-radius:14px; font-weight:700; cursor:pointer;
 }
 
 .moto-app .badge {
@@ -1166,7 +1166,7 @@ const cssMotorista = `
   background:#1a1a1a; color:#888; font-size:14px;
 }
 .moto-app .corrida-card {
-  margin:12px 14px; background:var(--card); border-radius:18px;
+  margin:12px 14px; background:var(--card); border-radius:20px;
   border:1px solid var(--line); overflow:hidden;
 }
 .moto-app .corrida-row {
@@ -1181,12 +1181,12 @@ const cssMotorista = `
 }
 .moto-app .cv.gold { color:var(--gold); font-size:18px; font-weight:800; }
 .moto-app .btn-waze {
-  background:#1a237e; color:#90caf9; border:none; border-radius:10px;
+  background:#1a237e; color:#90caf9; border:none; border-radius:12px;
   padding:8px 12px; font-size:12px; font-weight:700; cursor:pointer; flex-shrink:0;
 }
 .moto-app .acoes-corrida { padding:14px; display:flex; flex-direction:column; gap:10px; }
 .moto-app .btn-acao {
-  width:100%; padding:18px; border:none; border-radius:16px;
+  width:100%; padding:18px; border:none; border-radius:18px;
   font-size:16px; font-weight:700; cursor:pointer;
 }
 .moto-app .btn-acao.caminho { background:var(--orange); color:#fff; }

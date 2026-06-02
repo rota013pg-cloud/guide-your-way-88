@@ -167,20 +167,21 @@ function FinanceiroPage() {
                 <TableHead>Motorista</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Diária</TableHead>
+                <TableHead>Créditos</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10">
+                  <TableCell colSpan={6} className="text-center py-10">
                     <Loader2 className="h-5 w-5 animate-spin inline" />
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && data?.linhas.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                     Nenhum motorista cadastrado.
                   </TableCell>
                 </TableRow>

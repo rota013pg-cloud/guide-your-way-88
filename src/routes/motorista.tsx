@@ -131,6 +131,20 @@ function MotoristaApp() {
 
   const gpsWatchRef = useRef<number | null>(null);
   const ofertaTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const ultimoStatusCobrancaRef = useRef<string | null>(null);
+
+  // Notifica (toast) quando entra em Pendente — sem abrir modal bloqueante
+  useEffect(() => {
+    if (!cobranca) return;
+    const prev = ultimoStatusCobrancaRef.current;
+    if (prev !== "Pendente" && cobranca.status === "Pendente") {
+      const fat = Number(cobranca.faturamento_dia || 0);
+      const di = Number(cobranca.valor_diaria || 0);
+      setToast(`💰 Você atingiu a diária (R$ ${fat.toFixed(2).replace(".", ",")} / R$ ${di.toFixed(2).replace(".", ",")}). Pague quando puder pelo menu Taxas.`);
+      setTimeout(() => setToast(""), 6000);
+    }
+    ultimoStatusCobrancaRef.current = cobranca.status;
+  }, [cobranca]);
 
   // ─── Toast helper ───────────────────────────────────
   const mostrarToast = (msg: string) => {
@@ -559,7 +573,9 @@ function MotoristaApp() {
               setForcarCobranca(false);
             }
           }}
+          onFechar={() => setForcarCobranca(false)}
         />
+
       )}
 
       {sessao && tela !== "login" && (

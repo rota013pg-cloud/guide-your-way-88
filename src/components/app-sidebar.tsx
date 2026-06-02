@@ -11,6 +11,8 @@ import {
   MessageSquare,
   ShieldCheck,
   LogOut,
+  Sun,
+  Moon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import { useRole } from "@/hooks/use-role";
+import { useTheme } from "@/hooks/use-theme";
 
 type Item = { title: string; url: string; icon: typeof LayoutDashboard; adminOnly?: boolean };
 
@@ -53,6 +56,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
   const { isAdmin } = useRole();
+  const { theme, toggle } = useTheme();
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   const isActive = (path: string) => currentPath === path;
 
@@ -106,7 +110,13 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="gap-2">
+        <Button variant="ghost" size="sm" onClick={toggle} className="w-full justify-start">
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {!collapsed && (
+            <span className="ml-2">{theme === "dark" ? "Tema claro" : "Tema escuro"}</span>
+          )}
+        </Button>
         <Button variant="outline" size="sm" onClick={sair} className="w-full">
           <LogOut className="h-4 w-4" />
           {!collapsed && <span className="ml-2">Sair</span>}

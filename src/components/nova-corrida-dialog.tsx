@@ -29,10 +29,12 @@ import { AddressAutocomplete, type AddressValue } from "@/components/address-aut
 import { calcularRota } from "@/lib/maps.functions";
 import { dispararOfertas, registrarStatusCorrida } from "@/lib/corridas.functions";
 import { lerConfig } from "@/lib/config.functions";
+import { lerTarifas, type TarifasConfig } from "@/lib/tarifas.functions";
 import { calcularValorComParadas, floorReal } from "@/lib/tarifas-calc";
 import { maskTelefone } from "@/lib/masks";
 
-type Tarifa = { id: number; nome: string; bandeirada: number; minimo: number; por_km: number };
+type TarifaOpt = { id: string; nome: string; tarifaMinima: number; valorKm: number };
+
 type Modelo = "Imediata" | "Agendada";
 type Despacho = "Automatico" | "Manual" | "WhatsApp";
 type Pagamento = "Dinheiro" | "Pix" | "Cartão";
@@ -71,7 +73,7 @@ export function NovaCorridaDialog({
     else setOpenInternal(v);
   };
 
-  const [tarifas, setTarifas] = useState<Tarifa[]>([]);
+  const [tarifas, setTarifas] = useState<TarifaOpt[]>([]);
   const [motoristas, setMotoristas] = useState<MotoristaMini[]>([]);
 
   // Cliente
@@ -105,10 +107,15 @@ export function NovaCorridaDialog({
   const dispararFn = useServerFn(dispararOfertas);
   const registrarLogFn = useServerFn(registrarStatusCorrida);
   const lerConfigFn = useServerFn(lerConfig);
+  const lerTarifasFn = useServerFn(lerTarifas);
 
   const { data: cfgData } = useQuery({
     queryKey: ["app-config"],
     queryFn: () => lerConfigFn(),
+  });
+  const { data: tarifasData } = useQuery({
+    queryKey: ["tarifas-config"],
+    queryFn: () => lerTarifasFn(),
   });
   const valorParadaExtra = cfgData?.config?.valorParadaExtra ?? 3;
   const whatsappCentral = cfgData?.config?.whatsappCentral ?? "";
@@ -123,19 +130,31 @@ export function NovaCorridaDialog({
     }
   }, [open, clientePrefill]);
 
-  // Carregar tarifas + motoristas ao abrir
+  // Monta opções de tarifa a partir de tabelasFixas + híbrida
+  useEffect(() => {
+    if (!tarifasData?.tarifas) return;
+    const cfg: TarifasConfig = tarifasData.tarifas;
+    const opts: TarifaOpt[] = [
+      ...cfg.tabelasFixas.map((t) => ({
+        id: t.id,
+        nome: t.titulo,
+        tarifaMinima: t.tarifaMinima,
+        valorKm: t.valorKm,
+      })),
+      {
+        id: "hibrida",
+        nome: cfg.tabelaHibrida.titulo,
+        tarifaMinima: cfg.tabelaHibrida.tarifaMinima,
+        valorKm: cfg.tabelaHibrida.valorKm,
+      },
+    ];
+    setTarifas(opts);
+    if (!tarifaId && opts[0]) setTarifaId(opts[0].id);
+  }, [tarifasData]);
+
+  // Carregar motoristas ao abrir (tarifas vêm de query)
   useEffect(() => {
     if (!open) return;
-    supabase
-      .from("tarifas")
-      .select("id,nome,bandeirada,minimo,por_km")
-      .eq("ativa", true)
-      .then(({ data }) => {
-        if (data) {
-          setTarifas(data as Tarifa[]);
-          if (data[0] && !tarifaId) setTarifaId(String(data[0].id));
-        }
-      });
     supabase
       .from("motoristas")
       .select("codigo,nome,status")
@@ -144,6 +163,7 @@ export function NovaCorridaDialog({
         if (data) setMotoristas(data as MotoristaMini[]);
       });
   }, [open]);
+
 
   // Calcula distância automaticamente
   useEffect(() => {
@@ -165,9 +185,9 @@ export function NovaCorridaDialog({
     return () => { cancel = true; };
   }, [origem.lat, origem.lng, destino.lat, destino.lng]);
 
-  const tarifa = tarifas.find((t) => String(t.id) === tarifaId);
+  const tarifa = tarifas.find((t) => t.id === tarifaId);
   const km = parseFloat(distancia.replace(",", ".")) || 0;
-  const valorBase = tarifa ? Math.max(tarifa.bandeirada + km * tarifa.por_km, tarifa.minimo) : 0;
+  const valorBase = tarifa && km > 0 ? Math.max(km * tarifa.valorKm, tarifa.tarifaMinima) : 0;
   const { total, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
 
   const buscarCliente = async () => {
@@ -415,7 +435,7 @@ export function NovaCorridaDialog({
             <Select value={tarifaId} onValueChange={setTarifaId}>
               <SelectTrigger><SelectValue placeholder="Tarifa" /></SelectTrigger>
               <SelectContent>
-                {tarifas.map((t) => <SelectItem key={t.id} value={String(t.id)}>{t.nome}</SelectItem>)}
+                {tarifas.map((t) => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

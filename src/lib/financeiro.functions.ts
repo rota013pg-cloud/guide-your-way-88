@@ -70,6 +70,7 @@ export const listarFinanceiroHoje = createServerFn({ method: "POST" })
         nome: m.nome,
         telefone: m.telefone,
         status: m.status,
+        creditos: Number(m.creditos_diaria ?? 0),
         pago: !!diaria,
         valorPago: diaria ? Number(diaria.valor) : null,
         operador: diaria?.operador ?? null,

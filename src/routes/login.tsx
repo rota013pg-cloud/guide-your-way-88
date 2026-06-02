@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { existeAdmin } from "@/lib/bootstrap.functions";
 
 export const loginSearchSchema = z.object({
   reason: fallback(
@@ -48,15 +49,12 @@ function LoginPage() {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session) navigate({ to: "/dashboard", replace: true });
     });
-    supabase
-      .from("user_roles")
-      .select("user_id", { count: "exact", head: true })
-      .eq("role", "admin")
-      .then(({ count }) => {
-        const tem = (count ?? 0) > 0;
-        setAdminExiste(tem);
-        if (tem) setModo("login");
-      });
+    existeAdmin()
+      .then(({ existe }) => {
+        setAdminExiste(existe);
+        if (existe) setModo("login");
+      })
+      .catch(() => setAdminExiste(true));
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 

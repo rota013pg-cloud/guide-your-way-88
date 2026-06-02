@@ -208,6 +208,12 @@ function CorridasPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      <MensagensWhatsAppDialog
+        open={!!msgCorrida}
+        onOpenChange={(v) => !v && setMsgCorrida(null)}
+        corrida={msgCorrida}
+      />
     </div>
   );
 }

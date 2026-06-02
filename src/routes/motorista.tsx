@@ -12,6 +12,7 @@ import {
   motoristaAtualizarStatusCorrida,
   motoristaCarregarContexto,
   motoristaCarregarCorrida,
+  motoristaConcluirParada,
 } from "@/lib/motorista.functions";
 import {
   motoristaMinhaCobranca,
@@ -51,6 +52,13 @@ type Motorista = {
   cidade: string | null;
   status: string;
 };
+type Parada = {
+  ordem: number;
+  endereco: string;
+  lat?: number | null;
+  lng?: number | null;
+  concluida_em?: string | null;
+};
 type Corrida = {
   id: number;
   cliente: string | null;
@@ -59,6 +67,7 @@ type Corrida = {
   status: string;
   valor_final: number | null;
   motorista_codigo?: string | null;
+  paradas?: Parada[] | null;
 };
 type Oferta = {
   ofertaId: number;
@@ -97,6 +106,7 @@ function MotoristaApp() {
   const statusCorridaFn = useServerFn(motoristaAtualizarStatusCorrida);
   const contextoFn = useServerFn(motoristaCarregarContexto);
   const carregarCorridaFn = useServerFn(motoristaCarregarCorrida);
+  const concluirParadaFn = useServerFn(motoristaConcluirParada);
 
   const [sessao, setSessao] = useState<{ motorista: Motorista; token: string } | null>(null);
   const [tela, setTela] = useState<"login" | "home" | "corrida">("login");
@@ -429,6 +439,30 @@ function MotoristaApp() {
     }
   };
 
+  const concluirParada = async (ordem: number) => {
+    if (!sessao || !corridaAtual) return;
+    setCarregando(true);
+    try {
+      await concluirParadaFn({
+        data: {
+          codigo: sessao.motorista.codigo,
+          token: sessao.token,
+          corridaId: corridaAtual.id,
+          ordem,
+        },
+      });
+      const { corrida } = await carregarCorridaFn({
+        data: { codigo: sessao.motorista.codigo, token: sessao.token, corridaId: corridaAtual.id },
+      });
+      if (corrida) setCorridaAtual(corrida as Corrida);
+      mostrarToast(`Parada ${ordem} concluída ✓`);
+    } catch (e: unknown) {
+      mostrarToast(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
   const irWaze = (lugar: string) =>
     window.open(`https://waze.com/ul?q=${encodeURIComponent(lugar)}`, "_blank");
 
@@ -474,6 +508,7 @@ function MotoristaApp() {
           corrida={corridaAtual}
           onVoltar={() => setTela("home")}
           onMudarStatus={mudarStatusCorrida}
+          onConcluirParada={concluirParada}
           onWaze={irWaze}
         />
       )}
@@ -690,20 +725,51 @@ function CorridaTela({
   corrida,
   onVoltar,
   onMudarStatus,
+  onConcluirParada,
   onWaze,
 }: {
   corrida: Corrida;
   onVoltar: () => void;
   onMudarStatus: (s: "A caminho" | "Chegou" | "Em viagem" | "Finalizada") => void;
+  onConcluirParada: (ordem: number) => void;
   onWaze: (lugar: string) => void;
 }) {
-  const acoes: Record<string, { txt: string; classe: string; next: "A caminho" | "Chegou" | "Em viagem" | "Finalizada" }> = {
-    Aceita: { txt: "🏍️ A caminho", classe: "caminho", next: "A caminho" },
-    "A caminho": { txt: "📍 Cheguei ao local", classe: "chegou", next: "Chegou" },
-    Chegou: { txt: "🚀 Iniciar viagem", classe: "caminho", next: "Em viagem" },
-    "Em viagem": { txt: "✅ Finalizar corrida", classe: "finalizar", next: "Finalizada" },
-  };
-  const acao = acoes[corrida.status];
+  const paradas = Array.isArray(corrida.paradas) ? [...corrida.paradas].sort((a, b) => a.ordem - b.ordem) : [];
+  const proximaParada = paradas.find((p) => !p.concluida_em);
+  const todasParadasFeitas = paradas.length > 0 && !proximaParada;
+
+  // Próxima ação principal — depende do status e das paradas
+  let acao: { txt: string; classe: string; onClick: () => void } | null = null;
+  if (corrida.status === "Aceita") {
+    acao = { txt: "🏍️ A caminho", classe: "caminho", onClick: () => onMudarStatus("A caminho") };
+  } else if (corrida.status === "A caminho") {
+    acao = { txt: "📍 Cheguei ao local", classe: "chegou", onClick: () => onMudarStatus("Chegou") };
+  } else if (corrida.status === "Chegou") {
+    acao = { txt: "🚀 Iniciar viagem", classe: "caminho", onClick: () => onMudarStatus("Em viagem") };
+  } else if (corrida.status === "Em viagem") {
+    if (proximaParada) {
+      const ord = proximaParada.ordem;
+      const sufixo = ord === 1 ? "1ª" : ord === 2 ? "2ª" : ord === 3 ? "3ª" : `${ord}ª`;
+      acao = {
+        txt: `📍 Cheguei na ${sufixo} parada`,
+        classe: "chegou",
+        onClick: () => onConcluirParada(ord),
+      };
+    } else {
+      acao = { txt: "✅ Finalizar corrida", classe: "finalizar", onClick: () => onMudarStatus("Finalizada") };
+    }
+  }
+
+  // Status visual mais claro quando há paradas pendentes
+  const statusLabel = (() => {
+    if (corrida.status === "Em viagem" && proximaParada) {
+      const ord = proximaParada.ordem;
+      const sufixo = ord === 1 ? "1ª" : ord === 2 ? "2ª" : ord === 3 ? "3ª" : `${ord}ª`;
+      return `Indo p/ ${sufixo} parada`;
+    }
+    if (corrida.status === "Em viagem" && todasParadasFeitas) return "Indo p/ destino final";
+    return corrida.status;
+  })();
 
   return (
     <div className="tela">
@@ -712,7 +778,7 @@ function CorridaTela({
           ←
         </button>
         <span className="header-titulo">Corrida em andamento</span>
-        <div className="badge-status">{corrida.status}</div>
+        <div className="badge-status">{statusLabel}</div>
       </header>
 
       <div className="corrente-scroll">
@@ -742,10 +808,37 @@ function CorridaTela({
               🧭 Ir
             </button>
           </div>
+
+          {paradas.map((p) => {
+            const feita = !!p.concluida_em;
+            const ehProxima = proximaParada?.ordem === p.ordem;
+            return (
+              <div key={p.ordem} className="corrida-row" style={{ opacity: feita ? 0.55 : 1 }}>
+                <span className="ci">{feita ? "✅" : "🟡"}</span>
+                <div style={{ flex: 1 }}>
+                  <span className="cl">
+                    PARADA {p.ordem}
+                    {feita ? " (concluída)" : ehProxima ? " (próxima)" : ""}
+                  </span>
+                  <span className="cv" style={feita ? { textDecoration: "line-through" } : {}}>
+                    {p.endereco}
+                  </span>
+                </div>
+                {!feita && (
+                  <button className="btn-waze" onClick={() => onWaze(p.endereco)}>
+                    🧭 Ir
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
           <div className="corrida-row">
             <span className="ci">🏁</span>
             <div style={{ flex: 1 }}>
-              <span className="cl">DESTINO</span>
+              <span className="cl">
+                DESTINO {paradas.length > 0 ? "FINAL" : ""}
+              </span>
               <span className="cv">{corrida.destino || "-"}</span>
             </div>
             {corrida.destino && (
@@ -773,7 +866,7 @@ function CorridaTela({
 
         <div className="acoes-corrida">
           {acao && (
-            <button className={`btn-acao ${acao.classe}`} onClick={() => onMudarStatus(acao.next)}>
+            <button className={`btn-acao ${acao.classe}`} onClick={acao.onClick}>
               {acao.txt}
             </button>
           )}

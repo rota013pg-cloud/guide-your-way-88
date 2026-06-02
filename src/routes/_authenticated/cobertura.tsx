@@ -39,8 +39,47 @@ function htmlReportHref(full: string) {
   return `/coverage-report/${rel}.html`;
 }
 
+function parseLcov(text: string): Record<string, number[]> {
+  const out: Record<string, number[]> = {};
+  let file = "";
+  let lines: number[] = [];
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (line.startsWith("SF:")) {
+      file = line.slice(3);
+      lines = [];
+    } else if (line.startsWith("DA:")) {
+      const [n, hits] = line.slice(3).split(",");
+      if (Number(hits) === 0) lines.push(Number(n));
+    } else if (line === "end_of_record" && file) {
+      out[file] = lines.sort((a, b) => a - b);
+      file = "";
+    }
+  }
+  return out;
+}
+
+function toRanges(nums: number[]): string[] {
+  if (nums.length === 0) return [];
+  const ranges: string[] = [];
+  let start = nums[0];
+  let prev = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] === prev + 1) {
+      prev = nums[i];
+    } else {
+      ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+      start = prev = nums[i];
+    }
+  }
+  ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+  return ranges;
+}
+
 function CoveragePage() {
   const [data, setData] = useState<Summary | null>(null);
+  const [uncovered, setUncovered] = useState<Record<string, number[]>>({});
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("lines");
@@ -54,7 +93,20 @@ function CoveragePage() {
       })
       .then(setData)
       .catch((e) => setError(String(e)));
+    fetch("/coverage-lcov.info")
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((t) => t && setUncovered(parseLcov(t)))
+      .catch(() => {});
   }, []);
+
+  function toggleRow(path: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  }
 
   const rows = useMemo(() => {
     if (!data) return [];

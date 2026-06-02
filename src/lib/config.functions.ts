@@ -78,3 +78,21 @@ export const salvarConfig = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true, config: data };
   });
+
+// ─── SALVAR APENAS TEMPLATES (operador) ──────────────────
+export const salvarTemplates = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ templates: z.array(TemplateSchema).max(50) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { data: atual } = await supabaseAdmin
+      .from("app_config").select("config_json").eq("id", 1).maybeSingle();
+    const cfg = { ...CONFIG_DEFAULT, ...((atual?.config_json ?? {}) as Partial<AppConfig>) };
+    cfg.templates = data.templates;
+    const { error } = await supabaseAdmin
+      .from("app_config")
+      .upsert({ id: 1, config_json: cfg, atualizado_em: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

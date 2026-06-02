@@ -200,24 +200,69 @@ function CoveragePage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map(([path, e]) => (
-                  <tr key={path} className="border-t hover:bg-muted/30">
-                    <td className="p-2">
-                      <a
-                        href={htmlReportHref(path)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary hover:underline font-mono text-xs"
-                      >
-                        {relPath(path)}
-                      </a>
-                    </td>
-                    <Td m={e.statements} />
-                    <Td m={e.branches} />
-                    <Td m={e.functions} />
-                    <Td m={e.lines} />
-                  </tr>
-                ))}
+                {rows.map(([path, e]) => {
+                  const rel = relPath(path);
+                  const miss = uncovered[rel] ?? [];
+                  const isOpen = expanded.has(path);
+                  return (
+                    <Fragment key={path}>
+                      <tr className="border-t hover:bg-muted/30">
+                        <td className="p-2">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => toggleRow(path)}
+                              disabled={miss.length === 0}
+                              className="p-0.5 rounded hover:bg-muted disabled:opacity-30"
+                              aria-label={isOpen ? "Recolher" : "Expandir"}
+                            >
+                              {isOpen ? (
+                                <ChevronDown className="h-3 w-3" />
+                              ) : (
+                                <ChevronRight className="h-3 w-3" />
+                              )}
+                            </button>
+                            <a
+                              href={htmlReportHref(path)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-primary hover:underline font-mono text-xs"
+                            >
+                              {rel}
+                            </a>
+                            {miss.length > 0 && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                · {miss.length} linhas
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <Td m={e.statements} />
+                        <Td m={e.branches} />
+                        <Td m={e.functions} />
+                        <Td m={e.lines} />
+                      </tr>
+                      {isOpen && miss.length > 0 && (
+                        <tr className="border-t bg-muted/20">
+                          <td colSpan={5} className="p-3">
+                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                              Linhas não cobertas:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {toRanges(miss).map((r) => (
+                                <span
+                                  key={r}
+                                  className="font-mono text-xs px-1.5 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20"
+                                >
+                                  {r}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
                 {rows.length === 0 && (
                   <tr>
                     <td colSpan={5} className="p-6 text-center text-muted-foreground">

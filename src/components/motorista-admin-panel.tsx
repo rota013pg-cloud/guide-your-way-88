@@ -33,6 +33,7 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
   const alterarSenhaFn = useServerFn(adminAlterarSenha);
   const bloquearFn = useServerFn(adminBloquearMotorista);
   const desbloquearFn = useServerFn(adminDesbloquearMotorista);
+  const resetarDispositivoFn = useServerFn(adminResetarDispositivoMotorista);
 
   const [senha, setSenha] = useState<string | null>(null);
   const [novaSenha, setNovaSenha] = useState("");

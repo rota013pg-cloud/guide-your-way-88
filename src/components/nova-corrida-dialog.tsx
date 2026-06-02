@@ -188,25 +188,41 @@ export function NovaCorridaDialog({
   }, [open]);
 
 
-  // Calcula distância automaticamente
+  // Calcula distância automaticamente.
+  // Quando há paradas com coordenadas, usa a MAIOR distância entre origem→destino
+  // e origem→cada parada, garantindo que o motorista seja remunerado pelo trecho
+  // mais longo do percurso (não apenas pelo endereço final).
+  const paradasCoordsKey = paradas
+    .map((p) => (p.lat != null && p.lng != null ? `${p.lat},${p.lng}` : ""))
+    .join("|");
   useEffect(() => {
     if (origem.lat == null || origem.lng == null || destino.lat == null || destino.lng == null) return;
     let cancel = false;
     setCalcRota(true);
-    calcRotaFn({
-      data: {
-        origem: { lat: origem.lat, lng: origem.lng },
-        destino: { lat: destino.lat, lng: destino.lng },
-      },
-    })
-      .then((r) => {
+    const destinos: Array<{ lat: number; lng: number }> = [
+      { lat: destino.lat, lng: destino.lng },
+      ...paradas
+        .filter((p) => p.lat != null && p.lng != null)
+        .map((p) => ({ lat: p.lat as number, lng: p.lng as number })),
+    ];
+    Promise.all(
+      destinos.map((d) =>
+        calcRotaFn({
+          data: {
+            origem: { lat: origem.lat as number, lng: origem.lng as number },
+            destino: d,
+          },
+        }).catch(() => ({ km: 0, segundos: 0 })),
+      ),
+    )
+      .then((rotas) => {
         if (cancel) return;
-        if (r.km > 0) setDistancia(r.km.toFixed(1).replace(".", ","));
+        const maiorKm = rotas.reduce((acc, r) => (r.km > acc ? r.km : acc), 0);
+        if (maiorKm > 0) setDistancia(maiorKm.toFixed(1).replace(".", ","));
       })
-      .catch(() => {})
       .finally(() => { if (!cancel) setCalcRota(false); });
     return () => { cancel = true; };
-  }, [origem.lat, origem.lng, destino.lat, destino.lng]);
+  }, [origem.lat, origem.lng, destino.lat, destino.lng, paradasCoordsKey]);
 
   const tarifa = tarifas.find((t) => t.id === tarifaId);
   const km = parseFloat(distancia.replace(",", ".")) || 0;

@@ -435,7 +435,7 @@ export function NovaCorridaDialog({
             <Select value={tarifaId} onValueChange={setTarifaId}>
               <SelectTrigger><SelectValue placeholder="Tarifa" /></SelectTrigger>
               <SelectContent>
-                {tarifas.map((t) => <SelectItem key={t.id} value={String(t.id)}>{t.nome}</SelectItem>)}
+                {tarifas.map((t) => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

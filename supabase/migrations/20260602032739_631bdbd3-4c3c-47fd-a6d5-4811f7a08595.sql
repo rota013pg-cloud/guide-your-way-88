@@ -1,0 +1,1 @@
+ALTER TYPE public.status_motorista ADD VALUE IF NOT EXISTS 'Excluido';

@@ -540,7 +540,12 @@ export type Database = {
         | "Em viagem"
         | "Finalizada"
         | "Cancelada"
-      status_motorista: "Offline" | "Online" | "Em corrida" | "Bloqueado"
+      status_motorista:
+        | "Offline"
+        | "Online"
+        | "Em corrida"
+        | "Bloqueado"
+        | "Excluido"
       status_motorista_auth: "Ativo" | "Bloqueado"
       tipo_pagamento: "Dinheiro" | "Pix" | "Cartão" | "Maquininha" | "Conta"
     }
@@ -681,7 +686,13 @@ export const Constants = {
         "Finalizada",
         "Cancelada",
       ],
-      status_motorista: ["Offline", "Online", "Em corrida", "Bloqueado"],
+      status_motorista: [
+        "Offline",
+        "Online",
+        "Em corrida",
+        "Bloqueado",
+        "Excluido",
+      ],
       status_motorista_auth: ["Ativo", "Bloqueado"],
       tipo_pagamento: ["Dinheiro", "Pix", "Cartão", "Maquininha", "Conta"],
     },

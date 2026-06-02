@@ -371,6 +371,9 @@ export function NovaCorridaDialog({
     limpar();
     setOpen(false);
     onCriada?.();
+    if (currentPath !== "/dashboard") {
+      navigate({ to: "/dashboard" });
+    }
   };
 
   const addParada = () => setParadas((p) => [...p, { id: newId(), endereco: "" }]);

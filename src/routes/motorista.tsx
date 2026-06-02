@@ -508,6 +508,7 @@ function MotoristaApp() {
           corrida={corridaAtual}
           onVoltar={() => setTela("home")}
           onMudarStatus={mudarStatusCorrida}
+          onConcluirParada={concluirParada}
           onWaze={irWaze}
         />
       )}

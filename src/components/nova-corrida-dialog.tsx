@@ -428,7 +428,7 @@ export function NovaCorridaDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <Input placeholder="Nome" value={cliente} onChange={(e) => setCliente(e.target.value)} />
+            <Input placeholder="Nome" className="uppercase" value={cliente} onChange={(e) => setCliente(e.target.value.toUpperCase())} />
             <Input
               placeholder="Telefone"
               value={telefone}

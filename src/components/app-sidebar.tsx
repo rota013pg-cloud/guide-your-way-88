@@ -69,7 +69,7 @@ export function AppSidebar() {
   const [userFoto, setUserFoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const fileRef = useState<HTMLInputElement | null>(null);
+  
 
   useEffect(() => {
     let active = true;

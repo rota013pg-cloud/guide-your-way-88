@@ -612,7 +612,7 @@ function HomeTela({
     <div className="tela">
       <header className="header">
         <a className="app-logo" href="#">
-          Rota<span>013</span>
+          <LogoRota013 className="text-2xl" />
         </a>
         <div className="header-center">
           <div className="header-nome">{motorista.nome}</div>

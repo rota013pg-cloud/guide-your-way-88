@@ -44,6 +44,13 @@ function LoginPage() {
   const [adminExiste, setAdminExiste] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hostname === "app.rota013.com.br") {
+      navigate({ to: "/motorista", replace: true });
+      return;
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard", replace: true });
     });

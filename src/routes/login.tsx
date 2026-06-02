@@ -23,6 +23,11 @@ export const loginSearchSchema = z.object({
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Rota 013" }] }),
   validateSearch: zodValidator(loginSearchSchema),
+  beforeLoad: () => {
+    if (typeof window !== "undefined" && window.location.hostname === "app.rota013.com.br") {
+      throw redirect({ to: "/motorista" });
+    }
+  },
   component: LoginPage,
 });
 

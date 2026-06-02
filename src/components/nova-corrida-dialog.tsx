@@ -97,8 +97,12 @@ export function NovaCorridaDialog({
   const [agendadaPara, setAgendadaPara] = useState("");
   const [despacho, setDespacho] = useState<Despacho>("Automatico");
   const [motoristasManuais, setMotoristasManuais] = useState<string[]>([]);
+  const [agendadaMotorista, setAgendadaMotorista] = useState<string>(""); // codigo do motorista pré-vinculado
   const [pagamento, setPagamento] = useState<Pagamento>("Dinheiro");
   const [obs, setObs] = useState("");
+  const [buscandoCli, setBuscandoCli] = useState(false);
+  const [cliNaoEncontrado, setCliNaoEncontrado] = useState(false);
+
 
   const [salvando, setSalvando] = useState(false);
   const [whatsappOpen, setWhatsappOpen] = useState<{ texto: string; tel?: string } | null>(null);
@@ -190,24 +194,33 @@ export function NovaCorridaDialog({
   const valorBase = tarifa && km > 0 ? Math.max(km * tarifa.valorKm, tarifa.tarifaMinima) : 0;
   const { total, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
 
-  const buscarCliente = async () => {
+  // Busca automática de cliente com debounce (apenas Nome + Telefone, não toca endereço)
+  useEffect(() => {
     const cod = codigoBusca.trim().toUpperCase();
-    if (!cod) return;
-    const { data } = await supabase
-      .from("clientes")
-      .select("codigo,nome,telefone,endereco")
-      .eq("codigo", cod)
-      .maybeSingle();
-    if (!data) {
-      toast.error(`Cliente ${cod} não encontrado`);
-      return;
-    }
-    setClienteCodigo(data.codigo);
-    setCliente(data.nome);
-    setTelefone(maskTelefone(data.telefone ?? ""));
-    if (data.endereco && !origem.text) setOrigem({ text: data.endereco });
-    toast.success(`Cliente ${data.codigo} carregado`);
-  };
+    if (!cod || cod === clienteCodigo) return;
+    if (cod.length < 2) { setCliNaoEncontrado(false); return; }
+    let cancel = false;
+    setBuscandoCli(true);
+    const t = window.setTimeout(async () => {
+      const { data } = await supabase
+        .from("clientes")
+        .select("codigo,nome,telefone")
+        .eq("codigo", cod)
+        .maybeSingle();
+      if (cancel) return;
+      setBuscandoCli(false);
+      if (!data) {
+        setCliNaoEncontrado(true);
+        return;
+      }
+      setCliNaoEncontrado(false);
+      setClienteCodigo(data.codigo);
+      setCliente(data.nome);
+      setTelefone(maskTelefone(data.telefone ?? ""));
+    }, 400);
+    return () => { cancel = true; window.clearTimeout(t); };
+  }, [codigoBusca, clienteCodigo]);
+
 
   const limpar = () => {
     setCodigoBusca("");

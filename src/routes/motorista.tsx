@@ -273,14 +273,19 @@ function MotoristaApp() {
       if (ofertaTimerRef.current) clearTimeout(ofertaTimerRef.current);
       return;
     }
+    const ofertaAtual = oferta;
     ofertaTimerRef.current = setTimeout(() => {
       setOferta(null);
       mostrarToast("Tempo esgotado");
+      // Avisa o servidor para expirar e disparar nova rodada se ninguém mais tiver a oferta
+      expirarOfertaFn({
+        data: { ofertaId: ofertaAtual.ofertaId, corridaId: ofertaAtual.id },
+      }).catch(() => {});
     }, TIMEOUT_OFERTA_MS);
     return () => {
       if (ofertaTimerRef.current) clearTimeout(ofertaTimerRef.current);
     };
-  }, [oferta]);
+  }, [oferta, expirarOfertaFn]);
 
   // ─── GPS ────────────────────────────────────────────
   const iniciarGps = useCallback(() => {

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,7 +10,8 @@ import { toast } from "sonner";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus, DollarSign } from "lucide-react";
+import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus, DollarSign, Rocket } from "lucide-react";
+import { dispararOfertas, lancarCorridaAgendada } from "@/lib/corridas.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,

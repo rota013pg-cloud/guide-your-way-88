@@ -222,7 +222,28 @@ function MotoristaApp() {
           recarregarContexto();
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "motorista_cobranca",
+          filter: `motorista_codigo=eq.${sessao.motorista.codigo}`,
+        },
+        async () => {
+          try {
+            const r = await minhaCobrancaFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } });
+            setCobranca(r.cobranca as typeof cobranca);
+            setCobrancaCfg(r.config);
+          } catch { /* ignore */ }
+        },
+      )
       .subscribe();
+
+    // carrega cobrança inicial
+    minhaCobrancaFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } })
+      .then((r) => { setCobranca(r.cobranca as typeof cobranca); setCobrancaCfg(r.config); })
+      .catch(() => {});
 
     return () => {
       supabase.removeChannel(channel);

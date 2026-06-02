@@ -135,7 +135,7 @@ export function MotoristaDialog({
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
                 <Label>Nome *</Label>
-                <Input value={form.nome ?? ""} onChange={(e) => set("nome")(e.target.value)} maxLength={120} />
+                <Input className="uppercase" value={form.nome ?? ""} onChange={(e) => set("nome")(e.target.value.toUpperCase())} maxLength={120} />
               </div>
               <div>
                 <Label>Telefone</Label>

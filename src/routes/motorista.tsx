@@ -13,15 +13,25 @@ import {
   motoristaCarregarContexto,
   motoristaCarregarCorrida,
 } from "@/lib/motorista.functions";
+import {
+  motoristaMinhaCobranca,
+  motoristaSolicitarLiberacao,
+} from "@/lib/cobranca.functions";
+import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 
 export const Route = createFileRoute("/motorista")({
   ssr: false,
   head: () => ({
     meta: [
       { title: "Rota 013 — Motorista" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" },
       { name: "theme-color", content: "#f7c600" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Rota 013" },
+      { name: "mobile-web-app-capable", content: "yes" },
     ],
+    links: [{ rel: "manifest", href: "/manifest.webmanifest" }],
   }),
   component: MotoristaApp,
 });
@@ -97,6 +107,11 @@ function MotoristaApp() {
   const [loginCodigo, setLoginCodigo] = useState("");
   const [loginSenha, setLoginSenha] = useState("");
   const [loginErro, setLoginErro] = useState("");
+  const [cobranca, setCobranca] = useState<{ status: string; faturamento_dia: number; valor_diaria: number; comprovante_enviado_em: string | null } | null>(null);
+  const [cobrancaCfg, setCobrancaCfg] = useState<{ pixChave?: string; tipoChavePix?: string; whatsappCentral?: string; empresa?: string }>({});
+  const [enviandoLib, setEnviandoLib] = useState(false);
+  const minhaCobrancaFn = useServerFn(motoristaMinhaCobranca);
+  const solicitarLibFn = useServerFn(motoristaSolicitarLiberacao);
 
   const gpsWatchRef = useRef<number | null>(null);
   const ofertaTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -207,7 +222,28 @@ function MotoristaApp() {
           recarregarContexto();
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "motorista_cobranca",
+          filter: `motorista_codigo=eq.${sessao.motorista.codigo}`,
+        },
+        async () => {
+          try {
+            const r = await minhaCobrancaFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } });
+            setCobranca(r.cobranca as typeof cobranca);
+            setCobrancaCfg(r.config);
+          } catch { /* ignore */ }
+        },
+      )
       .subscribe();
+
+    // carrega cobrança inicial
+    minhaCobrancaFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } })
+      .then((r) => { setCobranca(r.cobranca as typeof cobranca); setCobrancaCfg(r.config); })
+      .catch(() => {});
 
     return () => {
       supabase.removeChannel(channel);

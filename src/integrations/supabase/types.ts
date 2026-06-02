@@ -32,6 +32,36 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_motorista: {
+        Row: {
+          autor: string
+          autor_nome: string | null
+          criado_em: string
+          id: number
+          lido: boolean
+          motorista_codigo: string
+          texto: string
+        }
+        Insert: {
+          autor: string
+          autor_nome?: string | null
+          criado_em?: string
+          id?: number
+          lido?: boolean
+          motorista_codigo: string
+          texto: string
+        }
+        Update: {
+          autor?: string
+          autor_nome?: string | null
+          criado_em?: string
+          id?: number
+          lido?: boolean
+          motorista_codigo?: string
+          texto?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           atualizado_em: string
@@ -347,6 +377,57 @@ export type Database = {
           },
         ]
       }
+      motorista_cobranca: {
+        Row: {
+          atualizado_em: string
+          comprovante_enviado_em: string | null
+          criado_em: string
+          dia_op: string
+          disparou_aviso_em: string | null
+          disparou_bloqueio_em: string | null
+          faturamento_dia: number
+          id: number
+          liberado_em: string | null
+          liberado_por: string | null
+          motorista_codigo: string
+          observacoes: string | null
+          status: string
+          valor_diaria: number
+        }
+        Insert: {
+          atualizado_em?: string
+          comprovante_enviado_em?: string | null
+          criado_em?: string
+          dia_op: string
+          disparou_aviso_em?: string | null
+          disparou_bloqueio_em?: string | null
+          faturamento_dia?: number
+          id?: number
+          liberado_em?: string | null
+          liberado_por?: string | null
+          motorista_codigo: string
+          observacoes?: string | null
+          status?: string
+          valor_diaria?: number
+        }
+        Update: {
+          atualizado_em?: string
+          comprovante_enviado_em?: string | null
+          criado_em?: string
+          dia_op?: string
+          disparou_aviso_em?: string | null
+          disparou_bloqueio_em?: string | null
+          faturamento_dia?: number
+          id?: number
+          liberado_em?: string | null
+          liberado_por?: string | null
+          motorista_codigo?: string
+          observacoes?: string | null
+          status?: string
+          valor_diaria?: number
+        }
+        Relationships: []
+      }
       motorista_gps: {
         Row: {
           criado_em: string
@@ -659,6 +740,10 @@ export type Database = {
       preview_proximo_codigo_motorista: { Args: never; Returns: string }
       proximo_codigo_cliente: { Args: never; Returns: string }
       proximo_codigo_motorista: { Args: never; Returns: string }
+      recomputa_cobranca_motorista: {
+        Args: { _codigo: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "operador"

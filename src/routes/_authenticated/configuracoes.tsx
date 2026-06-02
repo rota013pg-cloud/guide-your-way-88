@@ -118,6 +118,22 @@ function ConfiguracoesPage() {
                 />
               </div>
               <div className="space-y-1.5">
+                <Label htmlFor="tipoPix">Tipo da chave PIX</Label>
+                <select
+                  id="tipoPix"
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  value={form.tipoChavePix}
+                  disabled={!isAdmin}
+                  onChange={(e) => upd("tipoChavePix", e.target.value)}
+                >
+                  <option>CPF</option>
+                  <option>CNPJ</option>
+                  <option>E-mail</option>
+                  <option>Telefone</option>
+                  <option>Aleatória</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
                 <Label htmlFor="valorDiaria">Valor da diária (R$)</Label>
                 <Input
                   id="valorDiaria"
@@ -163,9 +179,22 @@ function ConfiguracoesPage() {
                   Minutos antes do horário em que o operador é notificado.
                 </p>
               </div>
-
-
-
+              <div className="space-y-1.5">
+                <Label htmlFor="percentBloqueio">% gatilho de bloqueio do app</Label>
+                <Input
+                  id="percentBloqueio"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="500"
+                  value={form.percentualBloqueio}
+                  disabled={!isAdmin}
+                  onChange={(e) => upd("percentualBloqueio", Math.max(0, Number(e.target.value) || 50))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Quando o faturamento do motorista atingir <b>valor da diária × (1 + %)</b> sem pagar, o app trava com aviso de pagamento. Padrão: 50%.
+                </p>
+              </div>
             </div>
 
             {data?.atualizadoEm && (

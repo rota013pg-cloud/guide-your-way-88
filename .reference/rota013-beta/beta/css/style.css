@@ -391,7 +391,7 @@ label {
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 .form-grid {
   display: grid;

@@ -243,6 +243,13 @@ export const motoristaAceitarOferta = createServerFn({ method: "POST" })
       .update({ status: "Em corrida" })
       .eq("codigo", data.codigo);
 
+    await supabaseAdmin.from("corrida_status_log").insert({
+      corrida_id: corridaId,
+      status: "Aceita",
+      motorista_codigo: data.codigo,
+      observacao: `Aceita por ${motorista?.nome ?? data.codigo}`,
+    });
+
     // ── Auto-baixa de diária via crédito adiantado ──
     // Na 1ª corrida do dia operacional, se o motorista tiver créditos,
     // consome 1 e registra a diária como paga automaticamente.

@@ -76,7 +76,6 @@ export function MotoristaBottomNav({
         },
       )
       .subscribe();
-    carregar();
     return () => { active = false; supabase.removeChannel(ch); };
   }, [motorista.codigo, tab]);
 

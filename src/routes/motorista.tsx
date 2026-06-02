@@ -484,6 +484,7 @@ function MotoristaApp() {
       )}
 
       {cobranca && (
+        forcarCobranca ||
         cobranca.status === "Bloqueado" ||
         cobranca.status === "Aguardando" ||
         (cobranca.status === "Pendente" && Number(cobranca.faturamento_dia) >= Number(cobranca.valor_diaria))
@@ -502,8 +503,19 @@ function MotoristaApp() {
               mostrarToast(e instanceof Error ? e.message : "Erro");
             } finally {
               setEnviandoLib(false);
+              setForcarCobranca(false);
             }
           }}
+        />
+      )}
+
+      {sessao && tela !== "login" && (
+        <MotoristaBottomNav
+          motorista={sessao.motorista}
+          token={sessao.token}
+          corridasHoje={corridasHoje}
+          cobranca={cobranca}
+          onAbrirCobranca={() => setForcarCobranca(true)}
         />
       )}
 

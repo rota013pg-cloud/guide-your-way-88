@@ -46,7 +46,7 @@ export const listarFinanceiroHoje = createServerFn({ method: "POST" })
     const [{ data: motoristas }, { data: pagamentos }] = await Promise.all([
       supabaseAdmin
         .from("motoristas")
-        .select("codigo, nome, telefone, status")
+        .select("codigo, nome, telefone, status, creditos_diaria")
         .order("codigo"),
       supabaseAdmin
         .from("financeiro")

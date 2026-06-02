@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { motoristaAlterarSenha } from "@/lib/motorista.functions";
 import { motoristaListarChat, motoristaEnviarMensagem } from "@/lib/chat-motorista.functions";
+import { motoristaListarCobrancasExtras } from "@/lib/cobrancas-extras.functions";
+import { useQuery } from "@tanstack/react-query";
 import { playChatBeep } from "@/lib/notification-sound";
 
 

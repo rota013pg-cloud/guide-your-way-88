@@ -74,7 +74,9 @@ export function AppSidebar() {
       if (!uid) return;
       const { data } = await supabase
         .from("usuarios_painel").select("nome").eq("user_id", uid).maybeSingle();
-      if (active) setUserNome(data?.nome ?? u.user?.email ?? "");
+      const email = u.user?.email ?? "";
+      const emailLimpo = email.endsWith("@painel.local") ? "" : email;
+      if (active) setUserNome(data?.nome ?? emailLimpo ?? "");
     })();
     return () => { active = false; };
   }, []);

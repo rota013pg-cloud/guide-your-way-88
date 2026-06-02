@@ -118,6 +118,22 @@ function ConfiguracoesPage() {
                 />
               </div>
               <div className="space-y-1.5">
+                <Label htmlFor="tipoPix">Tipo da chave PIX</Label>
+                <select
+                  id="tipoPix"
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  value={form.tipoChavePix}
+                  disabled={!isAdmin}
+                  onChange={(e) => upd("tipoChavePix", e.target.value)}
+                >
+                  <option>CPF</option>
+                  <option>CNPJ</option>
+                  <option>E-mail</option>
+                  <option>Telefone</option>
+                  <option>Aleatória</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
                 <Label htmlFor="valorDiaria">Valor da diária (R$)</Label>
                 <Input
                   id="valorDiaria"

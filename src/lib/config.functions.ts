@@ -7,12 +7,19 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+export type MensagemTemplate = {
+  id: string;
+  titulo: string;
+  texto: string;
+};
+
 export type AppConfig = {
   empresa: string;
   cidadeBase: string;
   whatsappCentral: string;
   pixChave: string;
   valorDiaria: number;
+  templates: MensagemTemplate[];
 };
 
 const CONFIG_DEFAULT: AppConfig = {
@@ -21,7 +28,14 @@ const CONFIG_DEFAULT: AppConfig = {
   whatsappCentral: "",
   pixChave: "",
   valorDiaria: 19.9,
+  templates: [],
 };
+
+const TemplateSchema = z.object({
+  id: z.string().min(1).max(40),
+  titulo: z.string().min(1).max(80),
+  texto: z.string().min(1).max(2000),
+});
 
 const ConfigSchema = z.object({
   empresa: z.string().min(1).max(100),
@@ -29,6 +43,7 @@ const ConfigSchema = z.object({
   whatsappCentral: z.string().max(20).regex(/^\d*$/, "Só números (DDI+DDD+número)"),
   pixChave: z.string().max(120),
   valorDiaria: z.number().positive().max(9999),
+  templates: z.array(TemplateSchema).max(50).optional().default([]),
 });
 
 // ─── LER CONFIG ──────────────────────────────────────────

@@ -95,7 +95,9 @@ function AuthenticatedLayout() {
           <header className="h-12 flex items-center gap-2 border-b border-border bg-card px-3 sticky top-0 z-30">
             <SidebarTrigger />
             <div className="flex-1" />
-            <span className="text-xs text-muted-foreground truncate max-w-[40ch]">{email}</span>
+            {email && !email.endsWith("@painel.local") && (
+              <span className="text-xs text-muted-foreground truncate max-w-[40ch]">{email}</span>
+            )}
           </header>
           <main className="flex-1 min-w-0">
             <Outlet />

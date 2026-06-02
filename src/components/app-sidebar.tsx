@@ -165,9 +165,28 @@ export function AppSidebar() {
 
       <SidebarFooter className="gap-2">
         <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/40">
-          <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
-            {iniciais}
-          </div>
+          <label className="relative group cursor-pointer shrink-0" title="Alterar foto">
+            <div className="h-8 w-8 rounded-full overflow-hidden bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold ring-1 ring-border">
+              {userFoto ? (
+                <img src={userFoto} alt={userNome} className="h-full w-full object-cover" />
+              ) : (
+                iniciais
+              )}
+            </div>
+            <span className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] text-white transition">
+              {uploading ? "..." : "Editar"}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) onPickFoto(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
           {!collapsed && (
             <div className="leading-tight min-w-0 flex-1">
               <div className="text-xs font-semibold truncate">{userNome || "—"}</div>

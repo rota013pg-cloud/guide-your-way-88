@@ -187,6 +187,9 @@ function CorridasPage() {
                     <div>{aberta.observacoes}</div>
                   </div>
                 )}
+                <Button variant="outline" onClick={() => setMsgCorrida(aberta)} className="w-full">
+                  <MessageSquare className="h-4 w-4 mr-2" /> Mensagens WhatsApp
+                </Button>
                 {aberta.status === "Agendada" && (
                   <div className="pt-2">
                     <Button onClick={() => handleLancarAgora(aberta.id)} className="w-full">

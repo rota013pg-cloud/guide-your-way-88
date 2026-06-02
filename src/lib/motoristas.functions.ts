@@ -18,6 +18,18 @@ async function exigirAdmin(userId: string) {
   if (!data) throw new Error("Acesso restrito a administradores.");
 }
 
+async function exigirOperador(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .in("role", ["admin", "operador"])
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Acesso restrito a operadores.");
+}
+
 export const listarMotoristas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
@@ -220,7 +232,7 @@ export const adminResetarDispositivoMotorista = createServerFn({ method: "POST" 
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ codigo: z.string() }).parse(d))
   .handler(async ({ data, context }) => {
-    await exigirAdmin(context.userId);
+    await exigirOperador(context.userId);
     const { error: e1 } = await supabaseAdmin
       .from("motorista_auth")
       .update({ device_id: null, device_nome: null } as any)
@@ -231,6 +243,10 @@ export const adminResetarDispositivoMotorista = createServerFn({ method: "POST" 
       .update({ status: "encerrada" })
       .eq("motorista_codigo", data.codigo)
       .eq("status", "ativa");
+    await supabaseAdmin
+      .from("motoristas")
+      .update({ status: "Offline" as any })
+      .eq("codigo", data.codigo);
     return { ok: true };
   });
 

@@ -1,0 +1,13 @@
+{
+  "name": "Rota 013 — Motorista",
+  "short_name": "Rota 013",
+  "start_url": "/motorista",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111111",
+  "theme_color": "#f7c600",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ]
+}

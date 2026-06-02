@@ -87,6 +87,8 @@ export function NovaCorridaDialog({
     if (controlled) onOpenChange?.(v);
     else setOpenInternal(v);
   };
+  const navigate = useNavigate();
+  const currentPath = useRouterState({ select: (s) => s.location.pathname });
 
   const [tarifas, setTarifas] = useState<TarifaOpt[]>([]);
   const [motoristas, setMotoristas] = useState<MotoristaMini[]>([]);

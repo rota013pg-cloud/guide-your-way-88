@@ -61,3 +61,19 @@ export const TABELAS_LABEL: Record<string, string> = {
   pgsantos: "Santos",
   pgcubatao: "Cubatão",
 };
+
+/** Zera os centavos sempre para baixo (R$11,99 → R$11,00). */
+export function floorReal(v: number): number {
+  if (!Number.isFinite(v) || v <= 0) return 0;
+  return Math.floor(v);
+}
+
+/** Soma o adicional por paradas extras e zera centavos. */
+export function calcularValorComParadas(
+  base: number,
+  qtdParadas: number,
+  valorParada: number,
+): { total: number; adicional: number } {
+  const adicional = Math.max(0, qtdParadas) * Math.max(0, valorParada);
+  return { total: floorReal(base + adicional), adicional };
+}

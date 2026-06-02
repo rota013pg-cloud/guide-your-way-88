@@ -1,211 +1,557 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
-import { dispararOfertas } from "@/lib/corridas.functions";
+import { Plus, Trash2, Copy, Search } from "lucide-react";
 import { AddressAutocomplete, type AddressValue } from "@/components/address-autocomplete";
 import { calcularRota } from "@/lib/maps.functions";
-import { useServerFn } from "@tanstack/react-start";
+import { dispararOfertas, registrarStatusCorrida } from "@/lib/corridas.functions";
+import { lerConfig } from "@/lib/config.functions";
+import { calcularValorComParadas, floorReal } from "@/lib/tarifas-calc";
+import { maskTelefone } from "@/lib/masks";
 
 type Tarifa = { id: number; nome: string; bandeirada: number; minimo: number; por_km: number };
-type ClienteMini = { codigo: string; nome: string; telefone: string | null };
+type Modelo = "Imediata" | "Agendada";
+type Despacho = "Automatico" | "Manual" | "WhatsApp";
+type Pagamento = "Dinheiro" | "Pix" | "Cartão";
+type MotoristaMini = { codigo: string; nome: string; status: string };
+type Parada = { id: string; endereco: string; lat?: number; lng?: number };
 
-export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
-  const [open, setOpen] = useState(false);
+export type ClientePrefill = {
+  codigo: string;
+  nome: string;
+  telefone: string | null;
+};
+
+type Props = {
+  onCriada?: () => void;
+  open?: boolean;
+  onOpenChange?: (v: boolean) => void;
+  clientePrefill?: ClientePrefill | null;
+  /** Quando `open` não é controlado externamente, esconde o trigger padrão. */
+  hideDefaultTrigger?: boolean;
+};
+
+const newId = () => Math.random().toString(36).slice(2, 9);
+
+export function NovaCorridaDialog({
+  onCriada,
+  open: openProp,
+  onOpenChange,
+  clientePrefill,
+  hideDefaultTrigger,
+}: Props) {
+  const controlled = openProp !== undefined;
+  const [openInternal, setOpenInternal] = useState(false);
+  const open = controlled ? !!openProp : openInternal;
+  const setOpen = (v: boolean) => {
+    if (controlled) onOpenChange?.(v);
+    else setOpenInternal(v);
+  };
+
   const [tarifas, setTarifas] = useState<Tarifa[]>([]);
-  const [clientes, setClientes] = useState<ClienteMini[]>([]);
-  const [salvando, setSalvando] = useState(false);
+  const [motoristas, setMotoristas] = useState<MotoristaMini[]>([]);
 
+  // Cliente
+  const [codigoBusca, setCodigoBusca] = useState("");
+  const [clienteCodigo, setClienteCodigo] = useState<string | null>(null);
   const [cliente, setCliente] = useState("");
   const [telefone, setTelefone] = useState("");
+
+  // Endereços
   const [origem, setOrigem] = useState<AddressValue>({ text: "" });
   const [destino, setDestino] = useState<AddressValue>({ text: "" });
+  const [paradas, setParadas] = useState<Parada[]>([]);
+
+  // Tarifa / valor
   const [distancia, setDistancia] = useState("");
   const [tarifaId, setTarifaId] = useState<string>("");
-  const [pagamento, setPagamento] = useState<"Dinheiro" | "Pix" | "Cartão" | "Maquininha" | "Conta">("Dinheiro");
-  const [obs, setObs] = useState("");
-  const [calculandoRota, setCalculandoRota] = useState(false);
-  const calcRota = useServerFn(calcularRota);
+  const [calcRota, setCalcRota] = useState(false);
 
+  // Modelo / Despacho / Pagamento
+  const [modelo, setModelo] = useState<Modelo>("Imediata");
+  const [agendadaPara, setAgendadaPara] = useState("");
+  const [despacho, setDespacho] = useState<Despacho>("Automatico");
+  const [motoristasManuais, setMotoristasManuais] = useState<string[]>([]);
+  const [pagamento, setPagamento] = useState<Pagamento>("Dinheiro");
+  const [obs, setObs] = useState("");
+
+  const [salvando, setSalvando] = useState(false);
+  const [whatsappOpen, setWhatsappOpen] = useState<{ texto: string; tel?: string } | null>(null);
+
+  const calcRotaFn = useServerFn(calcularRota);
+  const dispararFn = useServerFn(dispararOfertas);
+  const registrarLogFn = useServerFn(registrarStatusCorrida);
+  const lerConfigFn = useServerFn(lerConfig);
+
+  const { data: cfgData } = useQuery({
+    queryKey: ["app-config"],
+    queryFn: () => lerConfigFn(),
+  });
+  const valorParadaExtra = cfgData?.config?.valorParadaExtra ?? 3;
+  const whatsappCentral = cfgData?.config?.whatsappCentral ?? "";
+
+  // Aplicar prefill quando abrir
+  useEffect(() => {
+    if (open && clientePrefill) {
+      setClienteCodigo(clientePrefill.codigo);
+      setCliente(clientePrefill.nome);
+      setTelefone(maskTelefone(clientePrefill.telefone ?? ""));
+      setCodigoBusca(clientePrefill.codigo);
+    }
+  }, [open, clientePrefill]);
+
+  // Carregar tarifas + motoristas ao abrir
   useEffect(() => {
     if (!open) return;
-    supabase.from("tarifas").select("id,nome,bandeirada,minimo,por_km").eq("ativa", true).then(({ data }) => {
-      if (data) {
-        setTarifas(data as Tarifa[]);
-        if (data[0] && !tarifaId) setTarifaId(String(data[0].id));
-      }
-    });
-    supabase.from("clientes").select("codigo,nome,telefone").order("nome").limit(50).then(({ data }) => {
-      if (data) setClientes(data as ClienteMini[]);
-    });
+    supabase
+      .from("tarifas")
+      .select("id,nome,bandeirada,minimo,por_km")
+      .eq("ativa", true)
+      .then(({ data }) => {
+        if (data) {
+          setTarifas(data as Tarifa[]);
+          if (data[0] && !tarifaId) setTarifaId(String(data[0].id));
+        }
+      });
+    supabase
+      .from("motoristas")
+      .select("codigo,nome,status")
+      .order("codigo")
+      .then(({ data }) => {
+        if (data) setMotoristas(data as MotoristaMini[]);
+      });
   }, [open]);
 
-  // Calcula distância automaticamente quando ambos têm coordenadas
+  // Calcula distância automaticamente
   useEffect(() => {
     if (origem.lat == null || origem.lng == null || destino.lat == null || destino.lng == null) return;
     let cancel = false;
-    setCalculandoRota(true);
-    calcRota({ data: { origem: { lat: origem.lat, lng: origem.lng }, destino: { lat: destino.lat, lng: destino.lng } } })
+    setCalcRota(true);
+    calcRotaFn({
+      data: {
+        origem: { lat: origem.lat, lng: origem.lng },
+        destino: { lat: destino.lat, lng: destino.lng },
+      },
+    })
       .then((r) => {
         if (cancel) return;
-        if (r.km > 0) {
-          setDistancia(r.km.toFixed(1).replace(".", ","));
-          toast.success(`📍 ${r.km.toFixed(1)} km calculados via Google Maps`);
-        }
+        if (r.km > 0) setDistancia(r.km.toFixed(1).replace(".", ","));
       })
-      .catch((e) => { if (!cancel) toast.error("Rota: " + e.message); })
-      .finally(() => { if (!cancel) setCalculandoRota(false); });
+      .catch(() => {})
+      .finally(() => { if (!cancel) setCalcRota(false); });
     return () => { cancel = true; };
   }, [origem.lat, origem.lng, destino.lat, destino.lng]);
 
   const tarifa = tarifas.find((t) => String(t.id) === tarifaId);
   const km = parseFloat(distancia.replace(",", ".")) || 0;
-  const valorBruto = tarifa ? tarifa.bandeirada + km * tarifa.por_km : 0;
-  const valor = tarifa ? Math.max(valorBruto, tarifa.minimo) : 0;
+  const valorBase = tarifa ? Math.max(tarifa.bandeirada + km * tarifa.por_km, tarifa.minimo) : 0;
+  const { total, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
 
-  const reset = () => {
-    setCliente(""); setTelefone(""); setOrigem({ text: "" }); setDestino({ text: "" });
-    setDistancia(""); setPagamento("Dinheiro" as const); setObs("");
-  };
-
-  const onPickCliente = (codigo: string) => {
-    const c = clientes.find((x) => x.codigo === codigo);
-    if (c) { setCliente(c.nome); setTelefone(c.telefone ?? ""); }
-  };
-
-  const salvar = async () => {
-    if (!origem.text.trim()) { toast.error("Informe a origem."); return; }
-    setSalvando(true);
-    const { data: inserted, error } = await supabase.from("corridas").insert({
-      cliente: cliente || null,
-      telefone_cliente: telefone || null,
-      origem: origem.text,
-      destino: destino.text || null,
-      distancia_km: km || null,
-      valor_final: valor,
-      pagamento,
-      observacoes: obs || null,
-      status: "Pendente",
-      tipo: "Comum",
-    }).select("id").single();
-    setSalvando(false);
-    if (error) { toast.error("Erro: " + error.message); return; }
-    toast.success("Corrida criada!");
-    // Dispara ofertas em background
-    if (inserted?.id) {
-      dispararOfertas({ data: { corridaId: inserted.id } })
-        .then((r) => {
-          if (r.ofertados === 0) {
-            toast.warning("Corrida criada, mas " + (r.motivo ?? "nenhum motorista disponível"));
-          } else {
-            toast.success(`Oferta enviada para ${r.ofertados} motorista(s)`);
-          }
-        })
-        .catch((e) => toast.error("Erro ao ofertar: " + e.message));
+  const buscarCliente = async () => {
+    const cod = codigoBusca.trim().toUpperCase();
+    if (!cod) return;
+    const { data } = await supabase
+      .from("clientes")
+      .select("codigo,nome,telefone,endereco")
+      .eq("codigo", cod)
+      .maybeSingle();
+    if (!data) {
+      toast.error(`Cliente ${cod} não encontrado`);
+      return;
     }
-    reset();
+    setClienteCodigo(data.codigo);
+    setCliente(data.nome);
+    setTelefone(maskTelefone(data.telefone ?? ""));
+    if (data.endereco && !origem.text) setOrigem({ text: data.endereco });
+    toast.success(`Cliente ${data.codigo} carregado`);
+  };
+
+  const limpar = () => {
+    setCodigoBusca("");
+    setClienteCodigo(null);
+    setCliente("");
+    setTelefone("");
+    setOrigem({ text: "" });
+    setDestino({ text: "" });
+    setParadas([]);
+    setDistancia("");
+    setModelo("Imediata");
+    setAgendadaPara("");
+    setDespacho("Automatico");
+    setMotoristasManuais([]);
+    setPagamento("Dinheiro");
+    setObs("");
+  };
+
+  const gerarTextoWhatsApp = (corridaId: number) => {
+    const linhas: string[] = [];
+    linhas.push(`🏍️ *Corrida #${corridaId}*`);
+    if (cliente) linhas.push(`👤 ${cliente}${telefone ? ` · ${telefone}` : ""}`);
+    linhas.push(`📍 Origem: ${origem.text}`);
+    paradas.forEach((p, i) => linhas.push(`🟡 Parada ${i + 1}: ${p.endereco}`));
+    if (destino.text) linhas.push(`🏁 Destino: ${destino.text}`);
+    if (km > 0) linhas.push(`📏 ${km.toFixed(1).replace(".", ",")} km`);
+    linhas.push(`💰 *R$ ${total},00* (${pagamento})`);
+    if (obs) linhas.push(`📝 ${obs}`);
+    linhas.push(`\nResponda *ACEITO ${corridaId}* para confirmar.`);
+    return linhas.join("\n");
+  };
+
+  const lancar = async () => {
+    if (!origem.text.trim()) { toast.error("Informe a origem."); return; }
+    if (modelo === "Agendada" && !agendadaPara) {
+      toast.error("Informe a data/hora do agendamento.");
+      return;
+    }
+    if (despacho === "Manual" && motoristasManuais.length === 0) {
+      toast.error("Selecione pelo menos um motorista.");
+      return;
+    }
+    setSalvando(true);
+
+    const paradasJson = paradas.map((p, i) => ({
+      ordem: i + 1,
+      endereco: p.endereco,
+      lat: p.lat ?? null,
+      lng: p.lng ?? null,
+      concluida_em: null,
+    }));
+
+    const statusInicial = modelo === "Agendada" ? "Agendada" : "Pendente";
+
+    const { data: inserted, error } = await supabase
+      .from("corridas")
+      .insert({
+        cliente: cliente || null,
+        cliente_codigo: clienteCodigo,
+        telefone_cliente: telefone || null,
+        origem: origem.text,
+        origem_lat: origem.lat ?? null,
+        origem_lng: origem.lng ?? null,
+        destino: destino.text || null,
+        destino_lat: destino.lat ?? null,
+        destino_lng: destino.lng ?? null,
+        distancia_km: km || null,
+        valor_final: total,
+        valor_paradas: floorReal(adicional),
+        pagamento,
+        observacoes: obs || null,
+        status: statusInicial as any,
+        tipo: "Comum",
+        modelo,
+        agendada_para: modelo === "Agendada" ? new Date(agendadaPara).toISOString() : null,
+        despacho,
+        paradas: paradasJson as any,
+        motoristas_manuais: despacho === "Manual" ? motoristasManuais : [],
+      })
+      .select("id")
+      .single();
+
+    setSalvando(false);
+    if (error || !inserted) {
+      toast.error("Erro: " + (error?.message ?? "falha desconhecida"));
+      return;
+    }
+
+    // Log inicial
+    registrarLogFn({
+      data: {
+        corridaId: inserted.id,
+        status: statusInicial,
+        observacao: modelo === "Agendada"
+          ? `Agendada para ${new Date(agendadaPara).toLocaleString("pt-BR")}`
+          : `Modelo: ${despacho}`,
+      },
+    }).catch(() => {});
+
+    toast.success(modelo === "Agendada" ? "Corrida agendada!" : "Corrida criada!");
+
+    // Despacho
+    if (modelo === "Imediata") {
+      try {
+        const r = await dispararFn({ data: { corridaId: inserted.id } });
+        if (r.modo === "whatsapp") {
+          setWhatsappOpen({ texto: gerarTextoWhatsApp(inserted.id), tel: whatsappCentral });
+        } else if (r.ofertados === 0) {
+          toast.warning("Corrida criada, mas " + (r.motivo ?? "nenhum motorista disponível"));
+        } else {
+          toast.success(`Oferta enviada para ${r.ofertados} motorista(s)`);
+        }
+      } catch (e: any) {
+        toast.error("Erro ao ofertar: " + e.message);
+      }
+    }
+
+    limpar();
     setOpen(false);
     onCriada?.();
   };
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="w-full" size="lg"><Plus className="h-4 w-4 mr-2" />Nova corrida</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Nova corrida</DialogTitle>
-          <DialogDescription>Preencha os dados. A tarifa é calculada automaticamente.</DialogDescription>
-        </DialogHeader>
+  const addParada = () => setParadas((p) => [...p, { id: newId(), endereco: "" }]);
+  const updParada = (id: string, v: AddressValue) =>
+    setParadas((p) =>
+      p.map((x) => (x.id === id ? { ...x, endereco: v.text, lat: v.lat, lng: v.lng } : x)),
+    );
+  const rmParada = (id: string) => setParadas((p) => p.filter((x) => x.id !== id));
 
-        <div className="grid gap-3 py-2">
-          {clientes.length > 0 && (
-            <div className="grid gap-1.5">
-              <Label>Cliente cadastrado (opcional)</Label>
-              <Select onValueChange={onPickCliente}>
-                <SelectTrigger><SelectValue placeholder="Selecionar cliente…" /></SelectTrigger>
-                <SelectContent>
-                  {clientes.map((c) => (
-                    <SelectItem key={c.codigo} value={c.codigo}>{c.nome} {c.telefone ? `· ${c.telefone}` : ""}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+  const toggleMotoristaManual = (codigo: string) =>
+    setMotoristasManuais((s) =>
+      s.includes(codigo) ? s.filter((x) => x !== codigo) : [...s, codigo],
+    );
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="cli">Nome</Label>
-              <Input id="cli" value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Nome do cliente" />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="tel">Telefone</Label>
-              <Input id="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(13) 99999-9999" />
-            </div>
+  const copiarWhatsapp = async () => {
+    if (!whatsappOpen) return;
+    try {
+      await navigator.clipboard.writeText(whatsappOpen.texto);
+      toast.success("Texto copiado!");
+    } catch {
+      toast.error("Não foi possível copiar. Selecione o texto manualmente.");
+    }
+  };
+
+  const abrirWhatsApp = () => {
+    if (!whatsappOpen) return;
+    const url = `https://wa.me/${whatsappOpen.tel ?? ""}?text=${encodeURIComponent(whatsappOpen.texto)}`;
+    window.open(url, "_blank");
+  };
+
+  const dialogContent = (
+    <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>Nova corrida</DialogTitle>
+        <DialogDescription>
+          Busque o cliente, informe os endereços e configure o despacho.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="grid gap-4 py-2">
+        {/* Cliente */}
+        <div className="grid gap-2 rounded-lg border p-3 bg-muted/30">
+          <Label>Cliente</Label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Código (ex: C0001)"
+              value={codigoBusca}
+              onChange={(e) => setCodigoBusca(e.target.value.toUpperCase())}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); buscarCliente(); } }}
+              className="font-mono"
+            />
+            <Button type="button" variant="secondary" onClick={buscarCliente}>
+              <Search className="h-4 w-4 mr-1" /> Buscar
+            </Button>
           </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="ori">Origem *</Label>
-            <AddressAutocomplete id="ori" value={origem.text} onChange={setOrigem} placeholder="Endereço de partida" />
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="dest">Destino</Label>
-            <AddressAutocomplete id="dest" value={destino.text} onChange={setDestino} placeholder="Endereço de destino" />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="km">Distância (km){calculandoRota ? " …" : ""}</Label>
-              <Input id="km" inputMode="decimal" value={distancia} onChange={(e) => setDistancia(e.target.value)} placeholder="0,0" />
-            </div>
-            <div className="grid gap-1.5">
-              <Label>Tarifa</Label>
-              <Select value={tarifaId} onValueChange={setTarifaId}>
-                <SelectTrigger><SelectValue placeholder="Tarifa" /></SelectTrigger>
-                <SelectContent>
-                  {tarifas.map((t) => <SelectItem key={t.id} value={String(t.id)}>{t.nome}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-1.5">
-              <Label>Pagamento</Label>
-              <Select value={pagamento} onValueChange={(v) => setPagamento(v as typeof pagamento)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Dinheiro">Dinheiro</SelectItem>
-                  <SelectItem value="Pix">Pix</SelectItem>
-                  <SelectItem value="Cartão">Cartão</SelectItem>
-                  <SelectItem value="Maquininha">Maquininha</SelectItem>
-                  <SelectItem value="Conta">Conta</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="obs">Observações</Label>
-            <Textarea id="obs" value={obs} onChange={(e) => setObs(e.target.value)} rows={2} placeholder="Ex.: aguardar na portaria" />
-          </div>
-
-          <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Valor calculado</span>
-            <span className="text-2xl font-black text-primary">R$ {valor.toFixed(2)}</span>
+          <div className="grid grid-cols-2 gap-2">
+            <Input placeholder="Nome" value={cliente} onChange={(e) => setCliente(e.target.value)} />
+            <Input
+              placeholder="Telefone"
+              value={telefone}
+              onChange={(e) => setTelefone(maskTelefone(e.target.value))}
+            />
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={salvar} disabled={salvando}>{salvando ? "Salvando..." : "Criar corrida"}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* Endereços */}
+        <div className="grid gap-2">
+          <Label>Origem *</Label>
+          <AddressAutocomplete value={origem.text} onChange={setOrigem} placeholder="Endereço de partida" />
+        </div>
+
+        {paradas.map((p, i) => (
+          <div key={p.id} className="grid gap-2">
+            <div className="flex items-center justify-between">
+              <Label>Parada {i + 1}</Label>
+              <Button variant="ghost" size="sm" onClick={() => rmParada(p.id)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+            <AddressAutocomplete
+              value={p.endereco}
+              onChange={(v) => updParada(p.id, v)}
+              placeholder={`Endereço da parada ${i + 1}`}
+            />
+          </div>
+        ))}
+
+        <Button type="button" variant="outline" size="sm" onClick={addParada} className="justify-self-start">
+          <Plus className="h-4 w-4 mr-1" /> Adicionar parada (+R$ {valorParadaExtra},00)
+        </Button>
+
+        <div className="grid gap-2">
+          <Label>Destino</Label>
+          <AddressAutocomplete value={destino.text} onChange={setDestino} placeholder="Endereço de destino" />
+        </div>
+
+        {/* Tarifa / Distância / Pagamento */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="grid gap-1.5">
+            <Label>Distância (km){calcRota ? " …" : ""}</Label>
+            <Input inputMode="decimal" value={distancia} onChange={(e) => setDistancia(e.target.value)} placeholder="0,0" />
+          </div>
+          <div className="grid gap-1.5">
+            <Label>Tarifa</Label>
+            <Select value={tarifaId} onValueChange={setTarifaId}>
+              <SelectTrigger><SelectValue placeholder="Tarifa" /></SelectTrigger>
+              <SelectContent>
+                {tarifas.map((t) => <SelectItem key={t.id} value={String(t.id)}>{t.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-1.5">
+            <Label>Pagamento</Label>
+            <Select value={pagamento} onValueChange={(v) => setPagamento(v as Pagamento)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Dinheiro">Dinheiro</SelectItem>
+                <SelectItem value="Pix">Pix</SelectItem>
+                <SelectItem value="Cartão">Cartão</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Modelo / Despacho */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-1.5">
+            <Label>Modelo</Label>
+            <Select value={modelo} onValueChange={(v) => setModelo(v as Modelo)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Imediata">Imediata</SelectItem>
+                <SelectItem value="Agendada">Agendada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-1.5">
+            <Label>Despacho</Label>
+            <Select value={despacho} onValueChange={(v) => setDespacho(v as Despacho)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Automatico">Automático (top 5 + expande)</SelectItem>
+                <SelectItem value="Manual">Manual (escolher motoristas)</SelectItem>
+                <SelectItem value="WhatsApp">WhatsApp (gerar mensagem)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {modelo === "Agendada" && (
+          <div className="grid gap-1.5">
+            <Label>Data e hora do agendamento</Label>
+            <Input
+              type="datetime-local"
+              value={agendadaPara}
+              onChange={(e) => setAgendadaPara(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Corridas agendadas ficam aguardando — o operador inicia manualmente no horário.
+            </p>
+          </div>
+        )}
+
+        {despacho === "Manual" && (
+          <div className="grid gap-2 rounded-lg border p-3">
+            <Label>Motoristas selecionados ({motoristasManuais.length})</Label>
+            <div className="max-h-44 overflow-y-auto grid gap-1.5">
+              {motoristas.length === 0 && (
+                <p className="text-sm text-muted-foreground">Nenhum motorista cadastrado.</p>
+              )}
+              {motoristas.map((m) => (
+                <label key={m.codigo} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <Checkbox
+                    checked={motoristasManuais.includes(m.codigo)}
+                    onCheckedChange={() => toggleMotoristaManual(m.codigo)}
+                  />
+                  <span className="font-mono text-xs">{m.codigo}</span>
+                  <span>{m.nome}</span>
+                  <span className="ml-auto text-xs text-muted-foreground">{m.status}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid gap-1.5">
+          <Label>Observações</Label>
+          <Textarea value={obs} onChange={(e) => setObs(e.target.value)} rows={2} placeholder="Ex.: aguardar na portaria" />
+        </div>
+
+        <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 flex items-center justify-between">
+          <div className="text-sm">
+            <div className="text-muted-foreground">
+              Base: R$ {floorReal(valorBase)},00
+              {paradas.length > 0 && (
+                <> · +{paradas.length}× parada: R$ {floorReal(adicional)},00</>
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground italic">centavos zerados</div>
+          </div>
+          <span className="text-3xl font-black text-primary">R$ {total},00</span>
+        </div>
+      </div>
+
+      <DialogFooter className="gap-2 sm:gap-2 flex-wrap">
+        <Button variant="ghost" onClick={limpar}>Limpar</Button>
+        <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button onClick={lancar} disabled={salvando}>
+          {salvando ? "Salvando..." : modelo === "Agendada" ? "Agendar" : "Lançar corrida"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        {!controlled && !hideDefaultTrigger && (
+          <DialogTrigger asChild>
+            <Button className="w-full" size="lg">
+              <Plus className="h-4 w-4 mr-2" />Nova corrida
+            </Button>
+          </DialogTrigger>
+        )}
+        {dialogContent}
+      </Dialog>
+
+      {/* Dialog WhatsApp */}
+      <Dialog open={!!whatsappOpen} onOpenChange={(v) => { if (!v) setWhatsappOpen(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mensagem para WhatsApp</DialogTitle>
+            <DialogDescription>
+              Copie o texto e cole no grupo dos motoristas ou no particular.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea value={whatsappOpen?.texto ?? ""} readOnly rows={10} className="font-mono text-xs" />
+          <DialogFooter className="gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => setWhatsappOpen(null)}>Fechar</Button>
+            <Button variant="secondary" onClick={abrirWhatsApp}>Abrir WhatsApp</Button>
+            <Button onClick={copiarWhatsapp}><Copy className="h-4 w-4 mr-1" /> Copiar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

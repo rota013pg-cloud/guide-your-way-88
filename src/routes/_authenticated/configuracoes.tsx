@@ -132,6 +132,22 @@ function ConfiguracoesPage() {
                   Usado pelo Financeiro como valor padrão de cada diária.
                 </p>
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="valorParadaExtra">Valor por parada extra (R$)</Label>
+                <Input
+                  id="valorParadaExtra"
+                  type="number"
+                  step="0.50"
+                  min="0"
+                  value={form.valorParadaExtra}
+                  disabled={!isAdmin}
+                  onChange={(e) => upd("valorParadaExtra", Number(e.target.value) || 0)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Somado ao valor da corrida para cada parada intermediária.
+                </p>
+              </div>
+
             </div>
 
             {data?.atualizadoEm && (

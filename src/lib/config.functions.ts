@@ -19,6 +19,7 @@ export type AppConfig = {
   whatsappCentral: string;
   pixChave: string;
   valorDiaria: number;
+  valorParadaExtra: number;
   templates: MensagemTemplate[];
 };
 
@@ -28,6 +29,7 @@ const CONFIG_DEFAULT: AppConfig = {
   whatsappCentral: "",
   pixChave: "",
   valorDiaria: 19.9,
+  valorParadaExtra: 3,
   templates: [],
 };
 
@@ -43,8 +45,10 @@ const ConfigSchema = z.object({
   whatsappCentral: z.string().max(20).regex(/^\d*$/, "Só números (DDI+DDD+número)"),
   pixChave: z.string().max(120),
   valorDiaria: z.number().positive().max(9999),
+  valorParadaExtra: z.number().min(0).max(999),
   templates: z.array(TemplateSchema).max(50).optional().default([]),
 });
+
 
 // ─── LER CONFIG ──────────────────────────────────────────
 export const lerConfig = createServerFn({ method: "POST" })

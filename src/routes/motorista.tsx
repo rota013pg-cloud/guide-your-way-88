@@ -45,7 +45,7 @@ type Corrida = {
   destino: string | null;
   status: string;
   valor_final: number | null;
-  motorista_codigo: string | null;
+  motorista_codigo?: string | null;
 };
 type Oferta = {
   ofertaId: number;

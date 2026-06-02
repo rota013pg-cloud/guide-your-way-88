@@ -473,11 +473,35 @@ function MotoristaApp() {
         />
       )}
 
-      {oferta && (
+      {oferta && cobranca?.status !== "Bloqueado" && (
         <OfertaModal
           oferta={oferta}
           onAceitar={aceitarOferta}
           onRecusar={recusarOferta}
+        />
+      )}
+
+      {cobranca && (
+        cobranca.status === "Bloqueado" ||
+        cobranca.status === "Aguardando" ||
+        (cobranca.status === "Pendente" && Number(cobranca.faturamento_dia) >= Number(cobranca.valor_diaria))
+      ) && (
+        <CobrancaModal
+          cobranca={cobranca}
+          config={cobrancaCfg}
+          enviando={enviandoLib}
+          onJaPaguei={async () => {
+            if (!sessao) return;
+            setEnviandoLib(true);
+            try {
+              await solicitarLibFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } });
+              mostrarToast("Aguardando confirmação da central");
+            } catch (e) {
+              mostrarToast(e instanceof Error ? e.message : "Erro");
+            } finally {
+              setEnviandoLib(false);
+            }
+          }}
         />
       )}
 

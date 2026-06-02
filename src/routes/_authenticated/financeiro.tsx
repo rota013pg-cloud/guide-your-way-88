@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, FileDown, Trash2, Wallet, Plus, Minus } from "lucide-react";
+import { CheckCircle2, Loader2, FileDown, Trash2, Wallet, Plus, Minus, ShieldAlert, Unlock } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -28,6 +28,8 @@ import {
   adicionarCreditosDiaria,
   removerCreditoDiaria,
 } from "@/lib/financeiro.functions";
+import { listarCobrancasHoje, liberarMotorista, bloquearMotorista } from "@/lib/cobranca.functions";
+import { supabase } from "@/integrations/supabase/client";
 // pdf-lib é pesado e só precisa ao clicar "Gerar PDF" — import dinâmico.
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
@@ -283,6 +285,9 @@ function FinanceiroPage() {
         </div>
       </Card>
 
+      {/* ─── Cobranças automáticas (gatilho de bloqueio) ─── */}
+      <CobrancasAutomaticasPanel />
+
       {/* ─── Relatório ─── */}
       <Card className="p-4">
         <h2 className="font-semibold mb-3">Relatório por período (PDF)</h2>
@@ -379,5 +384,174 @@ function FinanceiroPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// ════════════════════════════════════════════════════
+// Painel: Cobranças automáticas de hoje (gatilho de bloqueio)
+// ════════════════════════════════════════════════════
+type CobrancaRow = {
+  motorista_codigo: string;
+  motorista_nome?: string | null;
+  motorista_telefone?: string | null;
+  status: string;
+  faturamento_dia: number | string;
+  valor_diaria: number | string;
+  disparou_aviso_em: string | null;
+  disparou_bloqueio_em: string | null;
+  comprovante_enviado_em: string | null;
+  liberado_em: string | null;
+  liberado_por: string | null;
+};
+
+function CobrancasAutomaticasPanel() {
+  const listarFn = useServerFn(listarCobrancasHoje);
+  const liberarFn = useServerFn(liberarMotorista);
+  const bloquearFn = useServerFn(bloquearMotorista);
+  const qc = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["cobrancas", "hoje"],
+    queryFn: () => listarFn(),
+    refetchInterval: 15000,
+  });
+
+  // Realtime: motorista atingiu gatilho → toast
+  useEffect(() => {
+    const ch = supabase
+      .channel("cobrancas-painel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "motorista_cobranca" },
+        (payload) => {
+          qc.invalidateQueries({ queryKey: ["cobrancas"] });
+          const novo = payload.new as Partial<CobrancaRow> | null;
+          if (!novo) return;
+          if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {
+            if (novo.status === "Bloqueado") {
+              toast.warning(`⚠️ ${novo.motorista_codigo} bloqueado — faturou acima do limite sem pagar a diária`);
+            } else if (novo.status === "Aguardando") {
+              toast.info(`💰 ${novo.motorista_codigo} avisou pagamento — confirme o comprovante`);
+            }
+          }
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
+
+  const liberar = useMutation({
+    mutationFn: (codigo: string) => liberarFn({ data: { motoristaCodigo: codigo } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cobrancas"] });
+      qc.invalidateQueries({ queryKey: ["financeiro"] });
+      toast.success("Motorista liberado ✓");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const bloquear = useMutation({
+    mutationFn: (codigo: string) => bloquearFn({ data: { motoristaCodigo: codigo } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cobrancas"] });
+      toast.success("Motorista bloqueado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const linhas = (data?.cobrancas ?? []) as CobrancaRow[];
+  const ativos = linhas.filter((c) => c.status !== "Pago");
+
+  const corStatus = (s: string) =>
+    s === "Bloqueado" ? "destructive" : s === "Aguardando" ? "secondary" : s === "Pago" ? "default" : "outline";
+
+  return (
+    <Card className="overflow-hidden">
+      <div className="p-4 border-b flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold">Cobranças automáticas de hoje</h2>
+          <p className="text-xs text-muted-foreground">
+            App do motorista exibe aviso ao atingir o valor da diária e bloqueia ao passar do limite configurado.
+          </p>
+        </div>
+        <Badge variant="outline">{ativos.length} ativa(s)</Badge>
+      </div>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Motorista</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Faturado hoje</TableHead>
+              <TableHead>Diária</TableHead>
+              <TableHead>Comprovante</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin inline" />
+                </TableCell>
+              </TableRow>
+            )}
+            {!isLoading && linhas.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  Nenhuma cobrança em andamento hoje.
+                </TableCell>
+              </TableRow>
+            )}
+            {linhas.map((c) => (
+              <TableRow key={c.motorista_codigo}>
+                <TableCell>
+                  <div className="font-mono text-xs">{c.motorista_codigo}</div>
+                  <div className="text-xs text-muted-foreground">{c.motorista_nome ?? "—"}</div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={corStatus(c.status)}>{c.status}</Badge>
+                </TableCell>
+                <TableCell className="font-medium">{brl(Number(c.faturamento_dia))}</TableCell>
+                <TableCell>{brl(Number(c.valor_diaria))}</TableCell>
+                <TableCell className="text-xs">
+                  {c.comprovante_enviado_em
+                    ? `Enviado ${new Date(c.comprovante_enviado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
+                    : "—"}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    {c.status !== "Pago" && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (!confirm(`Confirmar pagamento e liberar ${c.motorista_codigo}?`)) return;
+                          liberar.mutate(c.motorista_codigo);
+                        }}
+                        disabled={liberar.isPending}
+                      >
+                        <Unlock className="h-4 w-4 mr-1" /> Liberar
+                      </Button>
+                    )}
+                    {c.status !== "Bloqueado" && c.status !== "Pago" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          if (!confirm(`Bloquear ${c.motorista_codigo} agora?`)) return;
+                          bloquear.mutate(c.motorista_codigo);
+                        }}
+                      >
+                        <ShieldAlert className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
   );
 }

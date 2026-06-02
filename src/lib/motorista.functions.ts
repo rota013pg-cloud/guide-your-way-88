@@ -426,3 +426,42 @@ export const motoristaCarregarCorrida = createServerFn({ method: "POST" })
       .maybeSingle();
     return { corrida };
   });
+
+// ─── CONCLUIR PARADA ────────────────────────────────────
+export const motoristaConcluirParada = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      codigo: z.string(),
+      token: z.string(),
+      corridaId: z.number(),
+      ordem: z.number().int().min(1),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await validarToken(data.codigo, data.token);
+
+    const { data: corrida, error: e1 } = await supabaseAdmin
+      .from("corridas")
+      .select("paradas")
+      .eq("id", data.corridaId)
+      .eq("motorista_codigo", data.codigo)
+      .maybeSingle();
+    if (e1) throw new Error(e1.message);
+    if (!corrida) throw new Error("Corrida não encontrada");
+
+    const paradas = Array.isArray(corrida.paradas) ? (corrida.paradas as Array<Record<string, unknown>>) : [];
+    const novas = paradas.map((p) =>
+      Number(p.ordem) === data.ordem && !p.concluida_em
+        ? { ...p, concluida_em: new Date().toISOString() }
+        : p,
+    );
+
+    const { error: e2 } = await supabaseAdmin
+      .from("corridas")
+      .update({ paradas: novas })
+      .eq("id", data.corridaId)
+      .eq("motorista_codigo", data.codigo);
+    if (e2) throw new Error(e2.message);
+
+    return { ok: true };
+  });

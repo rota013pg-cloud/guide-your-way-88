@@ -84,14 +84,15 @@ function CorridasPage() {
               <TableHead>Despacho</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
             )}
             {!isLoading && corridas.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Nenhuma corrida ainda.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Nenhuma corrida ainda.</TableCell></TableRow>
             )}
             {corridas.map((c: any) => (
               <TableRow key={c.id} onClick={() => setAberta(c)} className="cursor-pointer">
@@ -110,6 +111,16 @@ function CorridasPage() {
                 <TableCell><Badge variant="outline">{c.despacho}</Badge></TableCell>
                 <TableCell><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>
                 <TableCell className="text-right font-bold">R$ {Number(c.valor_final).toFixed(0)},00</TableCell>
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    title="Mensagens WhatsApp"
+                    onClick={() => setMsgCorrida(c)}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

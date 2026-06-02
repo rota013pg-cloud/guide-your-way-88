@@ -18,6 +18,7 @@ import {
   motoristaMinhaCobranca,
   motoristaSolicitarLiberacao,
 } from "@/lib/cobranca.functions";
+import { expirarOferta } from "@/lib/corridas.functions";
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { playChatBeep } from "@/lib/notification-sound";
@@ -107,6 +108,7 @@ function MotoristaApp() {
   const contextoFn = useServerFn(motoristaCarregarContexto);
   const carregarCorridaFn = useServerFn(motoristaCarregarCorrida);
   const concluirParadaFn = useServerFn(motoristaConcluirParada);
+  const expirarOfertaFn = useServerFn(expirarOferta);
 
   const [sessao, setSessao] = useState<{ motorista: Motorista; token: string } | null>(null);
   const [tela, setTela] = useState<"login" | "home" | "corrida">("login");
@@ -271,14 +273,19 @@ function MotoristaApp() {
       if (ofertaTimerRef.current) clearTimeout(ofertaTimerRef.current);
       return;
     }
+    const ofertaAtual = oferta;
     ofertaTimerRef.current = setTimeout(() => {
       setOferta(null);
       mostrarToast("Tempo esgotado");
+      // Avisa o servidor para expirar e disparar nova rodada se ninguém mais tiver a oferta
+      expirarOfertaFn({
+        data: { ofertaId: ofertaAtual.ofertaId, corridaId: ofertaAtual.corridaId },
+      }).catch(() => {});
     }, TIMEOUT_OFERTA_MS);
     return () => {
       if (ofertaTimerRef.current) clearTimeout(ofertaTimerRef.current);
     };
-  }, [oferta]);
+  }, [oferta, expirarOfertaFn]);
 
   // ─── GPS ────────────────────────────────────────────
   const iniciarGps = useCallback(() => {

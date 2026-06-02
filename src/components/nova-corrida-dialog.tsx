@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -86,6 +87,8 @@ export function NovaCorridaDialog({
     if (controlled) onOpenChange?.(v);
     else setOpenInternal(v);
   };
+  const navigate = useNavigate();
+  const currentPath = useRouterState({ select: (s) => s.location.pathname });
 
   const [tarifas, setTarifas] = useState<TarifaOpt[]>([]);
   const [motoristas, setMotoristas] = useState<MotoristaMini[]>([]);
@@ -368,6 +371,9 @@ export function NovaCorridaDialog({
     limpar();
     setOpen(false);
     onCriada?.();
+    if (currentPath !== "/dashboard") {
+      navigate({ to: "/dashboard" });
+    }
   };
 
   const addParada = () => setParadas((p) => [...p, { id: newId(), endereco: "" }]);

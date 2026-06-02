@@ -143,10 +143,15 @@ export const dispararOfertas = createServerFn({ method: "POST" })
     }
 
     // Já ofertados (não duplicar)
-    const { data: jaOfertados } = await supabaseAdmin
+    // - Reoferta: só exclui motoristas com oferta ativa (pendente/aceita) — expiradas/recusadas podem receber de novo
+    // - Oferta inicial: exclui todos que já tenham qualquer registro de oferta nessa corrida
+    const ofertasQuery = supabaseAdmin
       .from("corrida_ofertas")
-      .select("motorista_codigo")
+      .select("motorista_codigo,status")
       .eq("corrida_id", corridaId);
+    const { data: jaOfertados } = reofertar
+      ? await ofertasQuery.in("status", ["pendente", "aceita"])
+      : await ofertasQuery;
     const jaSet = new Set((jaOfertados ?? []).map((o) => o.motorista_codigo));
     const codigos = candidatosCodigos.filter((c) => !jaSet.has(c));
     if (codigos.length === 0) {
@@ -214,6 +219,55 @@ export const dispararOfertas = createServerFn({ method: "POST" })
 
     return { ok: true, ofertados: rows.length, modo: corrida.despacho };
   });
+
+// ─── Expirar oferta (chamado pelo app do motorista após 30s) ──────
+// Se não restar nenhuma oferta pendente para a corrida, dispara automaticamente
+// uma nova rodada (reoferta) para os próximos motoristas mais próximos.
+export const expirarOferta = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      ofertaId: z.number().int().positive(),
+      corridaId: z.number().int().positive(),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await supabaseAdmin
+      .from("corrida_ofertas")
+      .update({ status: "expirada" })
+      .eq("id", data.ofertaId)
+      .eq("status", "pendente");
+
+    const { data: corrida } = await supabaseAdmin
+      .from("corridas")
+      .select("id, status, rodada_atual")
+      .eq("id", data.corridaId)
+      .maybeSingle();
+    if (!corrida) return { ok: true, reofertou: false };
+    if (corrida.status !== "Ofertada" && corrida.status !== "Pendente") {
+      return { ok: true, reofertou: false };
+    }
+
+    const { count } = await supabaseAdmin
+      .from("corrida_ofertas")
+      .select("id", { count: "exact", head: true })
+      .eq("corrida_id", data.corridaId)
+      .eq("status", "pendente");
+
+    if ((count ?? 0) > 0) return { ok: true, reofertou: false };
+
+    try {
+      await supabaseAdmin
+        .from("corridas")
+        .update({ rodada_atual: (corrida.rodada_atual ?? 1) + 1, status: "Pendente" })
+        .eq("id", data.corridaId);
+
+      await (dispararOfertas as any)({ data: { corridaId: data.corridaId, reofertar: true } });
+      return { ok: true, reofertou: true };
+    } catch {
+      return { ok: true, reofertou: false };
+    }
+  });
+
 
 // ─── Registrar evento de status manualmente ───────────────────────
 export const registrarStatusCorrida = createServerFn({ method: "POST" })

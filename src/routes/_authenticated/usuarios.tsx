@@ -116,19 +116,44 @@ function UsuariosPage() {
               <TableHead>Login</TableHead>
               <TableHead>Nome</TableHead>
               <TableHead className="hidden md:table-cell">E-mail</TableHead>
+              <TableHead>Perfil</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {usuarios.length === 0 && (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Nenhum usuário.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum usuário.</TableCell></TableRow>
             )}
             {usuarios.map((u: any) => (
               <TableRow key={u.user_id}>
                 <TableCell className="font-mono text-xs">{u.login}</TableCell>
                 <TableCell>{u.nome}</TableCell>
                 <TableCell className="hidden md:table-cell text-sm">{u.email}</TableCell>
+                <TableCell>
+                  <Select
+                    value={u.role}
+                    onValueChange={async (v) => {
+                      try {
+                        await roleFn({ data: { userId: u.user_id, role: v as any } });
+                        toast.success("Perfil atualizado");
+                        refresh();
+                      } catch (e: any) { toast.error(e.message); }
+                    }}
+                  >
+                    <SelectTrigger className="w-32 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">
+                        <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Admin</span>
+                      </SelectItem>
+                      <SelectItem value="operador">
+                        <span className="flex items-center gap-1"><User className="h-3 w-3" /> Operador</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
                 <TableCell>
                   <Badge variant={u.status === "Bloqueado" ? "destructive" : "secondary"}>{u.status}</Badge>
                   {u.motivo_bloqueio && <div className="text-xs text-muted-foreground mt-0.5">{u.motivo_bloqueio}</div>}
@@ -179,6 +204,15 @@ function UsuariosPage() {
               <Input value={novo.login} onChange={(e) => setNovo({ ...novo, login: e.target.value.toLowerCase() })} placeholder="ex: joao.silva" /></div>
             <div className="grid gap-1.5"><Label>Senha</Label>
               <Input type="text" value={novo.senha} onChange={(e) => setNovo({ ...novo, senha: e.target.value })} placeholder="mín. 6 caracteres" /></div>
+            <div className="grid gap-1.5"><Label>Perfil</Label>
+              <Select value={novo.role} onValueChange={(v) => setNovo({ ...novo, role: v as any })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin — acesso total (configurações, tarifas, usuários)</SelectItem>
+                  <SelectItem value="operador">Operador — operação diária (corridas, clientes, mural, financeiro)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpenNovo(false)}>Cancelar</Button>

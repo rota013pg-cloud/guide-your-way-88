@@ -7,12 +7,19 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+export type MensagemTemplate = {
+  id: string;
+  titulo: string;
+  texto: string;
+};
+
 export type AppConfig = {
   empresa: string;
   cidadeBase: string;
   whatsappCentral: string;
   pixChave: string;
   valorDiaria: number;
+  templates: MensagemTemplate[];
 };
 
 const CONFIG_DEFAULT: AppConfig = {
@@ -21,7 +28,14 @@ const CONFIG_DEFAULT: AppConfig = {
   whatsappCentral: "",
   pixChave: "",
   valorDiaria: 19.9,
+  templates: [],
 };
+
+const TemplateSchema = z.object({
+  id: z.string().min(1).max(40),
+  titulo: z.string().min(1).max(80),
+  texto: z.string().min(1).max(2000),
+});
 
 const ConfigSchema = z.object({
   empresa: z.string().min(1).max(100),
@@ -29,6 +43,7 @@ const ConfigSchema = z.object({
   whatsappCentral: z.string().max(20).regex(/^\d*$/, "Só números (DDI+DDD+número)"),
   pixChave: z.string().max(120),
   valorDiaria: z.number().positive().max(9999),
+  templates: z.array(TemplateSchema).max(50).optional().default([]),
 });
 
 // ─── LER CONFIG ──────────────────────────────────────────
@@ -62,4 +77,22 @@ export const salvarConfig = createServerFn({ method: "POST" })
       .upsert({ id: 1, config_json: data, atualizado_em: new Date().toISOString() });
     if (error) throw new Error(error.message);
     return { ok: true, config: data };
+  });
+
+// ─── SALVAR APENAS TEMPLATES (operador) ──────────────────
+export const salvarTemplates = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ templates: z.array(TemplateSchema).max(50) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { data: atual } = await supabaseAdmin
+      .from("app_config").select("config_json").eq("id", 1).maybeSingle();
+    const cfg = { ...CONFIG_DEFAULT, ...((atual?.config_json ?? {}) as Partial<AppConfig>) };
+    cfg.templates = data.templates;
+    const { error } = await supabaseAdmin
+      .from("app_config")
+      .upsert({ id: 1, config_json: cfg, atualizado_em: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

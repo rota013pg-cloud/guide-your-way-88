@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { ChatNotifier } from "@/components/chat-notifier";
 import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
 import {
   decideDashboardAuth,

@@ -60,6 +60,7 @@ export function CobrancaModal({
   // Layout: fullscreen para Bloqueado, card flutuante para Pendente/Aguardando
   return (
     <div
+      onClick={podeFechar ? onFechar : undefined}
       style={{
         position: "fixed",
         inset: 0,
@@ -72,6 +73,7 @@ export function CobrancaModal({
       }}
     >
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{
           background: "#fff",
           width: "100%",
@@ -81,8 +83,29 @@ export function CobrancaModal({
           boxShadow: "0 -8px 32px rgba(0,0,0,0.4)",
           maxHeight: "100vh",
           overflowY: "auto",
+          position: "relative",
         }}
       >
+        {podeFechar && (
+          <button
+            onClick={onFechar}
+            aria-label="Fechar"
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              width: 32,
+              height: 32,
+              border: 0,
+              background: "transparent",
+              fontSize: 22,
+              cursor: "pointer",
+              color: "#666",
+            }}
+          >
+            ✕
+          </button>
+        )}
         <div
           style={{
             fontSize: 14,

@@ -88,10 +88,7 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md p-8">
         <div className="mb-6 text-center">
-          <div className="logo-r013 text-6xl leading-none mb-3">
-            Rota<span>013</span>
-          </div>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Beta 2.0 · Painel do operador</p>
+          <LogoRota013 className="text-6xl mb-3" showBeta betaText="Beta 2.0 · Painel do operador" betaClassName="text-xs uppercase tracking-widest text-muted-foreground" />
         </div>
         {reason && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">

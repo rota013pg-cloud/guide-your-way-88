@@ -115,6 +115,11 @@ function DashboardPage() {
           <div className="flex items-center gap-1.5"><Users className="h-4 w-4 text-success" /><span className="font-semibold">{online.length}</span><span className="text-muted-foreground">online</span></div>
           <div className="flex items-center gap-1.5"><ListChecks className="h-4 w-4 text-primary" /><span className="font-semibold">{ativas.length}</span><span className="text-muted-foreground">ativas</span></div>
           <div className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /><span className="font-semibold">{finalizadasHoje.length}</span><span className="text-muted-foreground">hoje</span></div>
+          <div className="flex items-center gap-1.5" title="Apps de motorista travados na tela de pagamento da diária">
+            <DollarSign className={`h-4 w-4 ${travadosPagto.length ? "text-warning" : "text-muted-foreground"}`} />
+            <span className="font-semibold">{travadosPagto.length}</span>
+            <span className="text-muted-foreground">app{travadosPagto.length === 1 ? "" : "s"} pagto.</span>
+          </div>
         </div>
       </div>
 

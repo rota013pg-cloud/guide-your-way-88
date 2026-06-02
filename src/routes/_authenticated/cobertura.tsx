@@ -29,6 +29,8 @@ export const Route = createFileRoute("/_authenticated/cobertura")({
   component: CoveragePage,
 });
 
+const COVERAGE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/coverage`;
+
 function pctColor(pct: number) {
   if (pct >= 80) return "text-emerald-600";
   if (pct >= 50) return "text-amber-600";
@@ -43,7 +45,7 @@ function relPath(full: string) {
 function htmlReportHref(full: string) {
   // istanbul HTML uses the relative path with .html appended
   const rel = relPath(full);
-  return `/coverage-report/${rel}.html`;
+  return `${COVERAGE_BASE}/lcov-report/${rel}.html`;
 }
 
 function parseLcov(text: string): Record<string, number[]> {
@@ -94,14 +96,14 @@ function CoveragePage() {
   const [selectedFile, setSelectedFile] = useState<string>("");
 
   useEffect(() => {
-    fetch("/coverage-summary.json")
+    fetch(`${COVERAGE_BASE}/coverage-summary.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
       .then(setData)
       .catch((e) => setError(String(e)));
-    fetch("/coverage-lcov.info")
+    fetch(`${COVERAGE_BASE}/lcov.info`)
       .then((r) => (r.ok ? r.text() : ""))
       .then((t) => t && setUncovered(parseLcov(t)))
       .catch(() => {});
@@ -158,7 +160,7 @@ function CoveragePage() {
           </p>
         </div>
         <Button asChild variant="outline">
-          <a href="/coverage-report/index.html" target="_blank" rel="noreferrer">
+          <a href={`${COVERAGE_BASE}/lcov-report/index.html`} target="_blank" rel="noreferrer">
             Relatório HTML completo <ExternalLink className="ml-2 h-4 w-4" />
           </a>
         </Button>
@@ -170,9 +172,11 @@ function CoveragePage() {
           <div className="text-sm">
             <p className="font-medium">Não foi possível carregar a cobertura.</p>
             <p className="text-muted-foreground">
-              Rode <code className="px-1 bg-muted rounded">bun run test:coverage</code> e copie{" "}
-              <code className="px-1 bg-muted rounded">coverage/</code> para{" "}
-              <code className="px-1 bg-muted rounded">public/coverage-report/</code>.
+              O CI publica os artefatos em cada push para <code className="px-1 bg-muted rounded">main</code>.
+              Rode o workflow <code className="px-1 bg-muted rounded">Update coverage</code> ou execute{" "}
+              <code className="px-1 bg-muted rounded">npm run coverage:upload</code> localmente
+              (precisa de <code className="px-1 bg-muted rounded">SUPABASE_URL</code> e{" "}
+              <code className="px-1 bg-muted rounded">SUPABASE_SERVICE_ROLE_KEY</code>).
             </p>
             <p className="text-muted-foreground mt-1">Detalhe: {error}</p>
           </div>

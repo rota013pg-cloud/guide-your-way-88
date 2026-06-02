@@ -29,16 +29,22 @@ function DashboardPage() {
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
   const [corridas, setCorridas] = useState<Corrida[]>([]);
   const [gps, setGps] = useState<Gps[]>([]);
+  const [travadosPagto, setTravadosPagto] = useState<{ status: string }[]>([]);
 
   const carregar = async () => {
-    const [m, c, g] = await Promise.all([
+    const hojeOp = new Date();
+    if (hojeOp.getHours() < 6) hojeOp.setDate(hojeOp.getDate() - 1);
+    const dia = hojeOp.toISOString().slice(0, 10);
+    const [m, c, g, cob] = await Promise.all([
       supabase.from("motoristas").select("codigo,nome,moto,placa,status").order("nome"),
       supabase.from("corridas").select("id,cliente,origem,destino,status,valor_final,motorista,motorista_codigo,criado_em").order("criado_em", { ascending: false }).limit(50),
       supabase.from("motorista_gps").select("motorista_codigo,lat,lng,criado_em").order("criado_em", { ascending: false }).limit(200),
+      supabase.from("motorista_cobranca").select("status").eq("dia_op", dia).in("status", ["Pendente", "Aguardando", "Bloqueado"]),
     ]);
     if (m.data) setMotoristas(m.data as Motorista[]);
     if (c.data) setCorridas(c.data as Corrida[]);
     if (g.data) setGps(g.data as Gps[]);
+    if (cob.data) setTravadosPagto(cob.data as { status: string }[]);
   };
 
   useEffect(() => {

@@ -97,6 +97,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "App do motorista Rota 013 — corridas, faturamento e chat em tempo real." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Rota 013" },
+      { name: "twitter:description", content: "App do motorista Rota 013 — corridas, faturamento e chat em tempo real." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e9c2ab2d-7b16-4dd3-862d-ac56ee92f99e/id-preview-0c887e19--9dea8a03-a9e7-44f7-bdb3-9eed2afcc12d.lovable.app-1780423144681.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e9c2ab2d-7b16-4dd3-862d-ac56ee92f99e/id-preview-0c887e19--9dea8a03-a9e7-44f7-bdb3-9eed2afcc12d.lovable.app-1780423144681.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

@@ -58,6 +58,20 @@ type Props = {
 
 const newId = () => Math.random().toString(36).slice(2, 9);
 
+// Abrevia título de tarifa: "Praia Grande > São Vicente" → "PG > SV"
+function abreviarTarifa(nome: string) {
+  if (!nome) return "";
+  const partes = nome.split(/\s*[>→-]\s*/);
+  const abrevia = (s: string) =>
+    s
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((p) => p[0]?.toUpperCase() ?? "")
+      .join("");
+  if (partes.length >= 2) return partes.map(abrevia).join(" > ");
+  return abrevia(nome);
+}
+
 export function NovaCorridaDialog({
   onCriada,
   open: openProp,

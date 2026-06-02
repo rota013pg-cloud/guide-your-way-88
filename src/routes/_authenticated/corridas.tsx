@@ -32,7 +32,11 @@ const statusVariant = (s: string): "default" | "secondary" | "destructive" | "ou
 
 function CorridasPage() {
   const fetchFn = useServerFn(listarCorridasRecentes);
+  const lancarFn = useServerFn(lancarCorridaAgendada);
+  const ofertasFn = useServerFn(dispararOfertas);
+  const qc = useQueryClient();
   const [aberta, setAberta] = useState<any | null>(null);
+  const [novaAberta, setNovaAberta] = useState(false);
 
   const { data: corridas = [], isLoading } = useQuery({
     queryKey: ["corridas-recentes"],
@@ -40,14 +44,32 @@ function CorridasPage() {
     refetchInterval: 8000,
   });
 
+  const handleLancarAgora = async (id: number) => {
+    try {
+      await lancarFn({ data: { corridaId: id } });
+      await ofertasFn({ data: { corridaId: id } }).catch(() => {});
+      toast.success("Corrida lançada para os motoristas.");
+      qc.invalidateQueries({ queryKey: ["corridas-recentes"] });
+      setAberta(null);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao lançar corrida.");
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold">Corridas</h1>
-        <p className="text-sm text-muted-foreground">
-          {corridas.length} últimas — clique para ver o histórico de status.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Corridas</h1>
+          <p className="text-sm text-muted-foreground">
+            {corridas.length} últimas — clique para ver o histórico de status.
+          </p>
+        </div>
+        <Button onClick={() => setNovaAberta(true)}>
+          <Rocket className="h-4 w-4 mr-2" /> Nova corrida
+        </Button>
       </div>
+      <NovaCorridaDialog open={novaAberta} onOpenChange={setNovaAberta} />
 
       <Card>
         <Table>

@@ -142,6 +142,23 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
             </div>
           </div>
 
+          {/* Resetar dispositivo */}
+          <div className="space-y-2 border-t pt-3">
+            <Label className="text-xs">Dispositivo vinculado</Label>
+            <p className="text-xs text-muted-foreground">
+              Use quando o motorista trocou de aparelho e está vendo "logado em outro dispositivo".
+              Encerra a sessão atual e libera o login em um novo aparelho.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => resetDevMut.mutate()}
+              disabled={resetDevMut.isPending}
+            >
+              <Smartphone className="h-4 w-4 mr-2" /> Resetar dispositivo
+            </Button>
+          </div>
+
           {/* Bloquear / Desbloquear */}
           <div className="space-y-2 border-t pt-3">
             {bloqueado ? (

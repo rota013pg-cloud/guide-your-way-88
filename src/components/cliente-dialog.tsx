@@ -93,7 +93,7 @@ export function ClienteDialog({
         <div className="space-y-3">
           <div>
             <Label>Nome *</Label>
-            <Input value={nome} onChange={(e) => setNome(e.target.value)} maxLength={120} />
+            <Input className="uppercase" value={nome} onChange={(e) => setNome(e.target.value.toUpperCase())} maxLength={120} />
           </div>
           <div>
             <Label>Telefone</Label>

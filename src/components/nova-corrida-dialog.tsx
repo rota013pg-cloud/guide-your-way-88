@@ -235,6 +235,8 @@ export function NovaCorridaDialog({
     setAgendadaPara("");
     setDespacho("Automatico");
     setMotoristasManuais([]);
+    setAgendadaMotorista("");
+    setCliNaoEncontrado(false);
     setPagamento("Dinheiro");
     setObs("");
   };

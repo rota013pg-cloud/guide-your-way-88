@@ -134,17 +134,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
-          <div
-            className="logo-r013 text-2xl leading-none"
-            style={{ color: "hsl(var(--foreground))" }}
-          >
-            Rota<span>013</span>
-          </div>
-          {!collapsed && (
-            <div className="leading-tight ml-1">
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Beta 2.0</div>
-            </div>
-          )}
+          <LogoRota013 className="text-2xl" showBeta={!collapsed} />
         </div>
       </SidebarHeader>
 

@@ -20,6 +20,7 @@ import {
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { playChatBeep } from "@/lib/notification-sound";
+import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/motorista")({
   ssr: false,

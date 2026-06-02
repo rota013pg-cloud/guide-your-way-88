@@ -111,11 +111,17 @@ function HistoricoPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold">Histórico</h1>
-        <p className="text-sm text-muted-foreground">
-          Corridas registradas no período selecionado.
-        </p>
+      <div className="flex items-start justify-between flex-wrap gap-2">
+        <div>
+          <h1 className="text-2xl font-bold">Histórico</h1>
+          <p className="text-sm text-muted-foreground">
+            Corridas registradas no período selecionado.
+          </p>
+        </div>
+        <Button onClick={exportarPdf} disabled={exportando || isLoading || !data}>
+          {exportando ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
+          Exportar PDF
+        </Button>
       </div>
 
       {/* Filtros */}
@@ -156,6 +162,24 @@ function HistoricoPage() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <Label htmlFor="h-cli" className="text-xs">Cliente (nome, código ou telefone)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="h-cli"
+                value={cliente}
+                onChange={(e) => setCliente(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") setClienteAplicado(cliente.trim()); }}
+                placeholder="ex: João, C0010, 13988887777"
+              />
+              <Button variant="outline" onClick={() => setClienteAplicado(cliente.trim())}>Buscar</Button>
+              {clienteAplicado && (
+                <Button variant="ghost" onClick={() => { setCliente(""); setClienteAplicado(""); }}>
+                  Limpar
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </Card>

@@ -5,7 +5,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { hasRole } from "@/lib/roles.server";
 
 async function validarTokenMotorista(codigo: string, token: string) {
   const { data } = await supabaseAdmin

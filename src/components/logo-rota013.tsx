@@ -1,7 +1,13 @@
+import logoAsset from "@/assets/rota013-logo.png.asset.json";
+
 export function LogoRota013({ className = "text-2xl" }: { className?: string }) {
+  // Aproxima a altura ao tamanho do texto anterior (1em ~ font-size do className)
   return (
-    <div className={`logo-r013 leading-none ${className}`}>
-      Rota<span>013</span>
-    </div>
+    <img
+      src={logoAsset.url}
+      alt="Rota013"
+      className={`inline-block w-auto object-contain ${className}`}
+      style={{ height: "1.4em" }}
+    />
   );
 }

@@ -540,7 +540,7 @@ function MotoristaApp() {
         forcarCobranca ||
         cobranca.status === "Bloqueado" ||
         cobranca.status === "Aguardando" ||
-        (cobranca.status === "Pendente" && Number(cobranca.faturamento_dia) >= Number(cobranca.valor_diaria))
+        (cobranca.status === "Pendente" && Number(cobranca.faturamento_dia) >= Number(cobranca.valor_diaria) * 1.10)
       ) && (
         <CobrancaModal
           cobranca={cobranca}

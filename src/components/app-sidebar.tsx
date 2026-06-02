@@ -9,6 +9,7 @@ import {
   History,
   Settings,
   MessageSquare,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 import {
@@ -44,6 +45,7 @@ const gestao: Item[] = [
   { title: "Histórico", url: "/historico", icon: History },
   { title: "Mensagens", url: "/mensagens", icon: MessageSquare },
   { title: "Configurações", url: "/configuracoes", icon: Settings, adminOnly: true },
+  { title: "Cobertura", url: "/cobertura", icon: ShieldCheck, adminOnly: true },
 ];
 
 export function AppSidebar() {

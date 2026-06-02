@@ -20,6 +20,7 @@ import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticated/corridas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedCoberturaRouteImport } from './routes/_authenticated/cobertura'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 
 const LoginRoute = LoginRouteImport.update({
@@ -77,6 +78,11 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedCoberturaRoute = AuthenticatedCoberturaRouteImport.update({
+  id: '/cobertura',
+  path: '/cobertura',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/clientes': typeof AuthenticatedClientesRoute
+  '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/clientes': typeof AuthenticatedClientesRoute
+  '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
+  '/_authenticated/cobertura': typeof AuthenticatedCoberturaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corridas': typeof AuthenticatedCorridasRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/clientes'
+    | '/cobertura'
     | '/configuracoes'
     | '/corridas'
     | '/dashboard'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/clientes'
+    | '/cobertura'
     | '/configuracoes'
     | '/corridas'
     | '/dashboard'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/clientes'
+    | '/_authenticated/cobertura'
     | '/_authenticated/configuracoes'
     | '/_authenticated/corridas'
     | '/_authenticated/dashboard'
@@ -252,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cobertura': {
+      id: '/_authenticated/cobertura'
+      path: '/cobertura'
+      fullPath: '/cobertura'
+      preLoaderRoute: typeof AuthenticatedCoberturaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/clientes': {
       id: '/_authenticated/clientes'
       path: '/clientes'
@@ -264,6 +283,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
+  AuthenticatedCoberturaRoute: typeof AuthenticatedCoberturaRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorridasRoute: typeof AuthenticatedCorridasRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -276,6 +296,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
+  AuthenticatedCoberturaRoute: AuthenticatedCoberturaRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorridasRoute: AuthenticatedCorridasRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,

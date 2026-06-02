@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, FileDown, Trash2, Wallet, Plus, Minus } from "lucide-react";
+import { CheckCircle2, Loader2, FileDown, Trash2, Wallet, Plus, Minus, ShieldAlert, Unlock } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -28,6 +28,8 @@ import {
   adicionarCreditosDiaria,
   removerCreditoDiaria,
 } from "@/lib/financeiro.functions";
+import { listarCobrancasHoje, liberarMotorista, bloquearMotorista } from "@/lib/cobranca.functions";
+import { supabase } from "@/integrations/supabase/client";
 // pdf-lib é pesado e só precisa ao clicar "Gerar PDF" — import dinâmico.
 
 export const Route = createFileRoute("/_authenticated/financeiro")({

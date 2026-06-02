@@ -14,8 +14,9 @@ export function useWakeLock() {
 
     const request = async () => {
       try {
-        // @ts-expect-error - wakeLock pode não estar tipado em todos ambientes
-        wakeLock = await navigator.wakeLock.request("screen");
+        wakeLock = await (navigator as Navigator & {
+          wakeLock: { request: (type: "screen") => Promise<WakeLockSentinel> };
+        }).wakeLock.request("screen");
         wakeLock?.addEventListener("release", () => {
           // libera referência
           wakeLock = null;

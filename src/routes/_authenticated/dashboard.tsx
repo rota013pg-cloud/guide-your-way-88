@@ -54,6 +54,7 @@ function DashboardPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "corridas" }, carregar)
       .on("postgres_changes", { event: "*", schema: "public", table: "motoristas" }, carregar)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "motorista_gps" }, carregar)
+      .on("postgres_changes", { event: "*", schema: "public", table: "motorista_cobranca" }, carregar)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);

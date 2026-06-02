@@ -36,19 +36,28 @@ function ChatMotoristasPage() {
   const [apagandoConversa, setApagandoConversa] = useState(false);
   const fimRef = useRef<HTMLDivElement>(null);
 
+  const isAuthError = (e: unknown) =>
+    e instanceof Error && /unauthorized|authorization header/i.test(e.message);
+
   const carregarConversas = async () => {
     try {
       const { conversas } = await operadorListarConversas();
       setConversas(conversas);
     } catch (e) {
+      if (isAuthError(e)) return; // token renovando — ignora silenciosamente
       toast.error(e instanceof Error ? e.message : "Erro ao carregar");
     }
   };
 
   const carregarMensagens = async (codigo: string) => {
-    const { mensagens } = await operadorListarChat({ data: { motoristaCodigo: codigo } });
-    setMensagens(mensagens);
-    setTimeout(() => fimRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    try {
+      const { mensagens } = await operadorListarChat({ data: { motoristaCodigo: codigo } });
+      setMensagens(mensagens);
+      setTimeout(() => fimRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    } catch (e) {
+      if (isAuthError(e)) return;
+      toast.error(e instanceof Error ? e.message : "Erro ao carregar mensagens");
+    }
   };
 
   useEffect(() => {

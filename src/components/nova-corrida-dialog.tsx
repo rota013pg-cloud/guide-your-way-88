@@ -107,10 +107,15 @@ export function NovaCorridaDialog({
   const dispararFn = useServerFn(dispararOfertas);
   const registrarLogFn = useServerFn(registrarStatusCorrida);
   const lerConfigFn = useServerFn(lerConfig);
+  const lerTarifasFn = useServerFn(lerTarifas);
 
   const { data: cfgData } = useQuery({
     queryKey: ["app-config"],
     queryFn: () => lerConfigFn(),
+  });
+  const { data: tarifasData } = useQuery({
+    queryKey: ["tarifas-config"],
+    queryFn: () => lerTarifasFn(),
   });
   const valorParadaExtra = cfgData?.config?.valorParadaExtra ?? 3;
   const whatsappCentral = cfgData?.config?.whatsappCentral ?? "";
@@ -125,19 +130,31 @@ export function NovaCorridaDialog({
     }
   }, [open, clientePrefill]);
 
-  // Carregar tarifas + motoristas ao abrir
+  // Monta opções de tarifa a partir de tabelasFixas + híbrida
+  useEffect(() => {
+    if (!tarifasData?.tarifas) return;
+    const cfg: TarifasConfig = tarifasData.tarifas;
+    const opts: TarifaOpt[] = [
+      ...cfg.tabelasFixas.map((t) => ({
+        id: t.id,
+        nome: t.titulo,
+        tarifaMinima: t.tarifaMinima,
+        valorKm: t.valorKm,
+      })),
+      {
+        id: "hibrida",
+        nome: cfg.tabelaHibrida.titulo,
+        tarifaMinima: cfg.tabelaHibrida.tarifaMinima,
+        valorKm: cfg.tabelaHibrida.valorKm,
+      },
+    ];
+    setTarifas(opts);
+    if (!tarifaId && opts[0]) setTarifaId(opts[0].id);
+  }, [tarifasData]);
+
+  // Carregar motoristas ao abrir (tarifas vêm de query)
   useEffect(() => {
     if (!open) return;
-    supabase
-      .from("tarifas")
-      .select("id,nome,bandeirada,minimo,por_km")
-      .eq("ativa", true)
-      .then(({ data }) => {
-        if (data) {
-          setTarifas(data as Tarifa[]);
-          if (data[0] && !tarifaId) setTarifaId(String(data[0].id));
-        }
-      });
     supabase
       .from("motoristas")
       .select("codigo,nome,status")
@@ -146,6 +163,7 @@ export function NovaCorridaDialog({
         if (data) setMotoristas(data as MotoristaMini[]);
       });
   }, [open]);
+
 
   // Calcula distância automaticamente
   useEffect(() => {

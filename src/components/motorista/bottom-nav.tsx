@@ -57,16 +57,6 @@ export function MotoristaBottomNav({
   // Contagem inicial de mensagens não lidas (operador → motorista)
   useEffect(() => {
     let active = true;
-    const carregar = async () => {
-      const { data } = await supabase
-        .from("chat_motorista")
-        .select("id", { count: "exact", head: true })
-        .eq("motorista_codigo", motorista.codigo)
-        .eq("autor", "operador")
-        .eq("lido", false);
-      if (active) setUnread((data as unknown as { length?: number })?.length ?? 0);
-    };
-    // count via fetch separado
     supabase
       .from("chat_motorista")
       .select("*", { count: "exact", head: true })

@@ -58,6 +58,20 @@ type Props = {
 
 const newId = () => Math.random().toString(36).slice(2, 9);
 
+// Abrevia título de tarifa: "Praia Grande > São Vicente" → "PG > SV"
+function abreviarTarifa(nome: string) {
+  if (!nome) return "";
+  const partes = nome.split(/\s*[>→-]\s*/);
+  const abrevia = (s: string) =>
+    s
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((p) => p[0]?.toUpperCase() ?? "")
+      .join("");
+  if (partes.length >= 2) return partes.map(abrevia).join(" > ");
+  return abrevia(nome);
+}
+
 export function NovaCorridaDialog({
   onCriada,
   open: openProp,
@@ -99,6 +113,8 @@ export function NovaCorridaDialog({
   const [motoristasManuais, setMotoristasManuais] = useState<string[]>([]);
   const [agendadaMotorista, setAgendadaMotorista] = useState<string>(""); // codigo do motorista pré-vinculado
   const [pagamento, setPagamento] = useState<Pagamento>("Dinheiro");
+  const [desconto, setDesconto] = useState<string>("");
+  const [extra, setExtra] = useState<string>("");
   const [obs, setObs] = useState("");
   const [buscandoCli, setBuscandoCli] = useState(false);
   const [cliNaoEncontrado, setCliNaoEncontrado] = useState(false);
@@ -192,7 +208,10 @@ export function NovaCorridaDialog({
   const tarifa = tarifas.find((t) => t.id === tarifaId);
   const km = parseFloat(distancia.replace(",", ".")) || 0;
   const valorBase = tarifa && km > 0 ? Math.max(km * tarifa.valorKm, tarifa.tarifaMinima) : 0;
-  const { total, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
+  const { total: totalBase, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
+  const descontoNum = Math.max(0, parseFloat(desconto.replace(",", ".")) || 0);
+  const extraNum = Math.max(0, parseFloat(extra.replace(",", ".")) || 0);
+  const total = Math.max(0, totalBase - descontoNum + extraNum);
 
   // Busca automática de cliente com debounce (apenas Nome + Telefone, não toca endereço)
   useEffect(() => {
@@ -238,6 +257,8 @@ export function NovaCorridaDialog({
     setAgendadaMotorista("");
     setCliNaoEncontrado(false);
     setPagamento("Dinheiro");
+    setDesconto("");
+    setExtra("");
     setObs("");
   };
 
@@ -453,19 +474,28 @@ export function NovaCorridaDialog({
             <Label>Distância (km){calcRota ? " …" : ""}</Label>
             <Input inputMode="decimal" value={distancia} onChange={(e) => setDistancia(e.target.value)} placeholder="0,0" />
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid gap-1.5 min-w-0">
             <Label>Tarifa</Label>
             <Select value={tarifaId} onValueChange={setTarifaId}>
-              <SelectTrigger><SelectValue placeholder="Tarifa" /></SelectTrigger>
+              <SelectTrigger className="min-w-0">
+                <SelectValue placeholder="Tarifa">
+                  {tarifaId ? abreviarTarifa(tarifas.find((t) => t.id === tarifaId)?.nome ?? "") : null}
+                </SelectValue>
+              </SelectTrigger>
               <SelectContent>
-                {tarifas.map((t) => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
+                {tarifas.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    <span className="font-mono mr-2">{abreviarTarifa(t.nome)}</span>
+                    <span className="text-xs text-muted-foreground">{t.nome}</span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid gap-1.5 min-w-0">
             <Label>Pagamento</Label>
             <Select value={pagamento} onValueChange={(v) => setPagamento(v as Pagamento)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="min-w-0"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Dinheiro">Dinheiro</SelectItem>
                 <SelectItem value="Pix">Pix</SelectItem>
@@ -474,6 +504,29 @@ export function NovaCorridaDialog({
             </Select>
           </div>
         </div>
+
+        {/* Desconto e Cobrança Adicional */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-1.5">
+            <Label>Desconto (R$)</Label>
+            <Input
+              inputMode="decimal"
+              value={desconto}
+              onChange={(e) => setDesconto(e.target.value)}
+              placeholder="0,00"
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label>Cobrança adicional (R$)</Label>
+            <Input
+              inputMode="decimal"
+              value={extra}
+              onChange={(e) => setExtra(e.target.value)}
+              placeholder="0,00"
+            />
+          </div>
+        </div>
+
 
         {/* Modelo / Despacho */}
         <div className="grid grid-cols-2 gap-3">
@@ -560,11 +613,18 @@ export function NovaCorridaDialog({
               {paradas.length > 0 && (
                 <> · +{paradas.length}× parada: R$ {floorReal(adicional)},00</>
               )}
+              {descontoNum > 0 && (
+                <> · <span className="text-destructive">−R$ {descontoNum.toFixed(2).replace(".", ",")} desc.</span></>
+              )}
+              {extraNum > 0 && (
+                <> · <span className="text-emerald-600">+R$ {extraNum.toFixed(2).replace(".", ",")} extra</span></>
+              )}
             </div>
-            <div className="text-xs text-muted-foreground italic">centavos zerados</div>
+            <div className="text-xs text-muted-foreground italic">centavos zerados na base</div>
           </div>
-          <span className="text-3xl font-black text-primary">R$ {total},00</span>
+          <span className="text-3xl font-black text-primary">R$ {total.toFixed(2).replace(".", ",")}</span>
         </div>
+
       </div>
 
       <DialogFooter className="gap-2 sm:gap-2 flex-wrap">

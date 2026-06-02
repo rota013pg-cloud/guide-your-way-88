@@ -20,6 +20,7 @@ import {
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { playChatBeep } from "@/lib/notification-sound";
+import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/motorista")({
   ssr: false,
@@ -550,9 +551,7 @@ function LoginTela({
   return (
     <div className="tela tela-login">
       <div className="login-wrap">
-        <div className="login-logo">
-          Rota<span>013</span>
-        </div>
+        <LogoRota013 className="text-[3.4rem]" />
         <p className="login-sub">App do Motorista</p>
         <div className="form-group">
           <label>Código</label>
@@ -613,7 +612,7 @@ function HomeTela({
     <div className="tela">
       <header className="header">
         <a className="app-logo" href="#">
-          Rota<span>013</span>
+          <LogoRota013 className="text-2xl" />
         </a>
         <div className="header-center">
           <div className="header-nome">{motorista.nome}</div>
@@ -910,12 +909,7 @@ const cssMotorista = `
 }
 .moto-app .tela-login { justify-content:center; }
 .moto-app .login-wrap { padding:32px 28px; max-width:420px; margin:0 auto; width:100%; }
-.moto-app .login-logo {
-  font-family:"Saira Condensed", system-ui, sans-serif;
-  font-size:3.4rem; font-weight:900; font-style:italic; letter-spacing:-2px;
-  color:#fff; margin-bottom:4px; text-align:center;
-}
-.moto-app .login-logo span { color:var(--gold); }
+.moto-app .login-logo { text-align:center; margin-bottom:4px; }
 .moto-app .login-sub {
   text-align:center; color:var(--muted); font-size:13px;
   letter-spacing:2px; text-transform:uppercase; margin-bottom:36px;
@@ -944,12 +938,7 @@ const cssMotorista = `
   background:var(--card); border-bottom:1px solid var(--line); flex-shrink:0;
 }
 .moto-app .header-dark { background:#111; }
-.moto-app .app-logo {
-  font-family:"Saira Condensed", system-ui, sans-serif;
-  font-weight:900; font-style:italic; font-size:24px; color:#fff;
-  text-decoration:none; letter-spacing:-1px;
-}
-.moto-app .app-logo span { color:var(--gold); }
+.moto-app .app-logo { text-decoration:none; }
 .moto-app .header-center { flex:1; text-align:center; padding:0 8px; }
 .moto-app .header-nome { font-weight:700; font-size:15px; }
 .moto-app .header-moto { font-size:12px; color:var(--muted); margin-top:2px; }

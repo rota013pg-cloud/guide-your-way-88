@@ -50,7 +50,6 @@ const DashboardPage = (DashboardRoute.options as any)
 describe("Dashboard — Nova Corrida com mapa em falha", () => {
   it("abre o diálogo ao clicar no botão e mantém o estado mesmo com o mapa falhando", async () => {
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const user = userEvent.setup();
 
     render(<DashboardPage />);
     render(<DashboardPage />);
@@ -67,7 +66,7 @@ describe("Dashboard — Nova Corrida com mapa em falha", () => {
 
     // Clica no botão "Nova corrida" (gatilho do Dialog).
     const triggers = screen.getAllByRole("button", { name: /nova corrida/i });
-    await user.click(triggers[triggers.length - 1]);
+    fireEvent.click(triggers[triggers.length - 1]);
 
     // Diálogo abre.
     const dialog = await screen.findByRole("dialog");
@@ -77,12 +76,12 @@ describe("Dashboard — Nova Corrida com mapa em falha", () => {
     ).toBeInTheDocument();
 
     // Estado do formulário é preservado entre interações.
-    const origem = within(dialog).getByLabelText(/origem/i);
-    await user.type(origem, "Rua A, 123");
+    const origem = within(dialog).getByLabelText(/origem/i) as HTMLInputElement;
+    fireEvent.change(origem, { target: { value: "Rua A, 123" } });
     expect(origem).toHaveValue("Rua A, 123");
 
-    const nome = within(dialog).getByLabelText(/^nome$/i);
-    await user.type(nome, "João");
+    const nome = within(dialog).getByLabelText(/^nome$/i) as HTMLInputElement;
+    fireEvent.change(nome, { target: { value: "João" } });
     expect(nome).toHaveValue("João");
 
     // Origem continua com o valor digitado (estado não foi resetado).

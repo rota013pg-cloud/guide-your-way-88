@@ -895,10 +895,9 @@ const cssMotorista = `
 .moto-app .tela-login { justify-content:center; }
 .moto-app .login-wrap { padding:32px 28px; max-width:420px; margin:0 auto; width:100%; }
 .moto-app .login-logo {
-  font-family:"Bowlby One", system-ui, sans-serif;
-  font-size:3.6rem; font-weight:400; font-style:italic; letter-spacing:-2px;
+  font-family:"Saira Condensed", system-ui, sans-serif;
+  font-size:3.4rem; font-weight:900; font-style:italic; letter-spacing:-2px;
   color:#fff; margin-bottom:4px; text-align:center;
-  transform:skewX(-8deg);
 }
 .moto-app .login-logo span { color:var(--gold); }
 .moto-app .login-sub {
@@ -930,10 +929,9 @@ const cssMotorista = `
 }
 .moto-app .header-dark { background:#111; }
 .moto-app .app-logo {
-  font-family:"Bowlby One", system-ui, sans-serif;
-  font-weight:400; font-style:italic; font-size:24px; color:#fff;
-  text-decoration:none; letter-spacing:-1px; transform:skewX(-8deg);
-  display:inline-block;
+  font-family:"Saira Condensed", system-ui, sans-serif;
+  font-weight:900; font-style:italic; font-size:24px; color:#fff;
+  text-decoration:none; letter-spacing:-1px;
 }
 .moto-app .app-logo span { color:var(--gold); }
 .moto-app .header-center { flex:1; text-align:center; padding:0 8px; }

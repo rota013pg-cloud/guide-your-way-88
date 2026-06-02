@@ -80,6 +80,42 @@
 
 .dark { color-scheme: dark; }
 
+/* Tema claro — aplicado quando html tem .light */
+.light {
+  color-scheme: light;
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.18 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0 0);
+  --primary: oklch(0.78 0.18 92);
+  --primary-foreground: oklch(0.18 0 0);
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0.20 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.94 0.04 92);
+  --accent-foreground: oklch(0.20 0 0);
+  --destructive: oklch(0.58 0.22 28);
+  --destructive-foreground: oklch(0.98 0 0);
+  --success: oklch(0.65 0.17 150);
+  --success-foreground: oklch(0.98 0 0);
+  --warning: oklch(0.78 0.16 70);
+  --warning-foreground: oklch(0.18 0 0);
+  --border: oklch(0.90 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.78 0.18 92);
+  --sidebar: oklch(0.97 0 0);
+  --sidebar-foreground: oklch(0.18 0 0);
+  --sidebar-primary: oklch(0.78 0.18 92);
+  --sidebar-primary-foreground: oklch(0.18 0 0);
+  --sidebar-accent: oklch(0.93 0 0);
+  --sidebar-accent-foreground: oklch(0.20 0 0);
+  --sidebar-border: oklch(0.88 0 0);
+  --sidebar-ring: oklch(0.78 0.18 92);
+}
+
 @layer base {
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); }

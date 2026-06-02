@@ -301,6 +301,10 @@ export function NovaCorridaDialog({
         despacho,
         paradas: paradasJson as any,
         motoristas_manuais: despacho === "Manual" ? motoristasManuais : [],
+        motorista_codigo: modelo === "Agendada" && agendadaMotorista ? agendadaMotorista : null,
+        motorista: modelo === "Agendada" && agendadaMotorista
+          ? (motoristas.find((m) => m.codigo === agendadaMotorista)?.nome ?? null)
+          : null,
       })
       .select("id")
       .single();

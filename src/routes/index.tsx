@@ -9,13 +9,8 @@ function destinoPorHost(host: string | undefined): "/motorista" | "/login" {
 }
 
 export const Route = createFileRoute("/")({
-  beforeLoad: ({ location }) => {
-    // SSR: usa o host da request. Cliente: usa window.location.hostname.
-    const host =
-      typeof window !== "undefined"
-        ? window.location.hostname
-        : // @ts-expect-error - host pode vir do request em SSR
-          (location as { host?: string }).host;
+  beforeLoad: () => {
+    const host = typeof window !== "undefined" ? window.location.hostname : undefined;
     throw redirect({ to: destinoPorHost(host) });
   },
 });

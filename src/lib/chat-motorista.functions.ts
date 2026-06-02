@@ -142,3 +142,28 @@ export const operadorEnviarMensagem = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+async function exigirAdmin(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Acesso restrito a administradores.");
+}
+
+// ─── ADMIN: apagar mensagem ─────────────────────────────
+export const adminApagarMensagem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.number() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await exigirAdmin(context.userId as string);
+    const { error } = await supabaseAdmin
+      .from("chat_motorista")
+      .delete()
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

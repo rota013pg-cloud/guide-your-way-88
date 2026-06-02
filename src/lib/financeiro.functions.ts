@@ -149,6 +149,77 @@ export const removerPagamento = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ─── ADICIONAR CRÉDITOS DE DIÁRIA (pagamento adiantado) ──
+export const adicionarCreditosDiaria = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      motoristaCodigo: z.string().min(1).max(20),
+      dias: z.number().int().min(1).max(60),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: mot } = await supabaseAdmin
+      .from("motoristas")
+      .select("codigo, nome, creditos_diaria")
+      .eq("codigo", data.motoristaCodigo)
+      .maybeSingle();
+    if (!mot) throw new Error("Motorista não encontrado");
+
+    const valorDiaria = await lerValorDiaria();
+    const totalPago = valorDiaria * data.dias;
+    const operador =
+      (context.claims?.email as string | undefined) ??
+      (context.userId as string | undefined) ??
+      "Painel";
+
+    // Soma créditos no motorista
+    const { error: e1 } = await supabaseAdmin
+      .from("motoristas")
+      .update({ creditos_diaria: (mot.creditos_diaria ?? 0) + data.dias })
+      .eq("codigo", mot.codigo);
+    if (e1) throw new Error(e1.message);
+
+    // Registra pagamento adiantado no financeiro (tipo diferente p/ não conflitar com uniq_diaria_dia)
+    const { error: e2 } = await supabaseAdmin.from("financeiro").insert({
+      motorista_codigo: mot.codigo,
+      motorista: mot.nome,
+      valor: totalPago,
+      tipo: `Diária Adiantada (${data.dias}x)`,
+      operador,
+    });
+    if (e2) throw new Error(e2.message);
+
+    return {
+      ok: true,
+      novosCreditos: (mot.creditos_diaria ?? 0) + data.dias,
+      valorPago: totalPago,
+    };
+  });
+
+// ─── REMOVER 1 CRÉDITO ───────────────────────────────────
+export const removerCreditoDiaria = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ motoristaCodigo: z.string().min(1).max(20) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { data: mot } = await supabaseAdmin
+      .from("motoristas")
+      .select("creditos_diaria")
+      .eq("codigo", data.motoristaCodigo)
+      .maybeSingle();
+    if (!mot) throw new Error("Motorista não encontrado");
+    const atual = Number(mot.creditos_diaria ?? 0);
+    if (atual <= 0) return { ok: true, novosCreditos: 0 };
+    const { error } = await supabaseAdmin
+      .from("motoristas")
+      .update({ creditos_diaria: atual - 1 })
+      .eq("codigo", data.motoristaCodigo);
+    if (error) throw new Error(error.message);
+    return { ok: true, novosCreditos: atual - 1 };
+  });
+
 // ─── RELATÓRIO POR PERÍODO (dia_op) ──────────────────────
 export const relatorioFinanceiro = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

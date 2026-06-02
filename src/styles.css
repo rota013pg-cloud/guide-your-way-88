@@ -180,3 +180,13 @@ html, body {
 .moto-marker .moto-pin svg {
   transform: rotate(45deg);
 }
+
+/* iOS safe-area insets para painel do operador */
+[data-sidebar="sidebar"] {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.app-header-safe {
+  padding-top: env(safe-area-inset-top);
+  height: calc(3rem + env(safe-area-inset-top));
+}

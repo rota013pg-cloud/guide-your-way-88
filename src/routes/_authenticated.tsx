@@ -101,7 +101,7 @@ function AuthenticatedLayout() {
       <div className="min-h-screen flex w-full bg-background text-foreground">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 flex items-center gap-2 border-b border-border bg-card px-3 sticky top-0 z-30">
+          <header className="app-header-safe flex items-center gap-2 border-b border-border bg-card px-3 sticky top-0 z-30">
             <SidebarTrigger />
             <div className="flex-1" />
             <CobrancaNotifier />

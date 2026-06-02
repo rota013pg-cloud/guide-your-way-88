@@ -909,12 +909,7 @@ const cssMotorista = `
 }
 .moto-app .tela-login { justify-content:center; }
 .moto-app .login-wrap { padding:32px 28px; max-width:420px; margin:0 auto; width:100%; }
-.moto-app .login-logo {
-  font-family:"Saira Condensed", system-ui, sans-serif;
-  font-size:3.4rem; font-weight:900; font-style:italic; letter-spacing:-2px;
-  color:#fff; margin-bottom:4px; text-align:center;
-}
-.moto-app .login-logo span { color:var(--gold); }
+.moto-app .login-logo { text-align:center; margin-bottom:4px; }
 .moto-app .login-sub {
   text-align:center; color:var(--muted); font-size:13px;
   letter-spacing:2px; text-transform:uppercase; margin-bottom:36px;

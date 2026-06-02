@@ -51,6 +51,13 @@ type Motorista = {
   cidade: string | null;
   status: string;
 };
+type Parada = {
+  ordem: number;
+  endereco: string;
+  lat?: number | null;
+  lng?: number | null;
+  concluida_em?: string | null;
+};
 type Corrida = {
   id: number;
   cliente: string | null;
@@ -59,6 +66,7 @@ type Corrida = {
   status: string;
   valor_final: number | null;
   motorista_codigo?: string | null;
+  paradas?: Parada[] | null;
 };
 type Oferta = {
   ofertaId: number;

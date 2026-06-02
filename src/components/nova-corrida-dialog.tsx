@@ -113,6 +113,8 @@ export function NovaCorridaDialog({
   const [motoristasManuais, setMotoristasManuais] = useState<string[]>([]);
   const [agendadaMotorista, setAgendadaMotorista] = useState<string>(""); // codigo do motorista pré-vinculado
   const [pagamento, setPagamento] = useState<Pagamento>("Dinheiro");
+  const [desconto, setDesconto] = useState<string>("");
+  const [extra, setExtra] = useState<string>("");
   const [obs, setObs] = useState("");
   const [buscandoCli, setBuscandoCli] = useState(false);
   const [cliNaoEncontrado, setCliNaoEncontrado] = useState(false);

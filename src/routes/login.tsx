@@ -86,12 +86,12 @@ function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md p-8">
+      <Card className="w-full max-w-md p-8 rounded-2xl">
         <div className="mb-6 text-center">
           <LogoRota013 className="text-6xl mb-3" />
         </div>
         {reason && (
-          <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {reason === "expired" && "Sua sessão expirou. Entre novamente para continuar."}
             {reason === "unauthenticated" && "Você precisa estar autenticado para acessar o painel."}
             {reason === "session_error" && "Não foi possível verificar sua sessão. Faça login novamente."}
@@ -110,6 +110,7 @@ function LoginPage() {
               placeholder="seu@email.com  ou  joao.silva"
               value={identificador}
               onChange={(e) => setIdentificador(e.target.value)}
+              className="rounded-xl"
             />
           </div>
           <div>
@@ -125,9 +126,9 @@ function LoginPage() {
                 </button>
               )}
             </div>
-            <Input id="senha" type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} />
+            <Input id="senha" type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} className="rounded-xl" />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full rounded-xl" disabled={loading}>
             {loading ? "Aguarde..." : modo === "login" ? "Entrar" : "Criar conta"}
           </Button>
           {adminExiste === false && (

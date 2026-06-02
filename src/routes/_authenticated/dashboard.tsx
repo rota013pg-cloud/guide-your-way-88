@@ -63,8 +63,19 @@ function DashboardPage() {
           toast.warning(`Corrida #${log.corrida_id}: ${log.observacao ?? "nenhum motorista aceitou — reofertando"}`);
         }
       })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+      .subscribe((status) => {
+        console.log("[dashboard realtime]", status);
+      });
+    // Fallback polling — garante atualização mesmo se o realtime cair
+    const poll = setInterval(carregar, 5000);
+    // Recarrega ao voltar para a aba
+    const onVis = () => { if (document.visibilityState === "visible") carregar(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      supabase.removeChannel(ch);
+      clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, []);
 
   const online = useMemo(() => motoristas.filter((m) => m.status === "Online" || m.status === "Em corrida"), [motoristas]);

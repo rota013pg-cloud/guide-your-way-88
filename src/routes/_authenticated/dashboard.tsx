@@ -57,6 +57,12 @@ function DashboardPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "motoristas" }, carregar)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "motorista_gps" }, carregar)
       .on("postgres_changes", { event: "*", schema: "public", table: "motorista_cobranca" }, carregar)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "corrida_status_log" }, (payload) => {
+        const log = payload.new as { status: string; corrida_id: number; observacao: string | null };
+        if (log.status === "Reofertando") {
+          toast.warning(`Corrida #${log.corrida_id}: ${log.observacao ?? "nenhum motorista aceitou — reofertando"}`);
+        }
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);

@@ -1,0 +1,503 @@
+/**
+ * Bottom nav + sheets do app do motorista.
+ * Opções: Perfil, Alterar senha, Chat com operador, Histórico, Faturamento, Pagamentos.
+ */
+import { useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
+import { motoristaAlterarSenha } from "@/lib/motorista.functions";
+import { motoristaListarChat, motoristaEnviarMensagem } from "@/lib/chat-motorista.functions";
+
+type Motorista = {
+  codigo: string;
+  nome: string;
+  foto: string | null;
+  moto: string | null;
+  placa: string | null;
+  cor: string | null;
+  telefone: string | null;
+  cidade: string | null;
+  status: string;
+};
+type Corrida = {
+  id: number;
+  cliente: string | null;
+  origem: string;
+  destino: string | null;
+  status: string;
+  valor_final: number | null;
+};
+type Cobranca = {
+  status: string;
+  faturamento_dia: number;
+  valor_diaria: number;
+  comprovante_enviado_em: string | null;
+} | null;
+
+type Tab = "perfil" | "senha" | "chat" | "historico" | "faturamento" | "pagamentos" | null;
+
+const brl = (v: number) => `R$ ${(Number(v) || 0).toFixed(2).replace(".", ",")}`;
+
+export function MotoristaBottomNav({
+  motorista,
+  token,
+  corridasHoje,
+  cobranca,
+  onAbrirCobranca,
+}: {
+  motorista: Motorista;
+  token: string;
+  corridasHoje: Corrida[];
+  cobranca: Cobranca;
+  onAbrirCobranca: () => void;
+}) {
+  const [tab, setTab] = useState<Tab>(null);
+  const [unread, setUnread] = useState(0);
+
+  // Contagem inicial de mensagens não lidas (operador → motorista)
+  useEffect(() => {
+    let active = true;
+    const carregar = async () => {
+      const { data } = await supabase
+        .from("chat_motorista")
+        .select("id", { count: "exact", head: true })
+        .eq("motorista_codigo", motorista.codigo)
+        .eq("autor", "operador")
+        .eq("lido", false);
+      if (active) setUnread((data as unknown as { length?: number })?.length ?? 0);
+    };
+    // count via fetch separado
+    supabase
+      .from("chat_motorista")
+      .select("*", { count: "exact", head: true })
+      .eq("motorista_codigo", motorista.codigo)
+      .eq("autor", "operador")
+      .eq("lido", false)
+      .then(({ count }) => { if (active) setUnread(count ?? 0); });
+
+    const ch = supabase
+      .channel(`chat-nav-${motorista.codigo}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_motorista", filter: `motorista_codigo=eq.${motorista.codigo}` },
+        (payload) => {
+          const m = payload.new as { autor: string };
+          if (m.autor === "operador" && tab !== "chat") setUnread((u) => u + 1);
+        },
+      )
+      .subscribe();
+    carregar();
+    return () => { active = false; supabase.removeChannel(ch); };
+  }, [motorista.codigo, tab]);
+
+  const fechar = () => setTab(null);
+
+  return (
+    <>
+      <nav className="moto-bnav">
+        <button className={tab === "perfil" ? "active" : ""} onClick={() => setTab("perfil")}>
+          <span>👤</span><i>Perfil</i>
+        </button>
+        <button className={tab === "chat" ? "active" : ""} onClick={() => { setTab("chat"); setUnread(0); }}>
+          <span>💬{unread > 0 && <em className="bnav-dot">{unread}</em>}</span><i>Chat</i>
+        </button>
+        <button className={tab === "historico" ? "active" : ""} onClick={() => setTab("historico")}>
+          <span>📋</span><i>Histórico</i>
+        </button>
+        <button className={tab === "faturamento" ? "active" : ""} onClick={() => setTab("faturamento")}>
+          <span>💰</span><i>Ganhos</i>
+        </button>
+        <button className={tab === "pagamentos" ? "active" : ""} onClick={() => setTab("pagamentos")}>
+          <span>🧾</span><i>Taxas</i>
+        </button>
+      </nav>
+
+      {tab && (
+        <SheetWrap titulo={tituloTab(tab)} onClose={fechar}>
+          {tab === "perfil" && <PerfilTab motorista={motorista} onAlterarSenha={() => setTab("senha")} />}
+          {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
+          {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
+          {tab === "historico" && <HistoricoTab corridas={corridasHoje} />}
+          {tab === "faturamento" && <FaturamentoTab corridas={corridasHoje} cobranca={cobranca} />}
+          {tab === "pagamentos" && <PagamentosTab cobranca={cobranca} onAbrirCobranca={() => { onAbrirCobranca(); fechar(); }} />}
+        </SheetWrap>
+      )}
+
+      <style>{cssNav}</style>
+    </>
+  );
+}
+
+function tituloTab(t: Exclude<Tab, null>): string {
+  return ({
+    perfil: "Meu perfil",
+    senha: "Alterar senha",
+    chat: "Chat com a central",
+    historico: "Histórico de corridas",
+    faturamento: "Meus ganhos",
+    pagamentos: "Pagamento de taxas",
+  } as Record<string, string>)[t];
+}
+
+function SheetWrap({ titulo, onClose, children }: { titulo: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="moto-sheet-overlay" onClick={onClose}>
+      <div className="moto-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="moto-sheet-head">
+          <h3>{titulo}</h3>
+          <button onClick={onClose}>✕</button>
+        </div>
+        <div className="moto-sheet-body">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PERFIL ─────────────────────────────────────────────
+function PerfilTab({ motorista, onAlterarSenha }: { motorista: Motorista; onAlterarSenha: () => void }) {
+  const linhas: [string, string | null][] = [
+    ["Código", motorista.codigo],
+    ["Nome", motorista.nome],
+    ["Moto", motorista.moto],
+    ["Placa", motorista.placa],
+    ["Cor", motorista.cor],
+    ["Telefone", motorista.telefone],
+    ["Cidade", motorista.cidade],
+    ["Status", motorista.status],
+  ];
+  return (
+    <div className="moto-perfil">
+      <div className="moto-perfil-foto" style={motorista.foto ? { backgroundImage: `url('${motorista.foto}')` } : {}}>
+        {!motorista.foto && (motorista.nome[0] || "M").toUpperCase()}
+      </div>
+      <div className="moto-perfil-nome">{motorista.nome}</div>
+      <div className="moto-perfil-cod">{motorista.codigo}</div>
+      <ul className="moto-info">
+        {linhas.map(([k, v]) => (
+          <li key={k}><span>{k}</span><b>{v ?? "—"}</b></li>
+        ))}
+      </ul>
+      <button className="moto-btn-primary" onClick={onAlterarSenha}>🔑 Alterar senha</button>
+    </div>
+  );
+}
+
+// ─── SENHA ──────────────────────────────────────────────
+function SenhaTab({ codigo, token, onPronto }: { codigo: string; token: string; onPronto: () => void }) {
+  const alterarFn = useServerFn(motoristaAlterarSenha);
+  const [atual, setAtual] = useState("");
+  const [nova, setNova] = useState("");
+  const [conf, setConf] = useState("");
+  const [erro, setErro] = useState("");
+  const [ok, setOk] = useState(false);
+  const [carregando, setCarregando] = useState(false);
+
+  const salvar = async () => {
+    setErro("");
+    if (nova.length < 4) { setErro("Senha nova deve ter pelo menos 4 caracteres."); return; }
+    if (nova !== conf) { setErro("Confirmação não confere."); return; }
+    setCarregando(true);
+    try {
+      await alterarFn({ data: { codigo, token, senhaAtual: atual, senhaNova: nova } });
+      setOk(true);
+      setTimeout(onPronto, 1200);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao alterar senha.");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  return (
+    <div className="moto-form">
+      <label>Senha atual</label>
+      <input type="password" value={atual} onChange={(e) => setAtual(e.target.value)} />
+      <label>Nova senha</label>
+      <input type="password" value={nova} onChange={(e) => setNova(e.target.value)} />
+      <label>Confirmar nova senha</label>
+      <input type="password" value={conf} onChange={(e) => setConf(e.target.value)} />
+      {erro && <div className="moto-erro">{erro}</div>}
+      {ok && <div className="moto-ok">✓ Senha alterada!</div>}
+      <button className="moto-btn-primary" disabled={carregando || !atual || !nova} onClick={salvar}>
+        {carregando ? "Salvando…" : "Salvar nova senha"}
+      </button>
+    </div>
+  );
+}
+
+// ─── CHAT ───────────────────────────────────────────────
+type Msg = { id: number; autor: string; autor_nome: string | null; texto: string; criado_em: string };
+function ChatTab({ codigo, token }: { codigo: string; token: string }) {
+  const listarFn = useServerFn(motoristaListarChat);
+  const enviarFn = useServerFn(motoristaEnviarMensagem);
+  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [texto, setTexto] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const fimRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    listarFn({ data: { codigo, token } })
+      .then((r) => setMsgs(r.mensagens as Msg[]))
+      .catch(() => {});
+    const ch = supabase
+      .channel(`chat-tab-${codigo}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_motorista", filter: `motorista_codigo=eq.${codigo}` },
+        (payload) => setMsgs((cur) => [...cur, payload.new as Msg]),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [codigo, token, listarFn]);
+
+  useEffect(() => {
+    fimRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [msgs]);
+
+  const enviar = async () => {
+    const t = texto.trim();
+    if (!t) return;
+    setEnviando(true);
+    try {
+      await enviarFn({ data: { codigo, token, texto: t } });
+      setTexto("");
+    } catch { /* ignore */ } finally { setEnviando(false); }
+  };
+
+  return (
+    <div className="moto-chat">
+      <div className="moto-chat-lista">
+        {msgs.length === 0 && <div className="moto-empty">Nenhuma mensagem ainda. Envie a primeira!</div>}
+        {msgs.map((m) => (
+          <div key={m.id} className={`moto-msg ${m.autor === "motorista" ? "self" : "op"}`}>
+            <div className="moto-msg-autor">{m.autor === "motorista" ? "Você" : (m.autor_nome ?? "Central")}</div>
+            <div className="moto-msg-texto">{m.texto}</div>
+          </div>
+        ))}
+        <div ref={fimRef} />
+      </div>
+      <div className="moto-chat-input">
+        <input
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          placeholder="Digite uma mensagem…"
+          onKeyDown={(e) => e.key === "Enter" && enviar()}
+        />
+        <button onClick={enviar} disabled={enviando || !texto.trim()}>➤</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── HISTÓRICO ──────────────────────────────────────────
+function HistoricoTab({ corridas }: { corridas: Corrida[] }) {
+  if (corridas.length === 0) return <div className="moto-empty">Nenhuma corrida hoje.</div>;
+  return (
+    <div className="moto-historico">
+      {corridas.map((c) => (
+        <div key={c.id} className="moto-hist-item">
+          <div className="moto-hist-head">
+            <span>#{c.id} — {c.cliente ?? "Cliente"}</span>
+            <b>{brl(Number(c.valor_final ?? 0))}</b>
+          </div>
+          <div className="moto-hist-end">📍 {c.origem}<br />🏁 {c.destino ?? "-"}</div>
+          <span className="moto-hist-badge">{c.status}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── FATURAMENTO ────────────────────────────────────────
+function FaturamentoTab({ corridas, cobranca }: { corridas: Corrida[]; cobranca: Cobranca }) {
+  const finalizadas = corridas.filter((c) => c.status === "Finalizada");
+  const total = finalizadas.reduce((s, c) => s + Number(c.valor_final ?? 0), 0);
+  const diaria = Number(cobranca?.valor_diaria ?? 0);
+  const liquido = total - diaria;
+  return (
+    <div className="moto-fat">
+      <div className="moto-fat-card big">
+        <span>Ganho bruto hoje</span>
+        <b>{brl(total)}</b>
+      </div>
+      <div className="moto-fat-grid">
+        <div className="moto-fat-card">
+          <span>Corridas</span><b>{finalizadas.length}</b>
+        </div>
+        <div className="moto-fat-card">
+          <span>Diária</span><b>{brl(diaria)}</b>
+        </div>
+      </div>
+      <div className={`moto-fat-card big ${liquido >= 0 ? "ok" : "warn"}`}>
+        <span>Líquido (após diária)</span>
+        <b>{brl(liquido)}</b>
+      </div>
+      <div className="moto-fat-status">
+        Status do pagamento: <b>{cobranca?.status ?? "—"}</b>
+      </div>
+    </div>
+  );
+}
+
+// ─── PAGAMENTOS ─────────────────────────────────────────
+function PagamentosTab({ cobranca, onAbrirCobranca }: { cobranca: Cobranca; onAbrirCobranca: () => void }) {
+  const status = cobranca?.status ?? "Pendente";
+  const cor = status === "Bloqueado" ? "#dc2626" : status === "Pago" ? "#16a34a" : status === "Aguardando" ? "#d97706" : "#555";
+  return (
+    <div className="moto-pag">
+      <div className="moto-pag-status" style={{ color: cor }}>{status}</div>
+      <div className="moto-pag-row"><span>Faturamento do dia</span><b>{brl(Number(cobranca?.faturamento_dia ?? 0))}</b></div>
+      <div className="moto-pag-row"><span>Valor da diária</span><b>{brl(Number(cobranca?.valor_diaria ?? 0))}</b></div>
+      {cobranca?.comprovante_enviado_em && (
+        <div className="moto-pag-info">📨 Comprovante enviado em {new Date(cobranca.comprovante_enviado_em).toLocaleString("pt-BR")}</div>
+      )}
+      <button className="moto-btn-primary" onClick={onAbrirCobranca}>
+        Abrir tela de pagamento (PIX)
+      </button>
+      <p className="moto-pag-help">
+        Após pagar, envie o comprovante no WhatsApp da central para liberação imediata.
+      </p>
+    </div>
+  );
+}
+
+// ─── CSS ────────────────────────────────────────────────
+const cssNav = `
+.moto-app .moto-bnav {
+  position:fixed; left:0; right:0; bottom:0;
+  background:#111; border-top:1px solid #2a2a2a;
+  display:grid; grid-template-columns:repeat(5,1fr);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  z-index:900;
+}
+.moto-app .moto-bnav button {
+  background:transparent; border:0; color:#888; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:6px 2px; font-size:10px; font-weight:600;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.moto-app .moto-bnav button.active { color:#f7c600; }
+.moto-app .moto-bnav button span { font-size:20px; line-height:1; position:relative; }
+.moto-app .moto-bnav button i { font-style:normal; }
+.moto-app .moto-bnav .bnav-dot {
+  position:absolute; top:-4px; right:-10px;
+  background:#ef4444; color:#fff; font-size:9px; font-weight:700;
+  border-radius:10px; padding:1px 5px; font-style:normal;
+}
+.moto-app .home-scroll, .moto-app .corrente-scroll { padding-bottom:calc(72px + env(safe-area-inset-bottom)) !important; }
+
+.moto-app .moto-sheet-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:950;
+  display:flex; align-items:flex-end;
+}
+.moto-app .moto-sheet {
+  background:#1a1a1a; width:100%; max-height:90vh;
+  border-radius:24px 24px 0 0; display:flex; flex-direction:column;
+  animation: moto-slide .25s ease-out;
+}
+@keyframes moto-slide { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.moto-app .moto-sheet-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid #2a2a2a; flex-shrink:0;
+}
+.moto-app .moto-sheet-head h3 { font-size:16px; font-weight:800; color:#fff; }
+.moto-app .moto-sheet-head button {
+  background:transparent; border:0; color:#888; font-size:22px; cursor:pointer;
+}
+.moto-app .moto-sheet-body {
+  flex:1; overflow-y:auto; padding:16px 20px calc(20px + env(safe-area-inset-bottom));
+}
+
+.moto-app .moto-empty { text-align:center; color:#888; padding:40px 0; }
+.moto-app .moto-erro { background:#3a1414; color:#fca5a5; padding:10px; border-radius:10px; font-size:13px; }
+.moto-app .moto-ok { background:#143a1c; color:#86efac; padding:10px; border-radius:10px; font-size:13px; }
+.moto-app .moto-btn-primary {
+  width:100%; background:#f7c600; color:#111; font-weight:800;
+  border:0; border-radius:14px; padding:16px; cursor:pointer; margin-top:14px; font-size:15px;
+}
+.moto-app .moto-btn-primary:disabled { opacity:.5; }
+
+.moto-app .moto-perfil { text-align:center; }
+.moto-app .moto-perfil-foto {
+  width:96px; height:96px; border-radius:50%; margin:0 auto 12px;
+  background:#f7c600 center/cover no-repeat; color:#111;
+  font-size:36px; font-weight:900; display:flex; align-items:center; justify-content:center;
+}
+.moto-app .moto-perfil-nome { font-size:20px; font-weight:800; color:#fff; }
+.moto-app .moto-perfil-cod { font-size:12px; color:#888; margin-bottom:16px; letter-spacing:2px; }
+.moto-app .moto-info { list-style:none; padding:0; margin:0; text-align:left; }
+.moto-app .moto-info li {
+  display:flex; justify-content:space-between; padding:10px 4px;
+  border-bottom:1px solid #2a2a2a; font-size:14px;
+}
+.moto-app .moto-info li span { color:#888; }
+.moto-app .moto-info li b { color:#f1f1f1; }
+
+.moto-app .moto-form label {
+  display:block; font-size:11px; color:#888; margin:12px 0 6px;
+  text-transform:uppercase; letter-spacing:1px;
+}
+.moto-app .moto-form input {
+  width:100%; background:#0f0f0f; border:1.5px solid #2a2a2a;
+  border-radius:12px; padding:14px; color:#f1f1f1; outline:none; font-size:16px;
+}
+.moto-app .moto-form input:focus { border-color:#f7c600; }
+
+.moto-app .moto-chat { display:flex; flex-direction:column; height:60vh; }
+.moto-app .moto-chat-lista {
+  flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-bottom:8px;
+}
+.moto-app .moto-msg {
+  max-width:80%; padding:8px 12px; border-radius:14px; font-size:14px;
+}
+.moto-app .moto-msg.self { background:#f7c600; color:#111; align-self:flex-end; border-bottom-right-radius:4px; }
+.moto-app .moto-msg.op { background:#2a2a2a; color:#f1f1f1; align-self:flex-start; border-bottom-left-radius:4px; }
+.moto-app .moto-msg-autor { font-size:10px; opacity:.7; margin-bottom:2px; font-weight:700; }
+.moto-app .moto-chat-input { display:flex; gap:8px; padding-top:8px; border-top:1px solid #2a2a2a; }
+.moto-app .moto-chat-input input {
+  flex:1; background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:12px;
+  padding:12px 14px; color:#f1f1f1; outline:none; font-size:15px;
+}
+.moto-app .moto-chat-input button {
+  background:#f7c600; color:#111; border:0; border-radius:12px;
+  padding:0 18px; font-size:18px; font-weight:800; cursor:pointer;
+}
+
+.moto-app .moto-historico { display:flex; flex-direction:column; gap:10px; }
+.moto-app .moto-hist-item { background:#0f0f0f; border:1px solid #2a2a2a; border-radius:14px; padding:12px; }
+.moto-app .moto-hist-head { display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+.moto-app .moto-hist-head b { color:#f7c600; font-size:15px; }
+.moto-app .moto-hist-end { font-size:12px; color:#888; line-height:1.5; }
+.moto-app .moto-hist-badge {
+  display:inline-block; margin-top:6px; padding:3px 10px; border-radius:12px;
+  background:#1a1a1a; color:#888; font-size:11px; font-weight:700;
+}
+
+.moto-app .moto-fat { display:flex; flex-direction:column; gap:10px; }
+.moto-app .moto-fat-card {
+  background:#0f0f0f; border:1px solid #2a2a2a; border-radius:14px;
+  padding:14px; display:flex; justify-content:space-between; align-items:center;
+}
+.moto-app .moto-fat-card span { font-size:12px; color:#888; text-transform:uppercase; letter-spacing:.5px; }
+.moto-app .moto-fat-card b { font-size:18px; color:#f1f1f1; font-weight:800; }
+.moto-app .moto-fat-card.big b { color:#f7c600; font-size:24px; }
+.moto-app .moto-fat-card.big.ok b { color:#4ade80; }
+.moto-app .moto-fat-card.big.warn b { color:#ef4444; }
+.moto-app .moto-fat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.moto-app .moto-fat-status { text-align:center; color:#888; margin-top:8px; font-size:13px; }
+.moto-app .moto-fat-status b { color:#f1f1f1; }
+
+.moto-app .moto-pag { display:flex; flex-direction:column; gap:10px; }
+.moto-app .moto-pag-status {
+  text-align:center; font-size:24px; font-weight:900; padding:14px;
+  background:#0f0f0f; border-radius:14px; border:1px solid #2a2a2a;
+}
+.moto-app .moto-pag-row {
+  display:flex; justify-content:space-between; padding:10px 4px;
+  border-bottom:1px solid #2a2a2a; font-size:14px;
+}
+.moto-app .moto-pag-row span { color:#888; }
+.moto-app .moto-pag-row b { color:#f1f1f1; }
+.moto-app .moto-pag-info { color:#86efac; font-size:13px; padding:8px 0; }
+.moto-app .moto-pag-help { color:#888; font-size:12px; text-align:center; margin-top:8px; }
+`;

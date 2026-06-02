@@ -147,9 +147,61 @@ function ChatMotoristasPage() {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <MessageSquare className="h-6 w-6" /> Chat com motoristas
         </h1>
-        <Button variant="outline" size="sm" onClick={carregarConversas}>
-          <RefreshCw className="h-4 w-4 mr-1" /> Atualizar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Dialog open={novaAberto} onOpenChange={(o) => {
+            setNovaAberto(o);
+            if (o && motoristas.length === 0) {
+              listarMotoristas()
+                .then((mots) => setMotoristas(mots.map((m: any) => ({ codigo: m.codigo, nome: m.nome, status: m.status }))))
+                .catch((e) => { if (!isAuthError(e)) toast.error("Erro ao carregar motoristas"); });
+            }
+          }}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-1" /> Nova conversa
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Iniciar conversa com motorista</DialogTitle>
+              </DialogHeader>
+              <Input
+                placeholder="Buscar motorista..."
+                value={buscaNova}
+                onChange={(e) => setBuscaNova(e.target.value)}
+              />
+              <div className="max-h-[400px] overflow-y-auto space-y-1 mt-2">
+                {motoristas
+                  .filter((m) => !buscaNova ||
+                    m.nome.toLowerCase().includes(buscaNova.toLowerCase()) ||
+                    m.codigo.toLowerCase().includes(buscaNova.toLowerCase()))
+                  .map((m) => (
+                    <button
+                      key={m.codigo}
+                      onClick={() => {
+                        setSelecionado(m.codigo);
+                        setNovaAberto(false);
+                        setBuscaNova("");
+                        if (!conversas.find((c) => c.motorista_codigo === m.codigo)) {
+                          setMensagens([]);
+                        }
+                      }}
+                      className="w-full text-left rounded-md px-3 py-2 border border-border hover:bg-muted/50 transition"
+                    >
+                      <div className="font-semibold text-sm">{m.codigo} — {m.nome}</div>
+                      <div className="text-xs text-muted-foreground">{m.status ?? "Offline"}</div>
+                    </button>
+                  ))}
+                {motoristas.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">Carregando...</p>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" size="sm" onClick={carregarConversas}>
+            <RefreshCw className="h-4 w-4 mr-1" /> Atualizar
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 h-[calc(100vh-160px)]">

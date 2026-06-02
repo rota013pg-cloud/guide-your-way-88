@@ -37,10 +37,16 @@ async function registrarLog(
 
 export const dispararOfertas = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z.object({ corridaId: z.number().int().positive() }).parse(input),
+    z.object({
+      corridaId: z.number().int().positive(),
+      quantidade: z.number().int().min(1).max(50).optional(),
+      reofertar: z.boolean().optional(),
+    }).parse(input),
   )
   .handler(async ({ data }) => {
-    const { corridaId } = data;
+    const { corridaId, reofertar } = data;
+    const qtd = data.quantidade ?? QTD_MOT;
+
 
     const { data: corrida, error: corridaErr } = await supabaseAdmin
       .from("corridas")
@@ -55,9 +61,19 @@ export const dispararOfertas = createServerFn({ method: "POST" })
     if (corrida.modelo === "Agendada") {
       return { ok: true, ofertados: 0, modo: "agendada" as const };
     }
-    if (corrida.status !== "Pendente") {
+    if (corrida.status !== "Pendente" && !reofertar) {
       return { ok: true, ofertados: 0, motivo: "corrida não está pendente" };
     }
+
+    // Reoferta: expira ofertas pendentes anteriores para liberar os mesmos motoristas
+    if (reofertar) {
+      await supabaseAdmin
+        .from("corrida_ofertas")
+        .update({ status: "expirada" })
+        .eq("corrida_id", corridaId)
+        .eq("status", "pendente");
+    }
+
 
     // WhatsApp: não insere ofertas, retorna sinal para o cliente gerar o texto
     if (corrida.despacho === "WhatsApp") {
@@ -137,8 +153,9 @@ export const dispararOfertas = createServerFn({ method: "POST" })
           };
         })
         .sort((a, b) => a.distancia - b.distancia)
-        .slice(0, QTD_MOT)
+        .slice(0, qtd)
         .map((c) => c.codigo);
+
     }
 
     const rows = codigosFinais.map((codigo) => ({

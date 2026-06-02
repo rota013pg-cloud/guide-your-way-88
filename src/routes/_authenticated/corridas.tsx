@@ -58,6 +58,24 @@ function CorridasPage() {
     }
   };
 
+  const handleReofertar = async (id: number) => {
+    const resp = window.prompt("Oferecer novamente para quantos motoristas mais próximos?", "5");
+    if (resp === null) return;
+    const qtd = parseInt(resp, 10);
+    if (!Number.isFinite(qtd) || qtd < 1 || qtd > 50) {
+      toast.error("Informe um número entre 1 e 50.");
+      return;
+    }
+    try {
+      const r: any = await ofertasFn({ data: { corridaId: id, quantidade: qtd, reofertar: true } });
+      toast.success(`Reofertada para ${r?.ofertados ?? 0} motorista(s).`);
+      qc.invalidateQueries({ queryKey: ["corridas-recentes"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao reofertar.");
+    }
+  };
+
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-start justify-between gap-3">
@@ -190,6 +208,16 @@ function CorridasPage() {
                 <Button variant="outline" onClick={() => setMsgCorrida(aberta)} className="w-full">
                   <MessageSquare className="h-4 w-4 mr-2" /> Mensagens WhatsApp
                 </Button>
+                {aberta.status === "Ofertada" && (
+                  <div className="pt-2">
+                    <Button onClick={() => handleReofertar(aberta.id)} variant="secondary" className="w-full">
+                      <Rocket className="h-4 w-4 mr-2" /> Oferecer novamente
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1 text-center">
+                      Ainda não aceita — escolha quantos motoristas mais próximos receberão a oferta.
+                    </p>
+                  </div>
+                )}
                 {aberta.status === "Agendada" && (
                   <div className="pt-2">
                     <Button onClick={() => handleLancarAgora(aberta.id)} className="w-full">
@@ -202,6 +230,7 @@ function CorridasPage() {
                     )}
                   </div>
                 )}
+
                 <div>
                   <div className="text-xs text-muted-foreground mb-2">Histórico de status</div>
                   <CorridaTimeline corridaId={aberta.id} />

@@ -1,11 +1,15 @@
 /**
- * Diálogo que gera mensagens prontas de WhatsApp para uma corrida:
- *  - Grupo de motoristas (sem dados do cliente)
- *  - Motorista específico (com nome+telefone do cliente)
- *  - Cliente (confirmação com motorista e veículo)
+ * Diálogo que gera mensagens prontas de WhatsApp para uma corrida.
+ *
+ * Política de contato: a central é SEMPRE o intermediário.
+ *  - A mensagem do motorista NÃO inclui telefone do cliente.
+ *  - A mensagem do cliente NÃO inclui telefone do motorista.
+ *  - Ambas exibem o contato da central para dúvidas.
  */
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +20,9 @@ import {
 import {
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from "@/components/ui/tabs";
-import { Copy, Send, Phone } from "lucide-react";
+import { Copy, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { lerConfig } from "@/lib/config.functions";
 
 type Props = {
   open: boolean;
@@ -28,12 +33,31 @@ type Props = {
 const brl = (v: any) =>
   "R$ " + (Number(v) || 0).toFixed(2).replace(".", ",");
 
-const apenasDig = (s: string) => (s || "").replace(/\D/g, "");
+const formatFone = (s: string) => {
+  const d = (s || "").replace(/\D/g, "");
+  if (d.length === 13) return `(${d.slice(2, 4)}) ${d.slice(4, 9)}-${d.slice(9)}`;
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return s;
+};
 
 export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) {
   const [codigoMot, setCodigoMot] = useState("");
   const [motorista, setMotorista] = useState<any | null>(null);
   const [buscando, setBuscando] = useState(false);
+
+  const lerConfigFn = useServerFn(lerConfig);
+  const { data: cfgData } = useQuery({
+    queryKey: ["app-config-mini"],
+    queryFn: () => lerConfigFn({ data: {} as any }),
+    staleTime: 60_000,
+    enabled: open,
+  });
+  const empresa = cfgData?.config?.empresa || "Rota 013";
+  const central = cfgData?.config?.whatsappCentral || "";
+  const linhaCentral = central
+    ? `📞 Central ${empresa}: ${formatFone(central)}`
+    : `📞 Em caso de dúvidas, fale com a central ${empresa}.`;
 
   useEffect(() => {
     if (open) {
@@ -78,14 +102,14 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
     return linhas.join("\n");
   }, [corrida]);
 
+  // Mensagem para o MOTORISTA — sem telefone do cliente (intermediado pela central)
   const msgParticular = useMemo(() => {
     if (!corrida) return "";
     const linhas = [
       `🚗 *Corrida #${corrida.id}* — direcionada para você`,
       `👤 Cliente: ${corrida.cliente ?? "—"}`,
+      `📍 Origem: ${corrida.origem}`,
     ];
-    if (corrida.telefone_cliente) linhas.push(`📞 Telefone: ${corrida.telefone_cliente}`);
-    linhas.push(`📍 Origem: ${corrida.origem}`);
     if (Array.isArray(corrida.paradas) && corrida.paradas.length > 0) {
       corrida.paradas.forEach((p: any, i: number) =>
         linhas.push(`🔸 Parada ${i + 1}: ${p.endereco}`),
@@ -95,10 +119,11 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
     linhas.push(`💰 Valor: ${brl(corrida.valor_final)}`);
     if (corrida.pagamento) linhas.push(`💳 Pagamento: ${corrida.pagamento}`);
     if (corrida.observacoes) linhas.push(`📝 Obs: ${corrida.observacoes}`);
-    linhas.push("", "Confirme se aceita 👍");
+    linhas.push("", linhaCentral, "Confirme se aceita 👍");
     return linhas.join("\n");
-  }, [corrida]);
+  }, [corrida, linhaCentral]);
 
+  // Mensagem para o CLIENTE — sem telefone do motorista (intermediado pela central)
   const msgCliente = useMemo(() => {
     if (!corrida || !motorista) return "";
     const linhas = [
@@ -106,16 +131,15 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
       ``,
       `👤 Motorista: *${motorista.nome}* (${motorista.codigo})`,
     ];
-    if (motorista.telefone) linhas.push(`📞 Contato: ${motorista.telefone}`);
     const veic = [motorista.moto, motorista.cor].filter(Boolean).join(" ");
     if (veic) linhas.push(`🚗 Veículo: ${veic}`);
     if (motorista.placa) linhas.push(`🔢 Placa: ${motorista.placa}`);
     linhas.push(``, `📍 Origem: ${corrida.origem}`);
     if (corrida.destino) linhas.push(`🏁 Destino: ${corrida.destino}`);
     linhas.push(`💰 Valor: ${brl(corrida.valor_final)}`);
-    linhas.push(``, `Obrigado por escolher a Rota 013! 🙏`);
+    linhas.push(``, linhaCentral, `Obrigado por escolher a ${empresa}! 🙏`);
     return linhas.join("\n");
-  }, [corrida, motorista]);
+  }, [corrida, motorista, linhaCentral, empresa]);
 
   const copiar = async (txt: string) => {
     if (!txt) return;
@@ -127,12 +151,9 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
     }
   };
 
-  const abrirWa = (telefone: string, texto: string) => {
-    const tel = apenasDig(telefone);
-    const url = tel
-      ? `https://wa.me/55${tel}?text=${encodeURIComponent(texto)}`
-      : `https://wa.me/?text=${encodeURIComponent(texto)}`;
-    window.open(url, "_blank");
+  const abrirWa = (texto: string) => {
+    // Sempre abre sem destinatário fixo — a central direciona o envio.
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
   };
 
   if (!corrida) return null;
@@ -142,7 +163,9 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>Mensagens WhatsApp — Corrida #{corrida.id}</DialogTitle>
-          <DialogDescription>Copie ou abra direto no WhatsApp.</DialogDescription>
+          <DialogDescription>
+            Todo contato é intermediado pela central — motorista e cliente não trocam telefones.
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="grupo">
@@ -158,7 +181,7 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
               <Button variant="outline" size="sm" onClick={() => copiar(msgGrupo)}>
                 <Copy className="h-4 w-4 mr-1" /> Copiar
               </Button>
-              <Button size="sm" onClick={() => abrirWa("", msgGrupo)}>
+              <Button size="sm" onClick={() => abrirWa(msgGrupo)}>
                 <Send className="h-4 w-4 mr-1" /> Abrir WhatsApp
               </Button>
             </div>
@@ -177,9 +200,7 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
                 <p className="text-xs text-destructive">Motorista não encontrado.</p>
               )}
               {motorista && (
-                <p className="text-xs text-muted-foreground">
-                  {motorista.nome} · {motorista.telefone || "sem telefone"}
-                </p>
+                <p className="text-xs text-muted-foreground">{motorista.nome}</p>
               )}
             </div>
             <Textarea value={msgParticular} readOnly rows={10} className="font-mono text-xs" />
@@ -187,12 +208,8 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
               <Button variant="outline" size="sm" onClick={() => copiar(msgParticular)}>
                 <Copy className="h-4 w-4 mr-1" /> Copiar
               </Button>
-              <Button
-                size="sm"
-                disabled={!motorista?.telefone}
-                onClick={() => abrirWa(motorista?.telefone ?? "", msgParticular)}
-              >
-                <Phone className="h-4 w-4 mr-1" /> Enviar p/ motorista
+              <Button size="sm" onClick={() => abrirWa(msgParticular)}>
+                <Send className="h-4 w-4 mr-1" /> Abrir WhatsApp
               </Button>
             </div>
           </TabsContent>
@@ -227,10 +244,10 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
               </Button>
               <Button
                 size="sm"
-                disabled={!motorista || !corrida.telefone_cliente}
-                onClick={() => abrirWa(corrida.telefone_cliente ?? "", msgCliente)}
+                disabled={!motorista}
+                onClick={() => abrirWa(msgCliente)}
               >
-                <Phone className="h-4 w-4 mr-1" /> Enviar p/ cliente
+                <Send className="h-4 w-4 mr-1" /> Abrir WhatsApp
               </Button>
             </div>
           </TabsContent>

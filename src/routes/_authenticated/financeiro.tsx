@@ -285,6 +285,9 @@ function FinanceiroPage() {
         </div>
       </Card>
 
+      {/* ─── Cobranças automáticas (gatilho de bloqueio) ─── */}
+      <CobrancasAutomaticasPanel />
+
       {/* ─── Relatório ─── */}
       <Card className="p-4">
         <h2 className="font-semibold mb-3">Relatório por período (PDF)</h2>

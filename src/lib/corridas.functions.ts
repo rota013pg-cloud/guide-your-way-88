@@ -153,8 +153,9 @@ export const dispararOfertas = createServerFn({ method: "POST" })
           };
         })
         .sort((a, b) => a.distancia - b.distancia)
-        .slice(0, QTD_MOT)
+        .slice(0, qtd)
         .map((c) => c.codigo);
+
     }
 
     const rows = codigosFinais.map((codigo) => ({

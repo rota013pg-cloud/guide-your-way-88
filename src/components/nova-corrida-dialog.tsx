@@ -384,18 +384,18 @@ export function NovaCorridaDialog({
         {/* Cliente */}
         <div className="grid gap-2 rounded-lg border p-3 bg-muted/30">
           <Label>Cliente</Label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Input
               placeholder="Código (ex: C0001)"
               value={codigoBusca}
               onChange={(e) => setCodigoBusca(e.target.value.toUpperCase())}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); buscarCliente(); } }}
               className="font-mono"
             />
-            <Button type="button" variant="secondary" onClick={buscarCliente}>
-              <Search className="h-4 w-4 mr-1" /> Buscar
-            </Button>
+            {buscandoCli && <span className="text-xs text-muted-foreground">buscando…</span>}
+            {cliNaoEncontrado && !buscandoCli && <span className="text-xs text-destructive">não encontrado</span>}
+            {clienteCodigo && <Search className="h-4 w-4 text-primary" />}
           </div>
+
           <div className="grid grid-cols-2 gap-2">
             <Input placeholder="Nome" value={cliente} onChange={(e) => setCliente(e.target.value)} />
             <Input

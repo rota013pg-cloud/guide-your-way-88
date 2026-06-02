@@ -35,7 +35,13 @@ export const listarUsuarios = createServerFn({ method: "POST" })
       .select("*")
       .order("criado_em", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role");
+    const map = new Map<string, string>();
+    (roles ?? []).forEach((r: any) => {
+      // admin tem prioridade
+      if (r.role === "admin" || !map.has(r.user_id)) map.set(r.user_id, r.role);
+    });
+    return (data ?? []).map((u: any) => ({ ...u, role: map.get(u.user_id) ?? "operador" }));
   });
 
 // ─── CRIAR ──────────────────────────────────────────
@@ -44,6 +50,7 @@ const CriarSchema = z.object({
   email: z.string().trim().email().max(255),
   login: LoginField,
   senha: z.string().min(6).max(72),
+  role: z.enum(["admin", "operador"]).default("operador"),
 });
 
 export const criarUsuario = createServerFn({ method: "POST" })
@@ -79,13 +86,35 @@ export const criarUsuario = createServerFn({ method: "POST" })
       throw new Error(insErr.message);
     }
 
-    // Garante role operador (handle_new_user_role já cuida disso na maioria dos casos)
+    // Define role conforme escolha (substitui o default do trigger)
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
     await supabaseAdmin
       .from("user_roles")
-      .upsert({ user_id: userId, role: "operador" as any }, { onConflict: "user_id,role" })
-      .then(() => null, () => null);
+      .insert({ user_id: userId, role: data.role as any });
 
     return { ok: true, userId };
+  });
+
+// ─── ALTERAR ROLE ───────────────────────────────────
+export const alterarRoleUsuario = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      userId: z.string().uuid(),
+      role: z.enum(["admin", "operador"]),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await exigirAdmin(context.userId);
+    if (data.userId === context.userId && data.role !== "admin") {
+      throw new Error("Você não pode remover seu próprio acesso de administrador.");
+    }
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: data.userId, role: data.role as any });
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 // ─── ALTERAR SENHA ──────────────────────────────────

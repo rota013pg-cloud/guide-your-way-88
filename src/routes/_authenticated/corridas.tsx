@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Rocket } from "lucide-react";
+import { Rocket, MessageSquare } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -16,6 +16,7 @@ import {
 import { listarCorridasRecentes, lancarCorridaAgendada, dispararOfertas } from "@/lib/corridas.functions";
 import { CorridaTimeline } from "@/components/corrida-timeline";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
+import { MensagensWhatsAppDialog } from "@/components/mensagens-whatsapp-dialog";
 
 export const Route = createFileRoute("/_authenticated/corridas")({
   ssr: false,
@@ -37,6 +38,7 @@ function CorridasPage() {
   const qc = useQueryClient();
   const [aberta, setAberta] = useState<any | null>(null);
   const [novaAberta, setNovaAberta] = useState(false);
+  const [msgCorrida, setMsgCorrida] = useState<any | null>(null);
 
   const { data: corridas = [], isLoading } = useQuery({
     queryKey: ["corridas-recentes"],
@@ -82,14 +84,15 @@ function CorridasPage() {
               <TableHead>Despacho</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Carregando…</TableCell></TableRow>
             )}
             {!isLoading && corridas.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Nenhuma corrida ainda.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Nenhuma corrida ainda.</TableCell></TableRow>
             )}
             {corridas.map((c: any) => (
               <TableRow key={c.id} onClick={() => setAberta(c)} className="cursor-pointer">
@@ -108,6 +111,16 @@ function CorridasPage() {
                 <TableCell><Badge variant="outline">{c.despacho}</Badge></TableCell>
                 <TableCell><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>
                 <TableCell className="text-right font-bold">R$ {Number(c.valor_final).toFixed(0)},00</TableCell>
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    title="Mensagens WhatsApp"
+                    onClick={() => setMsgCorrida(c)}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -174,6 +187,9 @@ function CorridasPage() {
                     <div>{aberta.observacoes}</div>
                   </div>
                 )}
+                <Button variant="outline" onClick={() => setMsgCorrida(aberta)} className="w-full">
+                  <MessageSquare className="h-4 w-4 mr-2" /> Mensagens WhatsApp
+                </Button>
                 {aberta.status === "Agendada" && (
                   <div className="pt-2">
                     <Button onClick={() => handleLancarAgora(aberta.id)} className="w-full">
@@ -195,6 +211,12 @@ function CorridasPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      <MensagensWhatsAppDialog
+        open={!!msgCorrida}
+        onOpenChange={(v) => !v && setMsgCorrida(null)}
+        corrida={msgCorrida}
+      />
     </div>
   );
 }

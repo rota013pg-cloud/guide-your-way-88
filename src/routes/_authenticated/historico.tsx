@@ -12,8 +12,11 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { listarHistorico } from "@/lib/historico.functions";
+import { gerarPdfHistorico, baixarPdf } from "@/lib/historico-pdf";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   ssr: false,
@@ -57,9 +60,12 @@ function HistoricoPage() {
   const [ate, setAte] = useState(hojeISO());
   const [status, setStatus] = useState<string>("Todos");
   const [motorista, setMotorista] = useState<string>("__all");
+  const [cliente, setCliente] = useState<string>("");
+  const [clienteAplicado, setClienteAplicado] = useState<string>("");
+  const [exportando, setExportando] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["historico", de, ate, status, motorista],
+    queryKey: ["historico", de, ate, status, motorista, clienteAplicado],
     queryFn: () =>
       listarFn({
         data: {
@@ -67,17 +73,55 @@ function HistoricoPage() {
           ate,
           status: status as "Todos",
           motorista: motorista === "__all" ? undefined : motorista,
+          cliente: clienteAplicado || undefined,
         },
       }),
   });
 
+  const motoristaLabel = motorista === "__all"
+    ? ""
+    : (data?.motoristas.find((m) => m.codigo === motorista)
+        ? `${motorista} — ${data!.motoristas.find((m) => m.codigo === motorista)!.nome}`
+        : motorista);
+
+  const exportarPdf = async () => {
+    if (!data) return;
+    setExportando(true);
+    try {
+      const bytes = await gerarPdfHistorico({
+        filtros: {
+          de, ate,
+          status: status === "Todos" ? "" : status,
+          motorista: motoristaLabel,
+          cliente: clienteAplicado,
+        },
+        registros: data.lista as any,
+        totalValor: data.totalValor,
+        totalFinalizadas: data.totalFinalizadas,
+        totalCanceladas: data.totalCanceladas,
+      });
+      baixarPdf(bytes, `historico_${de}_a_${ate}.pdf`);
+      toast.success("PDF gerado");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao gerar PDF");
+    } finally {
+      setExportando(false);
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold">Histórico</h1>
-        <p className="text-sm text-muted-foreground">
-          Corridas registradas no período selecionado.
-        </p>
+      <div className="flex items-start justify-between flex-wrap gap-2">
+        <div>
+          <h1 className="text-2xl font-bold">Histórico</h1>
+          <p className="text-sm text-muted-foreground">
+            Corridas registradas no período selecionado.
+          </p>
+        </div>
+        <Button onClick={exportarPdf} disabled={exportando || isLoading || !data}>
+          {exportando ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
+          Exportar PDF
+        </Button>
       </div>
 
       {/* Filtros */}
@@ -118,6 +162,24 @@ function HistoricoPage() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <Label htmlFor="h-cli" className="text-xs">Cliente (nome, código ou telefone)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="h-cli"
+                value={cliente}
+                onChange={(e) => setCliente(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") setClienteAplicado(cliente.trim()); }}
+                placeholder="ex: João, C0010, 13988887777"
+              />
+              <Button variant="outline" onClick={() => setClienteAplicado(cliente.trim())}>Buscar</Button>
+              {clienteAplicado && (
+                <Button variant="ghost" onClick={() => { setCliente(""); setClienteAplicado(""); }}>
+                  Limpar
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </Card>

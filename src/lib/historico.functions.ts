@@ -12,6 +12,7 @@ const FiltroSchema = z.object({
   ate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   status: z.enum(["Todos", "Finalizada", "Cancelada", "Em viagem", "A caminho", "Chegou"]).optional(),
   motorista: z.string().max(20).optional(),
+  cliente: z.string().max(120).optional(),
 });
 
 export const listarHistorico = createServerFn({ method: "POST" })
@@ -23,7 +24,7 @@ export const listarHistorico = createServerFn({ method: "POST" })
 
     let q = supabaseAdmin
       .from("corridas")
-      .select("id, cliente, motorista, motorista_codigo, origem, destino, valor_final, status, pagamento, criado_em, finalizada_em, distancia_km, tipo, observacoes")
+      .select("id, cliente, cliente_codigo, telefone_cliente, motorista, motorista_codigo, origem, destino, valor_final, status, pagamento, criado_em, finalizada_em, distancia_km, tipo, observacoes")
       .gte("criado_em", inicio)
       .lte("criado_em", fim)
       .order("criado_em", { ascending: false })
@@ -34,6 +35,12 @@ export const listarHistorico = createServerFn({ method: "POST" })
     }
     if (data.motorista) {
       q = q.eq("motorista_codigo", data.motorista);
+    }
+    if (data.cliente && data.cliente.trim()) {
+      const termo = data.cliente.trim().replace(/[,()]/g, "");
+      q = q.or(
+        `cliente_codigo.eq.${termo},cliente.ilike.%${termo}%,telefone_cliente.ilike.%${termo}%`,
+      );
     }
 
     const { data: rows, error } = await q;
@@ -46,7 +53,6 @@ export const listarHistorico = createServerFn({ method: "POST" })
     const totalFinalizadas = lista.filter((r) => r.status === "Finalizada").length;
     const totalCanceladas = lista.filter((r) => r.status === "Cancelada").length;
 
-    // Lista de motoristas únicos para filtro
     const { data: motoristas } = await supabaseAdmin
       .from("motoristas")
       .select("codigo, nome")

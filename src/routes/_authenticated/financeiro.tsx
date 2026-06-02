@@ -64,10 +64,18 @@ function FinanceiroPage() {
   });
 
   const marcar = useMutation({
-    mutationFn: (codigo: string) => marcarFn({ data: { motoristaCodigo: codigo } }),
+    mutationFn: (v: { codigo: string; valor?: number; extras?: { cobrancaId: number; valor: number }[] }) =>
+      marcarFn({ data: { motoristaCodigo: v.codigo, valor: v.valor, extras: v.extras } }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["financeiro"] });
-      toast.success(r.jaExistia ? "Diária já estava registrada hoje" : "Diária registrada ✓");
+      qc.invalidateQueries({ queryKey: ["cobrancas-extras"] });
+      const erros = r.extrasErro?.length ?? 0;
+      toast.success(
+        (r.jaExistia ? "Diária já registrada" : "Diária registrada ✓") +
+        (r.extrasOk?.length ? ` · ${r.extrasOk.length} extra(s) lançado(s)` : "") +
+        (erros ? ` · ${erros} extra(s) com erro` : ""),
+      );
+      setMarcarOpen(null);
     },
     onError: (e: Error) => toast.error(e.message),
   });

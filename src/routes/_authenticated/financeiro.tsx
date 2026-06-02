@@ -217,27 +217,63 @@ function FinanceiroPage() {
                         <Badge variant="secondary">Pendente</Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
-                      {l.pago ? (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            if (!confirm(`Remover diária de ${l.nome}?`)) return;
-                            remover.mutate(l.pagamentoId!);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                    <TableCell>
+                      {l.creditos > 0 ? (
+                        <div className="flex items-center gap-1">
+                          <Badge variant="outline" className="font-mono">
+                            {l.creditos}
+                          </Badge>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6"
+                            title="Remover 1 crédito"
+                            onClick={() => {
+                              if (!confirm(`Remover 1 crédito de ${l.nome}?`)) return;
+                              remCredito.mutate(l.codigo);
+                            }}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                        </div>
                       ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
                         <Button
                           size="sm"
-                          onClick={() => marcar.mutate(l.codigo)}
-                          disabled={marcar.isPending}
+                          variant="outline"
+                          onClick={() => {
+                            setCredDias(5);
+                            setCredOpen({ codigo: l.codigo, nome: l.nome });
+                          }}
+                          title="Adicionar pagamento adiantado"
                         >
-                          <CheckCircle2 className="h-4 w-4 mr-1" /> Marcar pago
+                          <Wallet className="h-4 w-4 mr-1" /> Adiantar
                         </Button>
-                      )}
+                        {l.pago ? (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              if (!confirm(`Remover diária de ${l.nome}?`)) return;
+                              remover.mutate(l.pagamentoId!);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => marcar.mutate(l.codigo)}
+                            disabled={marcar.isPending}
+                          >
+                            <CheckCircle2 className="h-4 w-4 mr-1" /> Marcar pago
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

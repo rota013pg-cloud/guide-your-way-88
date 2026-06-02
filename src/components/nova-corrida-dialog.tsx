@@ -29,10 +29,12 @@ import { AddressAutocomplete, type AddressValue } from "@/components/address-aut
 import { calcularRota } from "@/lib/maps.functions";
 import { dispararOfertas, registrarStatusCorrida } from "@/lib/corridas.functions";
 import { lerConfig } from "@/lib/config.functions";
+import { lerTarifas, type TarifasConfig } from "@/lib/tarifas.functions";
 import { calcularValorComParadas, floorReal } from "@/lib/tarifas-calc";
 import { maskTelefone } from "@/lib/masks";
 
-type Tarifa = { id: number; nome: string; bandeirada: number; minimo: number; por_km: number };
+type TarifaOpt = { id: string; nome: string; tarifaMinima: number; valorKm: number };
+
 type Modelo = "Imediata" | "Agendada";
 type Despacho = "Automatico" | "Manual" | "WhatsApp";
 type Pagamento = "Dinheiro" | "Pix" | "Cartão";

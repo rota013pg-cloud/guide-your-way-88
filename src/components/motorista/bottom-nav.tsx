@@ -54,6 +54,8 @@ export function MotoristaBottomNav({
 }) {
   const [tab, setTab] = useState<Tab>(null);
   const [unread, setUnread] = useState(0);
+  const tabRef = useRef<Tab>(null);
+  tabRef.current = tab;
 
   // Contagem inicial de mensagens não lidas (operador → motorista)
   useEffect(() => {
@@ -72,13 +74,20 @@ export function MotoristaBottomNav({
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_motorista", filter: `motorista_codigo=eq.${motorista.codigo}` },
         (payload) => {
-          const m = payload.new as { autor: string };
-          if (m.autor === "operador" && tab !== "chat") setUnread((u) => u + 1);
+          const m = payload.new as { autor: string; autor_nome: string | null; texto: string };
+          if (m.autor !== "operador") return;
+          if (tabRef.current !== "chat") {
+            setUnread((u) => u + 1);
+            toast.message(`💬 ${m.autor_nome ?? "Central"}`, {
+              description: m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto,
+              action: { label: "Abrir", onClick: () => setTab("chat") },
+            });
+          }
         },
       )
       .subscribe();
     return () => { active = false; supabase.removeChannel(ch); };
-  }, [motorista.codigo, tab]);
+  }, [motorista.codigo]);
 
   const fechar = () => setTab(null);
 

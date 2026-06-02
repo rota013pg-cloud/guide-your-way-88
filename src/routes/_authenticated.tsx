@@ -16,6 +16,13 @@ import {
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { name: "application-name", content: "Rota 013 Operador" },
+      { name: "apple-mobile-web-app-title", content: "Rota 013 Operador" },
+    ],
+    links: [{ rel: "manifest", href: "/manifest-operador.webmanifest" }],
+  }),
   component: AuthenticatedLayout,
 });
 

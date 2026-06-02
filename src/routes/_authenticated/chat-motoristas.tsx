@@ -5,7 +5,9 @@ import {
   operadorListarConversas,
   operadorListarChat,
   operadorEnviarMensagem,
+  adminApagarMensagem,
 } from "@/lib/chat-motorista.functions";
+import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

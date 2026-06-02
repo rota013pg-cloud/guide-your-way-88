@@ -3,7 +3,14 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ArrowUpDown, ChevronDown, ChevronRight, ExternalLink, FileWarning } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronRight, ExternalLink, FileWarning, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Metric = { total: number; covered: number; skipped: number; pct: number };
 type FileEntry = {

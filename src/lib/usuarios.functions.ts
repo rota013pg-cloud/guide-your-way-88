@@ -35,7 +35,13 @@ export const listarUsuarios = createServerFn({ method: "POST" })
       .select("*")
       .order("criado_em", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role");
+    const map = new Map<string, string>();
+    (roles ?? []).forEach((r: any) => {
+      // admin tem prioridade
+      if (r.role === "admin" || !map.has(r.user_id)) map.set(r.user_id, r.role);
+    });
+    return (data ?? []).map((u: any) => ({ ...u, role: map.get(u.user_id) ?? "operador" }));
   });
 
 // ─── CRIAR ──────────────────────────────────────────

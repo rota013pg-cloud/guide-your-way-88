@@ -14,10 +14,13 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Eye, Key, Lock, Unlock, Trash2, Plus, ShieldAlert } from "lucide-react";
+import { Eye, Key, Lock, Unlock, Trash2, Plus, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useRole } from "@/hooks/use-role";
 import {
-  listarUsuarios, criarUsuario, alterarSenhaUsuario,
+  listarUsuarios, criarUsuario, alterarSenhaUsuario, alterarRoleUsuario,
   bloquearUsuario, desbloquearUsuario, excluirUsuario, verSenhaUsuario,
 } from "@/lib/usuarios.functions";
 
@@ -38,6 +41,7 @@ function UsuariosPage() {
   const desbloqFn = useServerFn(desbloquearUsuario);
   const excluirFn = useServerFn(excluirUsuario);
   const verSenhaFn = useServerFn(verSenhaUsuario);
+  const roleFn = useServerFn(alterarRoleUsuario);
 
   const { data: usuarios = [] } = useQuery({
     queryKey: ["usuarios-painel"],
@@ -45,7 +49,7 @@ function UsuariosPage() {
     enabled: isAdmin,
   });
 
-  const [novo, setNovo] = useState({ nome: "", email: "", login: "", senha: "" });
+  const [novo, setNovo] = useState<{ nome: string; email: string; login: string; senha: string; role: "admin" | "operador" }>({ nome: "", email: "", login: "", senha: "", role: "operador" });
   const [openNovo, setOpenNovo] = useState(false);
   const [senhaDialog, setSenhaDialog] = useState<{ userId: string; nome: string } | null>(null);
   const [novaSenha, setNovaSenha] = useState("");
@@ -60,7 +64,7 @@ function UsuariosPage() {
     onSuccess: () => {
       toast.success("Usuário criado");
       setOpenNovo(false);
-      setNovo({ nome: "", email: "", login: "", senha: "" });
+      setNovo({ nome: "", email: "", login: "", senha: "", role: "operador" });
       refresh();
     },
     onError: (e: Error) => toast.error(e.message),

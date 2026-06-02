@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Search, Shield, Lock, Pause, Play } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Shield, Lock, Pause, Play, Smartphone } from "lucide-react";
 import { listarMotoristas, excluirMotorista, pausarMotorista, retomarMotorista } from "@/lib/motoristas.functions";
 import { MotoristaDialog } from "@/components/motorista-dialog";
 import { MotoristaAdminPanel } from "@/components/motorista-admin-panel";
@@ -183,11 +183,10 @@ function MotoristasPage() {
                     <Pause className="h-3 w-3 mr-1" /> Pausar
                   </Button>
                 )}
-                {isAdmin && (
-                  <Button size="sm" variant="outline" onClick={() => setAdminAlvo(m)}>
-                    <Shield className="h-3 w-3 mr-1" /> Acesso
-                  </Button>
-                )}
+                <Button size="sm" variant="outline" onClick={() => setAdminAlvo(m)}>
+                  {isAdmin ? <Shield className="h-3 w-3 mr-1" /> : <Smartphone className="h-3 w-3 mr-1" />}
+                  {isAdmin ? "Acesso" : "Resetar"}
+                </Button>
                 <Button
                   size="icon"
                   variant="ghost"

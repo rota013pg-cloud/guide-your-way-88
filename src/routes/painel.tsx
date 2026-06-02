@@ -9,7 +9,10 @@ export const Route = createFileRoute("/painel")({
     meta: [
       { title: "Painel do Operador — Rota 013" },
       { name: "description", content: "Painel de operação Rota 013." },
+      { name: "application-name", content: "Rota 013 Operador" },
+      { name: "apple-mobile-web-app-title", content: "Rota 013 Operador" },
     ],
+    links: [{ rel: "manifest", href: "/manifest-operador.webmanifest" }],
   }),
   component: PainelRedirect,
 });

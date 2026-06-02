@@ -1,0 +1,36 @@
+{
+  "name": "Rota 013 — Operador",
+  "short_name": "Rota 013 Op",
+  "description": "Painel do operador Rota 013.",
+  "start_url": "/painel",
+  "id": "/painel",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/__l5e/assets-v1/3cbb4166-322b-415f-83cb-1d5860514bd2/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/__l5e/assets-v1/59f6c808-7258-426c-a72c-9812d75e80c3/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/__l5e/assets-v1/35018711-8cb2-4656-8dcd-7b57888f2680/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

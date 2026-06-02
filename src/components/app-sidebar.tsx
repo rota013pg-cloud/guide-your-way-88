@@ -64,6 +64,20 @@ export function AppSidebar() {
   const { theme, toggle } = useTheme();
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   const isActive = (path: string) => currentPath === path;
+  const [userNome, setUserNome] = useState<string>("");
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u.user?.id;
+      if (!uid) return;
+      const { data } = await supabase
+        .from("usuarios_painel").select("nome").eq("user_id", uid).maybeSingle();
+      if (active) setUserNome(data?.nome ?? u.user?.email ?? "");
+    })();
+    return () => { active = false; };
+  }, []);
 
   const sair = async () => {
     await supabase.auth.signOut();
@@ -71,6 +85,7 @@ export function AppSidebar() {
   };
 
   const visibleGestao = gestao.filter((i) => !i.adminOnly || isAdmin);
+  const iniciais = (userNome || "U").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 
   const renderItem = (item: Item) => (
     <SidebarMenuItem key={item.url}>
@@ -86,14 +101,16 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary font-black text-primary-foreground">
-            R
+        <div className="flex items-center gap-2 px-2 py-2">
+          <div
+            className="text-2xl font-black italic tracking-tighter leading-none"
+            style={{ color: "hsl(var(--foreground))" }}
+          >
+            Rota<span style={{ color: "#f7c600" }}>013</span>
           </div>
           {!collapsed && (
-            <div className="leading-tight">
-              <div className="text-sm font-bold">Rota 013</div>
-              <div className="text-[10px] text-muted-foreground">Beta 2.0</div>
+            <div className="leading-tight ml-1">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Beta 2.0</div>
             </div>
           )}
         </div>
@@ -116,6 +133,17 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="gap-2">
+        <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/40">
+          <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
+            {iniciais}
+          </div>
+          {!collapsed && (
+            <div className="leading-tight min-w-0 flex-1">
+              <div className="text-xs font-semibold truncate">{userNome || "—"}</div>
+              <div className="text-[10px] text-muted-foreground">{isAdmin ? "Administrador" : "Operador"}</div>
+            </div>
+          )}
+        </div>
         <Button variant="ghost" size="sm" onClick={toggle} className="w-full justify-start">
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           {!collapsed && (

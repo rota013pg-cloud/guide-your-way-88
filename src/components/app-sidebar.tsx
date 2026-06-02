@@ -105,10 +105,10 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
           <div
-            className="text-2xl font-black italic tracking-tighter leading-none"
+            className="logo-r013 text-2xl leading-none"
             style={{ color: "hsl(var(--foreground))" }}
           >
-            Rota<span style={{ color: "#f7c600" }}>013</span>
+            R<span>013</span>
           </div>
           {!collapsed && (
             <div className="leading-tight ml-1">

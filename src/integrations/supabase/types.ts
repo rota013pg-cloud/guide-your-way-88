@@ -110,75 +110,131 @@ export type Database = {
           },
         ]
       }
+      corrida_status_log: {
+        Row: {
+          corrida_id: number
+          criado_em: string
+          id: number
+          motorista_codigo: string | null
+          observacao: string | null
+          status: string
+        }
+        Insert: {
+          corrida_id: number
+          criado_em?: string
+          id?: number
+          motorista_codigo?: string | null
+          observacao?: string | null
+          status: string
+        }
+        Update: {
+          corrida_id?: number
+          criado_em?: string
+          id?: number
+          motorista_codigo?: string | null
+          observacao?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corrida_status_log_corrida_id_fkey"
+            columns: ["corrida_id"]
+            isOneToOne: false
+            referencedRelation: "corridas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corridas: {
         Row: {
+          agendada_para: string | null
           atualizado_em: string
           cliente: string | null
           cliente_codigo: string | null
           criado_em: string
+          despacho: Database["public"]["Enums"]["despacho_corrida"]
           destino: string | null
           destino_lat: number | null
           destino_lng: number | null
           distancia_km: number | null
           finalizada_em: string | null
           id: number
+          modelo: Database["public"]["Enums"]["modelo_corrida"]
           motorista: string | null
           motorista_codigo: string | null
+          motoristas_manuais: string[]
           observacoes: string | null
           origem: string
           origem_lat: number | null
           origem_lng: number | null
           pagamento: Database["public"]["Enums"]["tipo_pagamento"] | null
+          paradas: Json
+          rodada_atual: number
           status: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente: string | null
           tipo: string | null
           valor_final: number
+          valor_paradas: number
         }
         Insert: {
+          agendada_para?: string | null
           atualizado_em?: string
           cliente?: string | null
           cliente_codigo?: string | null
           criado_em?: string
+          despacho?: Database["public"]["Enums"]["despacho_corrida"]
           destino?: string | null
           destino_lat?: number | null
           destino_lng?: number | null
           distancia_km?: number | null
           finalizada_em?: string | null
           id?: number
+          modelo?: Database["public"]["Enums"]["modelo_corrida"]
           motorista?: string | null
           motorista_codigo?: string | null
+          motoristas_manuais?: string[]
           observacoes?: string | null
           origem: string
           origem_lat?: number | null
           origem_lng?: number | null
           pagamento?: Database["public"]["Enums"]["tipo_pagamento"] | null
+          paradas?: Json
+          rodada_atual?: number
           status?: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente?: string | null
           tipo?: string | null
           valor_final?: number
+          valor_paradas?: number
         }
         Update: {
+          agendada_para?: string | null
           atualizado_em?: string
           cliente?: string | null
           cliente_codigo?: string | null
           criado_em?: string
+          despacho?: Database["public"]["Enums"]["despacho_corrida"]
           destino?: string | null
           destino_lat?: number | null
           destino_lng?: number | null
           distancia_km?: number | null
           finalizada_em?: string | null
           id?: number
+          modelo?: Database["public"]["Enums"]["modelo_corrida"]
           motorista?: string | null
           motorista_codigo?: string | null
+          motoristas_manuais?: string[]
           observacoes?: string | null
           origem?: string
           origem_lat?: number | null
           origem_lng?: number | null
           pagamento?: Database["public"]["Enums"]["tipo_pagamento"] | null
+          paradas?: Json
+          rodada_atual?: number
           status?: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente?: string | null
           tipo?: string | null
           valor_final?: number
+          valor_paradas?: number
         }
         Relationships: [
           {
@@ -531,6 +587,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "operador"
+      despacho_corrida: "Automatico" | "Manual" | "WhatsApp"
+      modelo_corrida: "Imediata" | "Agendada"
       status_corrida:
         | "Pendente"
         | "Ofertada"
@@ -540,6 +598,8 @@ export type Database = {
         | "Em viagem"
         | "Finalizada"
         | "Cancelada"
+        | "Agendada"
+        | "Parada"
       status_motorista:
         | "Offline"
         | "Online"
@@ -676,6 +736,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "operador"],
+      despacho_corrida: ["Automatico", "Manual", "WhatsApp"],
+      modelo_corrida: ["Imediata", "Agendada"],
       status_corrida: [
         "Pendente",
         "Ofertada",
@@ -685,6 +747,8 @@ export const Constants = {
         "Em viagem",
         "Finalizada",
         "Cancelada",
+        "Agendada",
+        "Parada",
       ],
       status_motorista: [
         "Offline",

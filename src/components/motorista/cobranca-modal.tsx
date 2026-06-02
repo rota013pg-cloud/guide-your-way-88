@@ -22,11 +22,13 @@ export function CobrancaModal({
   config,
   onJaPaguei,
   enviando,
+  onFechar,
 }: {
   cobranca: Cobranca;
   config: Config;
   onJaPaguei: () => void;
   enviando: boolean;
+  onFechar?: () => void;
 }) {
   const [copiado, setCopiado] = useState(false);
   const pix = config.pixChave ?? "";
@@ -35,6 +37,7 @@ export function CobrancaModal({
   const valor = Number(cobranca.valor_diaria || 0);
   const bloqueado = cobranca.status === "Bloqueado";
   const aguardando = cobranca.status === "Aguardando";
+  const podeFechar = !bloqueado && !aguardando && !!onFechar;
 
   const copiarPix = async () => {
     if (!pix) return;

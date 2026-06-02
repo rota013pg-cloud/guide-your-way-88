@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus } from "lucide-react";
+import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus, DollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,

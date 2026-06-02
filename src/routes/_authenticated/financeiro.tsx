@@ -167,10 +167,23 @@ function FinanceiroPage() {
       {/* ─── Tabela motoristas × diária do dia ─── */}
       <Card className="overflow-hidden">
         <div className="p-4 border-b">
-          <h2 className="font-semibold">Diárias de hoje</h2>
-          <p className="text-xs text-muted-foreground">
-            Dia operacional: {data?.diaOp ?? "—"}
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Diárias de hoje</h2>
+              <p className="text-xs text-muted-foreground">
+                Dia operacional: {data?.diaOp ?? "—"}
+              </p>
+            </div>
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por código ou nome…"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <Table>

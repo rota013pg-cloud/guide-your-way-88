@@ -243,16 +243,20 @@ function DashboardPage() {
 }
 
 function CorridaAtivaCard({
-  c, motoristasOnline, onAtribuir, onFinalizar, onCancelar, corStatus,
+  c, motoristasOnline, onAtribuir, onFinalizar, onCancelar, onReofertar, onLancarAgora, corStatus,
 }: {
   c: Corrida; motoristasOnline: Motorista[]; onAtribuir: (cod: string) => void;
-  onFinalizar: () => void; onCancelar: () => void; corStatus: string;
+  onFinalizar: () => void; onCancelar: () => void;
+  onReofertar: () => void; onLancarAgora: () => void; corStatus: string;
 }) {
   return (
     <div className="rounded-lg border border-border p-3 space-y-2 hover:border-primary/40 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-sm truncate">{c.cliente ?? "Sem cliente"}</div>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] text-muted-foreground">#{c.id}</span>
+            <div className="font-semibold text-sm truncate">{c.cliente ?? "Sem cliente"}</div>
+          </div>
           <div className="text-xs text-muted-foreground truncate">📍 {c.origem}</div>
           {c.destino && <div className="text-xs text-muted-foreground truncate">🏁 {c.destino}</div>}
         </div>
@@ -262,10 +266,10 @@ function CorridaAtivaCard({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 pt-1">
+      <div className="flex items-center gap-2 pt-1 flex-wrap">
         {!c.motorista_codigo ? (
           <Select onValueChange={onAtribuir}>
-            <SelectTrigger className="h-8 text-xs flex-1">
+            <SelectTrigger className="h-8 text-xs flex-1 min-w-[140px]">
               <div className="flex items-center gap-1.5"><UserPlus className="h-3 w-3" /><SelectValue placeholder="Atribuir motorista..." /></div>
             </SelectTrigger>
             <SelectContent>
@@ -280,12 +284,22 @@ function CorridaAtivaCard({
         ) : (
           <div className="text-xs flex-1 truncate">🏍️ <span className="font-medium">{c.motorista}</span></div>
         )}
+        {(c.status === "Ofertada" || c.status === "Pendente") && !c.motorista_codigo && (
+          <Button size="sm" variant="secondary" className="h-8 px-2" onClick={onReofertar} title="Oferecer novamente">
+            <Rocket className="h-3.5 w-3.5" />
+          </Button>
+        )}
+        {c.status === "Agendada" && (
+          <Button size="sm" variant="default" className="h-8 px-2" onClick={onLancarAgora} title="Lançar agora">
+            <Rocket className="h-3.5 w-3.5" />
+          </Button>
+        )}
         {c.motorista_codigo && (
-          <Button size="sm" variant="default" className="h-8 px-2" onClick={onFinalizar}>
+          <Button size="sm" variant="default" className="h-8 px-2" onClick={onFinalizar} title="Finalizar">
             <CheckCircle2 className="h-3.5 w-3.5" />
           </Button>
         )}
-        <Button size="sm" variant="outline" className="h-8 px-2" onClick={onCancelar}>
+        <Button size="sm" variant="outline" className="h-8 px-2" onClick={onCancelar} title="Cancelar">
           <XCircle className="h-3.5 w-3.5" />
         </Button>
       </div>

@@ -13,6 +13,11 @@ import {
   motoristaCarregarContexto,
   motoristaCarregarCorrida,
 } from "@/lib/motorista.functions";
+import {
+  motoristaMinhaCobranca,
+  motoristaSolicitarLiberacao,
+} from "@/lib/cobranca.functions";
+import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 
 export const Route = createFileRoute("/motorista")({
   ssr: false,

@@ -87,6 +87,19 @@ function ChatMotoristasPage() {
     c.motorista_codigo.toLowerCase().includes(busca.toLowerCase()),
   );
 
+  const apagar = async (id: number) => {
+    if (!confirm("Tem certeza que deseja apagar esta mensagem?")) return;
+    setApagando(id);
+    try {
+      await adminApagarMensagem({ data: { id } });
+      if (selecionado) await carregarMensagens(selecionado);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao apagar");
+    } finally {
+      setApagando(null);
+    }
+  };
+
   const conversaAtual = conversas.find((c) => c.motorista_codigo === selecionado);
 
   return (

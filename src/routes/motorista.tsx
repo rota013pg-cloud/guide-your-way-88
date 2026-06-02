@@ -107,6 +107,11 @@ function MotoristaApp() {
   const [loginCodigo, setLoginCodigo] = useState("");
   const [loginSenha, setLoginSenha] = useState("");
   const [loginErro, setLoginErro] = useState("");
+  const [cobranca, setCobranca] = useState<{ status: string; faturamento_dia: number; valor_diaria: number; comprovante_enviado_em: string | null } | null>(null);
+  const [cobrancaCfg, setCobrancaCfg] = useState<{ pixChave?: string; tipoChavePix?: string; whatsappCentral?: string; empresa?: string }>({});
+  const [enviandoLib, setEnviandoLib] = useState(false);
+  const minhaCobrancaFn = useServerFn(motoristaMinhaCobranca);
+  const solicitarLibFn = useServerFn(motoristaSolicitarLiberacao);
 
   const gpsWatchRef = useRef<number | null>(null);
   const ofertaTimerRef = useRef<NodeJS.Timeout | null>(null);

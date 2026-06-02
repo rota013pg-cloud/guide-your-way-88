@@ -25,6 +25,8 @@ function MotoristasPage() {
   const { isAdmin } = useRole();
   const listar = useServerFn(listarMotoristas);
   const excluir = useServerFn(excluirMotorista);
+  const pausarFn = useServerFn(pausarMotorista);
+  const retomarFn = useServerFn(retomarMotorista);
   const [filtro, setFiltro] = useState("");
   const [open, setOpen] = useState(false);
   const [editando, setEditando] = useState<any>(null);
@@ -39,6 +41,25 @@ function MotoristasPage() {
     mutationFn: (codigo: string) => excluir({ data: { codigo } }),
     onSuccess: () => {
       toast.success("Motorista removido");
+      qc.invalidateQueries({ queryKey: ["motoristas"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const pausarMut = useMutation({
+    mutationFn: ({ codigo, motivo }: { codigo: string; motivo: string }) =>
+      pausarFn({ data: { codigo, motivo } }),
+    onSuccess: () => {
+      toast.success("Motorista pausado — não receberá novas corridas");
+      qc.invalidateQueries({ queryKey: ["motoristas"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const retomarMut = useMutation({
+    mutationFn: (codigo: string) => retomarFn({ data: { codigo } }),
+    onSuccess: () => {
+      toast.success("Motorista retomado — voltará a receber corridas");
       qc.invalidateQueries({ queryKey: ["motoristas"] });
     },
     onError: (e: any) => toast.error(e.message),

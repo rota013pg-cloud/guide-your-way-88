@@ -344,7 +344,7 @@ export const motoristaCarregarContexto = createServerFn({ method: "POST" })
       corridaAtual,
       corridasHoje: corridasHoje ?? [],
       oferta,
-      config: (cfg?.config_json as Record<string, unknown>) ?? {},
+      config: (cfg?.config_json ?? {}) as { valorDiaria?: number; pixChave?: string },
     };
   });
 

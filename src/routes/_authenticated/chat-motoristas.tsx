@@ -42,6 +42,9 @@ function ChatMotoristasPage() {
   const [busca, setBusca] = useState("");
   const [apagando, setApagando] = useState<number | null>(null);
   const [apagandoConversa, setApagandoConversa] = useState(false);
+  const [novaAberto, setNovaAberto] = useState(false);
+  const [motoristas, setMotoristas] = useState<Array<{ codigo: string; nome: string; status: string | null }>>([]);
+  const [buscaNova, setBuscaNova] = useState("");
   const fimRef = useRef<HTMLDivElement>(null);
 
   const isAuthError = (e: unknown) =>

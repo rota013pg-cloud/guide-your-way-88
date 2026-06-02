@@ -6,6 +6,7 @@ import {
   operadorListarChat,
   operadorEnviarMensagem,
   adminApagarMensagem,
+  adminApagarConversa,
 } from "@/lib/chat-motorista.functions";
 import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ function ChatMotoristasPage() {
   const [enviando, setEnviando] = useState(false);
   const [busca, setBusca] = useState("");
   const [apagando, setApagando] = useState<number | null>(null);
+  const [apagandoConversa, setApagandoConversa] = useState(false);
   const fimRef = useRef<HTMLDivElement>(null);
 
   const carregarConversas = async () => {
@@ -100,6 +102,23 @@ function ChatMotoristasPage() {
     }
   };
 
+  const apagarConversa = async () => {
+    if (!selecionado) return;
+    if (!confirm("Tem certeza que deseja apagar TODA a conversa com este motorista? Esta ação não pode ser desfeita.")) return;
+    setApagandoConversa(true);
+    try {
+      await adminApagarConversa({ data: { motoristaCodigo: selecionado } });
+      setSelecionado(null);
+      setMensagens([]);
+      await carregarConversas();
+      toast.success("Conversa apagada com sucesso.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao apagar conversa");
+    } finally {
+      setApagandoConversa(false);
+    }
+  };
+
   const conversaAtual = conversas.find((c) => c.motorista_codigo === selecionado);
 
   return (
@@ -136,7 +155,7 @@ function ChatMotoristasPage() {
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-sm truncate">{c.motorista_nome}</span>
+                  <span className="font-semibold text-sm truncate">{c.motorista_codigo} — {c.motorista_nome}</span>
                   {c.nao_lidas > 0 && (
                     <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
                       {c.nao_lidas}
@@ -159,11 +178,26 @@ function ChatMotoristasPage() {
             </div>
           ) : (
             <>
-              <div className="px-4 py-3 border-b border-border">
-                <div className="font-semibold">{conversaAtual?.motorista_nome}</div>
-                <div className="text-xs text-muted-foreground">
-                  {selecionado} {conversaAtual?.telefone ? `• ${conversaAtual.telefone}` : ""}
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <div>
+                  <div className="font-semibold">{conversaAtual?.motorista_nome}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {selecionado} {conversaAtual?.telefone ? `• ${conversaAtual.telefone}` : ""}
+                  </div>
                 </div>
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={apagarConversa}
+                    disabled={apagandoConversa}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    title="Apagar conversa completa"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    {apagandoConversa ? "Apagando..." : "Apagar conversa"}
+                  </Button>
+                )}
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-muted/20">
                 {mensagens.length === 0 && (

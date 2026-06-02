@@ -167,3 +167,17 @@ export const adminApagarMensagem = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ─── ADMIN: apagar conversa completa ────────────────────
+export const adminApagarConversa = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ motoristaCodigo: z.string() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await exigirAdmin(context.userId as string);
+    const { error } = await supabaseAdmin
+      .from("chat_motorista")
+      .delete()
+      .eq("motorista_codigo", data.motoristaCodigo);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

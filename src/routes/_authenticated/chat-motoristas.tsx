@@ -180,10 +180,10 @@ function ChatMotoristasPage() {
             <>
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                 <div>
-                  <div className="font-semibold">{conversaAtual?.motorista_nome}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {selecionado} {conversaAtual?.telefone ? `• ${conversaAtual.telefone}` : ""}
-                  </div>
+                  <div className="font-semibold">{selecionado} - {conversaAtual?.motorista_nome}</div>
+                  {conversaAtual?.telefone && (
+                    <div className="text-xs text-muted-foreground">{conversaAtual.telefone}</div>
+                  )}
                 </div>
                 {isAdmin && (
                   <Button

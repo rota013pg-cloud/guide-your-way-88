@@ -226,18 +226,14 @@ export const motoristaAceitarOferta = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (motCred && (motCred.creditos_diaria ?? 0) > 0) {
-        const { data: cfg } = await supabaseAdmin
-          .from("app_config").select("config_json").eq("id", 1).maybeSingle();
-        const valorDiaria = Number(
-          ((cfg?.config_json ?? {}) as { valorDiaria?: number }).valorDiaria ?? 19.9,
-        );
-
+        // Valor = 0 porque já foi cobrado no lançamento de "Diária Adiantada".
+        // O registro existe apenas para marcar a diária do dia como paga.
         const { error: insErr } = await supabaseAdmin
           .from("financeiro")
           .insert({
             motorista_codigo: data.codigo,
             motorista: motCred.nome,
-            valor: valorDiaria,
+            valor: 0,
             tipo: "Diária",
             operador: "AUTO (crédito adiantado)",
           });

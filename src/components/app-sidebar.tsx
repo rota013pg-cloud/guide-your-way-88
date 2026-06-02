@@ -11,6 +11,8 @@ import {
   MessageSquare,
   ShieldCheck,
   LogOut,
+  Sun,
+  Moon,
 } from "lucide-react";
 import {
   Sidebar,

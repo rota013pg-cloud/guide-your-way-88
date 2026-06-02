@@ -325,6 +325,13 @@ export const motoristaAtualizarStatusCorrida = createServerFn({ method: "POST" }
       .eq("motorista_codigo", data.codigo);
     if (error) throw new Error(error.message);
 
+    // Registra no log de status para o painel acompanhar a evolução
+    await supabaseAdmin.from("corrida_status_log").insert({
+      corrida_id: data.corridaId,
+      status: data.status,
+      motorista_codigo: data.codigo,
+    });
+
     if (data.status === "Finalizada") {
       const { data: mot } = await supabaseAdmin
         .from("motoristas")

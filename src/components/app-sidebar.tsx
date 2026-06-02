@@ -110,7 +110,13 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="gap-2">
+        <Button variant="ghost" size="sm" onClick={toggle} className="w-full justify-start">
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {!collapsed && (
+            <span className="ml-2">{theme === "dark" ? "Tema claro" : "Tema escuro"}</span>
+          )}
+        </Button>
         <Button variant="outline" size="sm" onClick={sair} className="w-full">
           <LogOut className="h-4 w-4" />
           {!collapsed && <span className="ml-2">Sair</span>}

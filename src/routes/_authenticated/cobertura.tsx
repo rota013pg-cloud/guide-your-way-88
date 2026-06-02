@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowUpDown, ExternalLink, FileWarning } from "lucide-react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { ArrowUpDown, ChevronDown, ChevronRight, ExternalLink, FileWarning } from "lucide-react";
 
 type Metric = { total: number; covered: number; skipped: number; pct: number };
 type FileEntry = {
@@ -39,8 +39,47 @@ function htmlReportHref(full: string) {
   return `/coverage-report/${rel}.html`;
 }
 
+function parseLcov(text: string): Record<string, number[]> {
+  const out: Record<string, number[]> = {};
+  let file = "";
+  let lines: number[] = [];
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (line.startsWith("SF:")) {
+      file = line.slice(3);
+      lines = [];
+    } else if (line.startsWith("DA:")) {
+      const [n, hits] = line.slice(3).split(",");
+      if (Number(hits) === 0) lines.push(Number(n));
+    } else if (line === "end_of_record" && file) {
+      out[file] = lines.sort((a, b) => a - b);
+      file = "";
+    }
+  }
+  return out;
+}
+
+function toRanges(nums: number[]): string[] {
+  if (nums.length === 0) return [];
+  const ranges: string[] = [];
+  let start = nums[0];
+  let prev = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] === prev + 1) {
+      prev = nums[i];
+    } else {
+      ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+      start = prev = nums[i];
+    }
+  }
+  ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+  return ranges;
+}
+
 function CoveragePage() {
   const [data, setData] = useState<Summary | null>(null);
+  const [uncovered, setUncovered] = useState<Record<string, number[]>>({});
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("lines");
@@ -54,7 +93,20 @@ function CoveragePage() {
       })
       .then(setData)
       .catch((e) => setError(String(e)));
+    fetch("/coverage-lcov.info")
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((t) => t && setUncovered(parseLcov(t)))
+      .catch(() => {});
   }, []);
+
+  function toggleRow(path: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  }
 
   const rows = useMemo(() => {
     if (!data) return [];
@@ -148,24 +200,69 @@ function CoveragePage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map(([path, e]) => (
-                  <tr key={path} className="border-t hover:bg-muted/30">
-                    <td className="p-2">
-                      <a
-                        href={htmlReportHref(path)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary hover:underline font-mono text-xs"
-                      >
-                        {relPath(path)}
-                      </a>
-                    </td>
-                    <Td m={e.statements} />
-                    <Td m={e.branches} />
-                    <Td m={e.functions} />
-                    <Td m={e.lines} />
-                  </tr>
-                ))}
+                {rows.map(([path, e]) => {
+                  const rel = relPath(path);
+                  const miss = uncovered[rel] ?? [];
+                  const isOpen = expanded.has(path);
+                  return (
+                    <Fragment key={path}>
+                      <tr className="border-t hover:bg-muted/30">
+                        <td className="p-2">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => toggleRow(path)}
+                              disabled={miss.length === 0}
+                              className="p-0.5 rounded hover:bg-muted disabled:opacity-30"
+                              aria-label={isOpen ? "Recolher" : "Expandir"}
+                            >
+                              {isOpen ? (
+                                <ChevronDown className="h-3 w-3" />
+                              ) : (
+                                <ChevronRight className="h-3 w-3" />
+                              )}
+                            </button>
+                            <a
+                              href={htmlReportHref(path)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-primary hover:underline font-mono text-xs"
+                            >
+                              {rel}
+                            </a>
+                            {miss.length > 0 && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                · {miss.length} linhas
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <Td m={e.statements} />
+                        <Td m={e.branches} />
+                        <Td m={e.functions} />
+                        <Td m={e.lines} />
+                      </tr>
+                      {isOpen && miss.length > 0 && (
+                        <tr className="border-t bg-muted/20">
+                          <td colSpan={5} className="p-3">
+                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                              Linhas não cobertas:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {toRanges(miss).map((r) => (
+                                <span
+                                  key={r}
+                                  className="font-mono text-xs px-1.5 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20"
+                                >
+                                  {r}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
                 {rows.length === 0 && (
                   <tr>
                     <td colSpan={5} className="p-6 text-center text-muted-foreground">

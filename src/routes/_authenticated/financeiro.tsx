@@ -295,8 +295,23 @@ function FinanceiroPage() {
         </div>
       </Card>
 
+      {/* ─── Cobranças extras (camiseta, itens, manutenção…) ─── */}
+      <CobrancasExtrasPanel
+        motoristas={(data?.linhas ?? []).map((l) => ({ codigo: l.codigo, nome: l.nome }))}
+      />
+
       {/* ─── Cobranças automáticas (gatilho de bloqueio) ─── */}
       <CobrancasAutomaticasPanel />
+
+      {/* ─── Dialog: marcar diária paga com extras ─── */}
+      <MarcarDiariaComExtrasDialog
+        open={!!marcarOpen}
+        onClose={() => setMarcarOpen(null)}
+        motorista={marcarOpen}
+        valorDiaria={data?.valorDiaria ?? 0}
+        pending={marcar.isPending}
+        onConfirm={(p) => marcarOpen && marcar.mutate({ codigo: marcarOpen.codigo, valor: p.valor, extras: p.extras })}
+      />
 
       {/* ─── Relatório ─── */}
       <Card className="p-4">

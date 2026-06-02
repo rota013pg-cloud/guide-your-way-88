@@ -58,6 +58,24 @@ function CorridasPage() {
     }
   };
 
+  const handleReofertar = async (id: number) => {
+    const resp = window.prompt("Oferecer novamente para quantos motoristas mais próximos?", "5");
+    if (resp === null) return;
+    const qtd = parseInt(resp, 10);
+    if (!Number.isFinite(qtd) || qtd < 1 || qtd > 50) {
+      toast.error("Informe um número entre 1 e 50.");
+      return;
+    }
+    try {
+      const r: any = await ofertasFn({ data: { corridaId: id, quantidade: qtd, reofertar: true } });
+      toast.success(`Reofertada para ${r?.ofertados ?? 0} motorista(s).`);
+      qc.invalidateQueries({ queryKey: ["corridas-recentes"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao reofertar.");
+    }
+  };
+
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-start justify-between gap-3">

@@ -186,20 +186,43 @@ export async function gerarPdfFinanceiro(input: RelatorioInput): Promise<Uint8Ar
   });
   y -= 14;
 
-  texto("DATA", margin, y, { size: 9, bold: true, color: muted });
-  texto("MOTORISTA", margin + 100, y, { size: 9, bold: true, color: muted });
-  texto("TIPO", margin + 290, y, { size: 9, bold: true, color: muted });
-  texto("OPERADOR", margin + 350, y, { size: 9, bold: true, color: muted });
-  texto("VALOR", margin + 470, y, { size: 9, bold: true, color: muted });
+  // Colunas (x inicial → largura útil até a próxima coluna)
+  const COL = {
+    data:  { x: margin,        max: 90  },
+    mot:   { x: margin + 95,   max: 140 },
+    tipo:  { x: margin + 240,  max: 130 },
+    oper:  { x: margin + 375,  max: 90  },
+    valor: { x: margin + 470,  max: 45  },
+  };
+
+  // Trunca a string para caber em maxW (px) na fonte 9.
+  const fit = (s: string, maxW: number, size = 9) => {
+    if (!s) return "";
+    if (font.widthOfTextAtSize(s, size) <= maxW) return s;
+    let lo = 0, hi = s.length;
+    while (lo < hi) {
+      const mid = ((lo + hi) >> 1) + 1;
+      const candidato = s.slice(0, mid) + "…";
+      if (font.widthOfTextAtSize(candidato, size) <= maxW) lo = mid;
+      else hi = mid - 1;
+    }
+    return s.slice(0, lo) + "…";
+  };
+
+  texto("DATA",      COL.data.x,  y, { size: 9, bold: true, color: muted });
+  texto("MOTORISTA", COL.mot.x,   y, { size: 9, bold: true, color: muted });
+  texto("TIPO",      COL.tipo.x,  y, { size: 9, bold: true, color: muted });
+  texto("OPERADOR",  COL.oper.x,  y, { size: 9, bold: true, color: muted });
+  texto("VALOR",     COL.valor.x, y, { size: 9, bold: true, color: muted });
   y -= 12;
 
   for (const r of input.registros) {
     novaPaginaSeNec(16);
-    texto(formatarData(r.data), margin, y, { size: 9 });
-    texto((r.motorista || r.motorista_codigo).slice(0, 30), margin + 100, y, { size: 9 });
-    texto(r.tipo, margin + 290, y, { size: 9 });
-    texto((r.operador ?? "—").slice(0, 18), margin + 350, y, { size: 9 });
-    texto(brl(Number(r.valor)), margin + 470, y, { size: 9, bold: true });
+    texto(fit(formatarData(r.data), COL.data.max), COL.data.x, y, { size: 9 });
+    texto(fit(r.motorista || r.motorista_codigo, COL.mot.max), COL.mot.x, y, { size: 9 });
+    texto(fit(r.tipo, COL.tipo.max), COL.tipo.x, y, { size: 9 });
+    texto(fit(r.operador ?? "—", COL.oper.max), COL.oper.x, y, { size: 9 });
+    texto(brl(Number(r.valor)), COL.valor.x, y, { size: 9, bold: true });
     y -= 13;
   }
 

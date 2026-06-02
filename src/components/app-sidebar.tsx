@@ -10,12 +10,12 @@ import {
   History,
   Settings,
   MessageSquare,
-  ShieldCheck,
   LogOut,
   Sun,
   Moon,
   UserCog,
   StickyNote,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -55,7 +55,7 @@ const gestao: Item[] = [
   { title: "Mensagens", url: "/mensagens", icon: MessageSquare },
   { title: "Usuários", url: "/usuarios", icon: UserCog, adminOnly: true },
   { title: "Configurações", url: "/configuracoes", icon: Settings, adminOnly: true },
-  { title: "Cobertura", url: "/cobertura", icon: ShieldCheck, adminOnly: true },
+  { title: "Instruções", url: "/instrucoes", icon: BookOpen },
 ];
 
 export function AppSidebar() {

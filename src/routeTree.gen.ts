@@ -24,7 +24,6 @@ import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticated/corridas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
-import { Route as AuthenticatedCoberturaRouteImport } from './routes/_authenticated/cobertura'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedChatMotoristasRouteImport } from './routes/_authenticated/chat-motoristas'
 
@@ -103,11 +102,6 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedCoberturaRoute = AuthenticatedCoberturaRouteImport.update({
-  id: '/cobertura',
-  path: '/cobertura',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
@@ -127,7 +121,6 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
-  '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -146,7 +139,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
-  '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -167,7 +159,6 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
-  '/_authenticated/cobertura': typeof AuthenticatedCoberturaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corridas': typeof AuthenticatedCorridasRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -188,7 +179,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/chat-motoristas'
     | '/clientes'
-    | '/cobertura'
     | '/configuracoes'
     | '/corridas'
     | '/dashboard'
@@ -207,7 +197,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/chat-motoristas'
     | '/clientes'
-    | '/cobertura'
     | '/configuracoes'
     | '/corridas'
     | '/dashboard'
@@ -227,7 +216,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/chat-motoristas'
     | '/_authenticated/clientes'
-    | '/_authenticated/cobertura'
     | '/_authenticated/configuracoes'
     | '/_authenticated/corridas'
     | '/_authenticated/dashboard'
@@ -355,13 +343,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/cobertura': {
-      id: '/_authenticated/cobertura'
-      path: '/cobertura'
-      fullPath: '/cobertura'
-      preLoaderRoute: typeof AuthenticatedCoberturaRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/clientes': {
       id: '/_authenticated/clientes'
       path: '/clientes'
@@ -382,7 +363,6 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedChatMotoristasRoute: typeof AuthenticatedChatMotoristasRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
-  AuthenticatedCoberturaRoute: typeof AuthenticatedCoberturaRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorridasRoute: typeof AuthenticatedCorridasRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -398,7 +378,6 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChatMotoristasRoute: AuthenticatedChatMotoristasRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
-  AuthenticatedCoberturaRoute: AuthenticatedCoberturaRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorridasRoute: AuthenticatedCorridasRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -425,3 +404,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

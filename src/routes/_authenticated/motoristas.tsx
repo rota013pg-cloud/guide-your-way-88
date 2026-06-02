@@ -101,6 +101,7 @@ function MotoristasPage() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filtrados.map((m: any) => {
           const bloqueado = m.auth_status === "Bloqueado";
+          const pausado = !!m.pausado;
           return (
             <Card key={m.codigo} className="p-4 space-y-3">
               <div className="flex items-start gap-3">
@@ -109,7 +110,7 @@ function MotoristasPage() {
                   <AvatarFallback>{m.nome?.[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-xs text-muted-foreground">{m.codigo}</span>
                     {bloqueado ? (
                       <Badge variant="destructive" className="text-[10px]">
@@ -127,6 +128,11 @@ function MotoristasPage() {
                         ● {m.status}
                       </Badge>
                     )}
+                    {pausado && (
+                      <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-600">
+                        <Pause className="h-2.5 w-2.5 mr-1" /> Pausado
+                      </Badge>
+                    )}
                   </div>
                   <p className="font-semibold truncate">{m.nome}</p>
                   <p className="text-xs text-muted-foreground">{m.telefone || "Sem telefone"}</p>
@@ -142,10 +148,41 @@ function MotoristasPage() {
                 </p>
               )}
 
-              <div className="flex gap-2 pt-2 border-t">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => { setEditando(m); setOpen(true); }}>
+              {pausado && m.pausado_motivo && (
+                <p className="text-xs text-amber-600 border-l-2 border-amber-500 pl-2">
+                  Pausa: {m.pausado_motivo}
+                </p>
+              )}
+
+              <div className="flex gap-2 pt-2 border-t flex-wrap">
+                <Button size="sm" variant="outline" className="flex-1 min-w-[90px]" onClick={() => { setEditando(m); setOpen(true); }}>
                   <Pencil className="h-3 w-3 mr-1" /> Editar
                 </Button>
+                {pausado ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-emerald-600 border-emerald-500/40 hover:bg-emerald-500/10"
+                    onClick={() => retomarMut.mutate(m.codigo)}
+                    disabled={retomarMut.isPending}
+                  >
+                    <Play className="h-3 w-3 mr-1" /> Retomar
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-amber-600 border-amber-500/40 hover:bg-amber-500/10"
+                    onClick={() => {
+                      const motivo = prompt(`Pausar ${m.nome}?\n\nMotivo (opcional):`) ?? null;
+                      if (motivo === null) return; // cancelou
+                      pausarMut.mutate({ codigo: m.codigo, motivo: motivo.trim() });
+                    }}
+                    disabled={pausarMut.isPending}
+                  >
+                    <Pause className="h-3 w-3 mr-1" /> Pausar
+                  </Button>
+                )}
                 {isAdmin && (
                   <Button size="sm" variant="outline" onClick={() => setAdminAlvo(m)}>
                     <Shield className="h-3 w-3 mr-1" /> Acesso

@@ -78,7 +78,11 @@ function ClientesPage() {
           className="pl-9"
           placeholder="Buscar por código, nome ou telefone…"
           value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
+          onChange={(e) => {
+            let v = e.target.value;
+            if (/^\d+$/.test(v)) v = "C" + v;
+            setFiltro(v);
+          }}
         />
       </div>
 

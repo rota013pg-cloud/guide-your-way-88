@@ -394,7 +394,11 @@ export function NovaCorridaDialog({
             <Input
               placeholder="Código (ex: C0001)"
               value={codigoBusca}
-              onChange={(e) => setCodigoBusca(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                let v = e.target.value.toUpperCase();
+                if (v && !v.startsWith("C") && /^\d+$/.test(v)) v = "C" + v;
+                setCodigoBusca(v);
+              }}
               className="font-mono"
             />
             {buscandoCli && <span className="text-xs text-muted-foreground">buscando…</span>}

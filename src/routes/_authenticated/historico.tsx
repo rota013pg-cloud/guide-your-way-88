@@ -12,8 +12,11 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { listarHistorico } from "@/lib/historico.functions";
+import { gerarPdfHistorico, baixarPdf } from "@/lib/historico-pdf";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   ssr: false,
@@ -57,9 +60,12 @@ function HistoricoPage() {
   const [ate, setAte] = useState(hojeISO());
   const [status, setStatus] = useState<string>("Todos");
   const [motorista, setMotorista] = useState<string>("__all");
+  const [cliente, setCliente] = useState<string>("");
+  const [clienteAplicado, setClienteAplicado] = useState<string>("");
+  const [exportando, setExportando] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["historico", de, ate, status, motorista],
+    queryKey: ["historico", de, ate, status, motorista, clienteAplicado],
     queryFn: () =>
       listarFn({
         data: {
@@ -67,9 +73,41 @@ function HistoricoPage() {
           ate,
           status: status as "Todos",
           motorista: motorista === "__all" ? undefined : motorista,
+          cliente: clienteAplicado || undefined,
         },
       }),
   });
+
+  const motoristaLabel = motorista === "__all"
+    ? ""
+    : (data?.motoristas.find((m) => m.codigo === motorista)
+        ? `${motorista} — ${data!.motoristas.find((m) => m.codigo === motorista)!.nome}`
+        : motorista);
+
+  const exportarPdf = async () => {
+    if (!data) return;
+    setExportando(true);
+    try {
+      const bytes = await gerarPdfHistorico({
+        filtros: {
+          de, ate,
+          status: status === "Todos" ? "" : status,
+          motorista: motoristaLabel,
+          cliente: clienteAplicado,
+        },
+        registros: data.lista as any,
+        totalValor: data.totalValor,
+        totalFinalizadas: data.totalFinalizadas,
+        totalCanceladas: data.totalCanceladas,
+      });
+      baixarPdf(bytes, `historico_${de}_a_${ate}.pdf`);
+      toast.success("PDF gerado");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao gerar PDF");
+    } finally {
+      setExportando(false);
+    }
+  };
 
   return (
     <div className="p-4 md:p-6 space-y-4">

@@ -258,15 +258,28 @@ export const expirarOferta = createServerFn({ method: "POST" })
 
     if ((count ?? 0) > 0) return { ok: true, reofertou: false };
 
+    const novaRodada = (corrida.rodada_atual ?? 1) + 1;
     try {
       await supabaseAdmin
         .from("corridas")
-        .update({ rodada_atual: (corrida.rodada_atual ?? 1) + 1, status: "Pendente" })
+        .update({ rodada_atual: novaRodada, status: "Pendente" })
         .eq("id", data.corridaId);
 
-      await (dispararOfertas as any)({ data: { corridaId: data.corridaId, reofertar: true } });
-      return { ok: true, reofertou: true };
-    } catch {
+      await registrarLog(
+        data.corridaId,
+        "Reofertando",
+        null,
+        `Nenhum motorista aceitou — iniciando rodada ${novaRodada}`,
+      );
+
+      // Rodada 2 em diante: amplia o raio para até 10 motoristas mais próximos
+      const quantidade = novaRodada >= 2 ? 10 : QTD_MOT;
+      await (dispararOfertas as any)({
+        data: { corridaId: data.corridaId, reofertar: true, quantidade },
+      });
+      return { ok: true, reofertou: true, rodada: novaRodada };
+    } catch (e) {
+      await registrarLog(data.corridaId, "Falha reoferta", null, String((e as Error)?.message ?? e));
       return { ok: true, reofertou: false };
     }
   });

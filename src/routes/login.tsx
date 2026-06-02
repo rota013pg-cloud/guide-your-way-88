@@ -89,11 +89,10 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md p-8">
         <div className="mb-6 text-center">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground font-black text-2xl mb-3">
-            R
+          <div className="text-5xl font-black italic tracking-tighter leading-none mb-3">
+            Rota<span style={{ color: "#f7c600" }}>013</span>
           </div>
-          <h1 className="text-2xl font-bold">Rota 013 Beta</h1>
-          <p className="text-sm text-muted-foreground mt-1">Painel do operador</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Beta 2.0 · Painel do operador</p>
         </div>
         {reason && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -135,17 +134,21 @@ function LoginPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Aguarde..." : modo === "login" ? "Entrar" : "Criar conta"}
           </Button>
-          <button
-            type="button"
-            className="w-full text-sm text-muted-foreground hover:text-foreground"
-            onClick={() => setModo(modo === "login" ? "signup" : "login")}
-          >
-            {modo === "login" ? "Primeiro acesso? Criar conta de operador" : "Já tem conta? Entrar"}
-          </button>
+          {adminExiste === false && (
+            <button
+              type="button"
+              className="w-full text-sm text-muted-foreground hover:text-foreground"
+              onClick={() => setModo(modo === "login" ? "signup" : "login")}
+            >
+              {modo === "login" ? "Primeiro acesso? Criar conta de operador" : "Já tem conta? Entrar"}
+            </button>
+          )}
         </form>
-        <p className="mt-6 text-xs text-muted-foreground text-center">
-          O primeiro usuário cadastrado vira <strong>admin</strong> automaticamente.
-        </p>
+        {adminExiste === false && (
+          <p className="mt-6 text-xs text-muted-foreground text-center">
+            O primeiro usuário cadastrado vira <strong>admin</strong> automaticamente.
+          </p>
+        )}
       </Card>
 
       <EsqueciSenhaDialog open={forgotOpen} onClose={() => setForgotOpen(false)} initial={identificador} />

@@ -143,10 +143,15 @@ export const dispararOfertas = createServerFn({ method: "POST" })
     }
 
     // Já ofertados (não duplicar)
-    const { data: jaOfertados } = await supabaseAdmin
+    // - Reoferta: só exclui motoristas com oferta ativa (pendente/aceita) — expiradas/recusadas podem receber de novo
+    // - Oferta inicial: exclui todos que já tenham qualquer registro de oferta nessa corrida
+    const ofertasQuery = supabaseAdmin
       .from("corrida_ofertas")
-      .select("motorista_codigo")
+      .select("motorista_codigo,status")
       .eq("corrida_id", corridaId);
+    const { data: jaOfertados } = reofertar
+      ? await ofertasQuery.in("status", ["pendente", "aceita"])
+      : await ofertasQuery;
     const jaSet = new Set((jaOfertados ?? []).map((o) => o.motorista_codigo));
     const codigos = candidatosCodigos.filter((c) => !jaSet.has(c));
     if (codigos.length === 0) {

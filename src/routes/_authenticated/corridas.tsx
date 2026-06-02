@@ -208,6 +208,16 @@ function CorridasPage() {
                 <Button variant="outline" onClick={() => setMsgCorrida(aberta)} className="w-full">
                   <MessageSquare className="h-4 w-4 mr-2" /> Mensagens WhatsApp
                 </Button>
+                {aberta.status === "Ofertada" && (
+                  <div className="pt-2">
+                    <Button onClick={() => handleReofertar(aberta.id)} variant="secondary" className="w-full">
+                      <Rocket className="h-4 w-4 mr-2" /> Oferecer novamente
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1 text-center">
+                      Ainda não aceita — escolha quantos motoristas mais próximos receberão a oferta.
+                    </p>
+                  </div>
+                )}
                 {aberta.status === "Agendada" && (
                   <div className="pt-2">
                     <Button onClick={() => handleLancarAgora(aberta.id)} className="w-full">
@@ -220,6 +230,7 @@ function CorridasPage() {
                     )}
                   </div>
                 )}
+
                 <div>
                   <div className="text-xs text-muted-foreground mb-2">Histórico de status</div>
                   <CorridaTimeline corridaId={aberta.id} />

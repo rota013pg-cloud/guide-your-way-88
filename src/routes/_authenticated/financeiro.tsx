@@ -320,6 +320,64 @@ function FinanceiroPage() {
           O relatório usa o <b>dia operacional</b> (corte às 06h) — uma data inicial = data final gera o relatório do dia.
         </p>
       </Card>
+
+      {/* ─── Modal: Adicionar créditos adiantados ─── */}
+      <Dialog open={!!credOpen} onOpenChange={(v) => !v && setCredOpen(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pagamento adiantado de diárias</DialogTitle>
+          </DialogHeader>
+          {credOpen && (
+            <div className="space-y-3">
+              <div className="text-sm">
+                Motorista: <b>{credOpen.nome}</b> ({credOpen.codigo})
+              </div>
+              <div>
+                <Label htmlFor="cred-dias" className="text-xs">Quantidade de diárias</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Button
+                    type="button" variant="outline" size="icon"
+                    onClick={() => setCredDias((d) => Math.max(1, d - 1))}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    id="cred-dias"
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={credDias}
+                    onChange={(e) => setCredDias(Math.max(1, Math.min(60, Number(e.target.value) || 1)))}
+                    className="w-24 text-center"
+                  />
+                  <Button
+                    type="button" variant="outline" size="icon"
+                    onClick={() => setCredDias((d) => Math.min(60, d + 1))}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="text-sm bg-muted/50 rounded p-3">
+                Valor total: <b>{brl((data?.valorDiaria ?? 0) * credDias)}</b>
+                <div className="text-xs text-muted-foreground mt-1">
+                  O sistema vai dar baixa automática de 1 crédito na primeira corrida de cada novo dia.
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setCredOpen(null)}>Cancelar</Button>
+            <Button
+              onClick={() => credOpen && addCreditos.mutate({ motoristaCodigo: credOpen.codigo, dias: credDias })}
+              disabled={addCreditos.isPending}
+            >
+              {addCreditos.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Registrar pagamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

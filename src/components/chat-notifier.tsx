@@ -36,14 +36,18 @@ export function ChatNotifier() {
   noChatRef.current = noChat;
 
   const recarregar = async () => {
-    const { data } = await supabase
-      .from("chat_motorista")
-      .select("id,motorista_codigo,autor,autor_nome,texto,criado_em,lido")
-      .eq("autor", "motorista")
-      .eq("lido", false)
-      .order("criado_em", { ascending: false })
-      .limit(20);
-    setNaoLidas((data as Msg[]) ?? []);
+    try {
+      const { data } = await supabase
+        .from("chat_motorista")
+        .select("id,motorista_codigo,autor,autor_nome,texto,criado_em,lido")
+        .eq("autor", "motorista")
+        .eq("lido", false)
+        .order("criado_em", { ascending: false })
+        .limit(20);
+      setNaoLidas((data as Msg[]) ?? []);
+    } catch {
+      /* ignore */
+    }
   };
 
   useEffect(() => {

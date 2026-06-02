@@ -19,6 +19,7 @@ import { Route as AuthenticatedTarifasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedMotoristasRouteImport } from './routes/_authenticated/motoristas'
 import { Route as AuthenticatedMensagensRouteImport } from './routes/_authenticated/mensagens'
+import { Route as AuthenticatedInstrucoesRouteImport } from './routes/_authenticated/instrucoes'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -76,6 +77,11 @@ const AuthenticatedMensagensRoute = AuthenticatedMensagensRouteImport.update({
   path: '/mensagens',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedInstrucoesRoute = AuthenticatedInstrucoesRouteImport.update({
+  id: '/instrucoes',
+  path: '/instrucoes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/mensagens': typeof AuthenticatedMensagensRoute
   '/motoristas': typeof AuthenticatedMotoristasRoute
   '/mural': typeof AuthenticatedMuralRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/mensagens': typeof AuthenticatedMensagensRoute
   '/motoristas': typeof AuthenticatedMotoristasRoute
   '/mural': typeof AuthenticatedMuralRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
+  '/_authenticated/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/_authenticated/mensagens': typeof AuthenticatedMensagensRoute
   '/_authenticated/motoristas': typeof AuthenticatedMotoristasRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/financeiro'
     | '/historico'
+    | '/instrucoes'
     | '/mensagens'
     | '/motoristas'
     | '/mural'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/financeiro'
     | '/historico'
+    | '/instrucoes'
     | '/mensagens'
     | '/motoristas'
     | '/mural'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/financeiro'
     | '/_authenticated/historico'
+    | '/_authenticated/instrucoes'
     | '/_authenticated/mensagens'
     | '/_authenticated/motoristas'
     | '/_authenticated/mural'
@@ -308,6 +320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMensagensRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/instrucoes': {
+      id: '/_authenticated/instrucoes'
+      path: '/instrucoes'
+      fullPath: '/instrucoes'
+      preLoaderRoute: typeof AuthenticatedInstrucoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/historico': {
       id: '/_authenticated/historico'
       path: '/historico'
@@ -368,6 +387,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
+  AuthenticatedInstrucoesRoute: typeof AuthenticatedInstrucoesRoute
   AuthenticatedMensagensRoute: typeof AuthenticatedMensagensRoute
   AuthenticatedMotoristasRoute: typeof AuthenticatedMotoristasRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
@@ -383,6 +403,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
+  AuthenticatedInstrucoesRoute: AuthenticatedInstrucoesRoute,
   AuthenticatedMensagensRoute: AuthenticatedMensagensRoute,
   AuthenticatedMotoristasRoute: AuthenticatedMotoristasRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,

@@ -1,4 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 // Hostnames que pertencem ao app do motorista (PWA instalado no celular).
 const MOTORISTA_HOSTS = ["app.rota013.com.br"];
@@ -9,8 +10,15 @@ function destinoPorHost(host: string | undefined): "/motorista" | "/login" {
 }
 
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    const host = typeof window !== "undefined" ? window.location.hostname : undefined;
-    throw redirect({ to: destinoPorHost(host) });
-  },
+  ssr: false,
+  component: IndexRedirect,
 });
+
+function IndexRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const host = typeof window !== "undefined" ? window.location.hostname : undefined;
+    navigate({ to: destinoPorHost(host), replace: true });
+  }, [navigate]);
+  return null;
+}

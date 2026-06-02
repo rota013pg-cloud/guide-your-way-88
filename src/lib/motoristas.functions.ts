@@ -213,3 +213,45 @@ export const adminDesbloquearMotorista = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ─── PAUSAR / RETOMAR MOTORISTA ─────────────────────────
+// Quando pausado, o motorista não recebe novas ofertas de corrida.
+// O app do motorista não exibe esse estado.
+export const pausarMotorista = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        codigo: z.string(),
+        motivo: z.string().trim().max(255).optional().default(""),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("motoristas")
+      .update({
+        pausado: true,
+        pausado_em: new Date().toISOString(),
+        pausado_motivo: data.motivo || null,
+      } as any)
+      .eq("codigo", data.codigo);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const retomarMotorista = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ codigo: z.string() }).parse(d))
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("motoristas")
+      .update({
+        pausado: false,
+        pausado_em: null,
+        pausado_motivo: null,
+      } as any)
+      .eq("codigo", data.codigo);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

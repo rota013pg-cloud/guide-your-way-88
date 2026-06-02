@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
+import { dispararOfertas } from "@/lib/corridas.functions";
 
 type Tarifa = { id: number; nome: string; bandeirada: number; minimo: number; por_km: number };
 type ClienteMini = { codigo: string; nome: string; telefone: string | null };
@@ -58,7 +59,7 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
   const salvar = async () => {
     if (!origem.trim()) { toast.error("Informe a origem."); return; }
     setSalvando(true);
-    const { error } = await supabase.from("corridas").insert({
+    const { data: inserted, error } = await supabase.from("corridas").insert({
       cliente: cliente || null,
       telefone_cliente: telefone || null,
       origem,
@@ -69,10 +70,22 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
       observacoes: obs || null,
       status: "Pendente",
       tipo: "Comum",
-    });
+    }).select("id").single();
     setSalvando(false);
     if (error) { toast.error("Erro: " + error.message); return; }
     toast.success("Corrida criada!");
+    // Dispara ofertas em background
+    if (inserted?.id) {
+      dispararOfertas({ data: { corridaId: inserted.id } })
+        .then((r) => {
+          if (r.ofertados === 0) {
+            toast.warning("Corrida criada, mas " + (r.motivo ?? "nenhum motorista disponível"));
+          } else {
+            toast.success(`Oferta enviada para ${r.ofertados} motorista(s)`);
+          }
+        })
+        .catch((e) => toast.error("Erro ao ofertar: " + e.message));
+    }
     reset();
     setOpen(false);
     onCriada?.();

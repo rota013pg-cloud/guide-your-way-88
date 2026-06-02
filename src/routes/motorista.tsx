@@ -198,6 +198,7 @@ function MotoristaApp() {
           } catch {
             /* ignore */
           }
+          try { playChatBeep(); } catch { /* ignore */ }
         },
       )
       .on(

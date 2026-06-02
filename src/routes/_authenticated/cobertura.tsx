@@ -3,7 +3,14 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ArrowUpDown, ChevronDown, ChevronRight, ExternalLink, FileWarning } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronRight, ExternalLink, FileWarning, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Metric = { total: number; covered: number; skipped: number; pct: number };
 type FileEntry = {
@@ -84,6 +91,7 @@ function CoveragePage() {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("lines");
   const [asc, setAsc] = useState(true);
+  const [selectedFile, setSelectedFile] = useState<string>("");
 
   useEffect(() => {
     fetch("/coverage-summary.json")
@@ -107,6 +115,12 @@ function CoveragePage() {
       return next;
     });
   }
+
+  const filesWithUncovered = useMemo(() => {
+    return Object.keys(uncovered)
+      .filter((k) => uncovered[k].length > 0)
+      .sort((a, b) => a.localeCompare(b));
+  }, [uncovered]);
 
   const rows = useMemo(() => {
     if (!data) return [];
@@ -181,12 +195,76 @@ function CoveragePage() {
             ))}
           </div>
 
-          <Input
-            placeholder="Filtrar por caminho do arquivo..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="max-w-md"
-          />
+          <div className="flex flex-col sm:flex-row gap-3 items-start">
+            <Input
+              placeholder="Filtrar por caminho do arquivo..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="max-w-md"
+            />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Select
+                value={selectedFile}
+                onValueChange={setSelectedFile}
+              >
+                <SelectTrigger className="w-full sm:w-[380px]">
+                  <SelectValue placeholder="Selecione um arquivo para ver linhas não cobertas..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {filesWithUncovered.map((f) => (
+                    <SelectItem key={f} value={f}>
+                      <span className="font-mono text-xs">{relPath(f)}</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        ({uncovered[f].length} linhas)
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedFile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedFile("")}
+                  title="Limpar seleção"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {selectedFile && (
+            <Card className="p-4 border-l-4 border-l-destructive">
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div>
+                  <h2 className="text-sm font-semibold">{relPath(selectedFile)}</h2>
+                  <p className="text-xs text-muted-foreground">
+                    {uncovered[selectedFile]?.length ?? 0} linhas não cobertas
+                  </p>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <a
+                    href={htmlReportHref(selectedFile)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Ver no Istanbul <ExternalLink className="ml-1.5 h-3 w-3" />
+                  </a>
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {toRanges(uncovered[selectedFile] ?? []).map((r) => (
+                  <span
+                    key={r}
+                    className="font-mono text-xs px-2 py-1 rounded bg-destructive/10 text-destructive border border-destructive/20"
+                  >
+                    {r}
+                  </span>
+                ))}
+              </div>
+            </Card>
+          )}
 
           <Card className="overflow-x-auto">
             <table className="w-full text-sm">

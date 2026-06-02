@@ -89,6 +89,11 @@ export const motoristaLogin = createServerFn({ method: "POST" })
       .insert({ motorista_codigo: codigo, token, device_id: data.deviceId || null, status: "ativa" });
 
     await supabaseAdmin
+      .from("motoristas")
+      .update({ status: "Online" })
+      .eq("codigo", codigo);
+
+    await supabaseAdmin
       .from("motorista_auth")
       .update({
         device_id: data.deviceId || null,

@@ -24,12 +24,14 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
 
   const [cliente, setCliente] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [origem, setOrigem] = useState("");
-  const [destino, setDestino] = useState("");
+  const [origem, setOrigem] = useState<AddressValue>({ text: "" });
+  const [destino, setDestino] = useState<AddressValue>({ text: "" });
   const [distancia, setDistancia] = useState("");
   const [tarifaId, setTarifaId] = useState<string>("");
   const [pagamento, setPagamento] = useState<"Dinheiro" | "Pix" | "Cartão" | "Maquininha" | "Conta">("Dinheiro");
   const [obs, setObs] = useState("");
+  const [calculandoRota, setCalculandoRota] = useState(false);
+  const calcRota = useServerFn(calcularRota);
 
   useEffect(() => {
     if (!open) return;
@@ -44,13 +46,31 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
     });
   }, [open]);
 
+  // Calcula distância automaticamente quando ambos têm coordenadas
+  useEffect(() => {
+    if (origem.lat == null || origem.lng == null || destino.lat == null || destino.lng == null) return;
+    let cancel = false;
+    setCalculandoRota(true);
+    calcRota({ data: { origem: { lat: origem.lat, lng: origem.lng }, destino: { lat: destino.lat, lng: destino.lng } } })
+      .then((r) => {
+        if (cancel) return;
+        if (r.km > 0) {
+          setDistancia(r.km.toFixed(1).replace(".", ","));
+          toast.success(`📍 ${r.km.toFixed(1)} km calculados via Google Maps`);
+        }
+      })
+      .catch((e) => { if (!cancel) toast.error("Rota: " + e.message); })
+      .finally(() => { if (!cancel) setCalculandoRota(false); });
+    return () => { cancel = true; };
+  }, [origem.lat, origem.lng, destino.lat, destino.lng]);
+
   const tarifa = tarifas.find((t) => String(t.id) === tarifaId);
   const km = parseFloat(distancia.replace(",", ".")) || 0;
   const valorBruto = tarifa ? tarifa.bandeirada + km * tarifa.por_km : 0;
   const valor = tarifa ? Math.max(valorBruto, tarifa.minimo) : 0;
 
   const reset = () => {
-    setCliente(""); setTelefone(""); setOrigem(""); setDestino("");
+    setCliente(""); setTelefone(""); setOrigem({ text: "" }); setDestino({ text: "" });
     setDistancia(""); setPagamento("Dinheiro" as const); setObs("");
   };
 

@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { useWakeLock } from "@/hooks/use-wake-lock";
+import { ensureAudioUnlock } from "@/lib/notification-sound";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -148,6 +149,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useWakeLock();
+  if (typeof window !== "undefined") ensureAudioUnlock();
+
 
 
   return (

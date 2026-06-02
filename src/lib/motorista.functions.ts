@@ -458,7 +458,7 @@ export const motoristaConcluirParada = createServerFn({ method: "POST" })
 
     const { error: e2 } = await supabaseAdmin
       .from("corridas")
-      .update({ paradas: novas })
+      .update({ paradas: novas as never })
       .eq("id", data.corridaId)
       .eq("motorista_codigo", data.codigo);
     if (e2) throw new Error(e2.message);

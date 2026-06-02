@@ -174,6 +174,32 @@ function MotoristaApp() {
     if (!sessao) return;
     recarregarContexto();
 
+    const apresentarOferta = async (ofertaId: number, corridaId: number) => {
+      const { corrida } = await carregarCorridaFn({
+        data: {
+          codigo: sessao.motorista.codigo,
+          token: sessao.token,
+          corridaId,
+        },
+      });
+      if (!corrida) return;
+      setOferta({
+        ofertaId,
+        corridaId: corrida.id,
+        cliente: corrida.cliente,
+        origem: corrida.origem,
+        destino: corrida.destino,
+        valor: Number(corrida.valor_final ?? 0),
+        distancia: corrida.distancia_km as number | null,
+      });
+      try {
+        navigator.vibrate?.([200, 100, 200, 100, 200]);
+      } catch {
+        /* ignore */
+      }
+      try { playChatBeep(); } catch { /* ignore */ }
+    };
+
     // Realtime: novas ofertas para este motorista
     const channel = supabase
       .channel(`motorista-${sessao.motorista.codigo}`)
@@ -188,30 +214,7 @@ function MotoristaApp() {
         async (payload) => {
           const o = payload.new as { id: number; corrida_id: number; status: string };
           if (o.status !== "pendente") return;
-          // buscar dados da corrida
-          const { corrida } = await carregarCorridaFn({
-            data: {
-              codigo: sessao.motorista.codigo,
-              token: sessao.token,
-              corridaId: o.corrida_id,
-            },
-          });
-          if (!corrida) return;
-          setOferta({
-            ofertaId: o.id,
-            corridaId: corrida.id,
-            cliente: corrida.cliente,
-            origem: corrida.origem,
-            destino: corrida.destino,
-            valor: Number(corrida.valor_final ?? 0),
-            distancia: corrida.distancia_km as number | null,
-          });
-          try {
-            navigator.vibrate?.([200, 100, 200, 100, 200]);
-          } catch {
-            /* ignore */
-          }
-          try { playChatBeep(); } catch { /* ignore */ }
+          await apresentarOferta(o.id, o.corrida_id);
         },
       )
       .on(
@@ -222,9 +225,14 @@ function MotoristaApp() {
           table: "corrida_ofertas",
           filter: `motorista_codigo=eq.${sessao.motorista.codigo}`,
         },
-        (payload) => {
-          const o = payload.new as { id: number; status: string };
-          setOferta((cur) => (cur && o.id === cur.ofertaId && o.status !== "pendente" ? null : cur));
+        async (payload) => {
+          const o = payload.new as { id: number; corrida_id: number; status: string };
+          // Reoferta: o upsert no servidor reativa o registro como "pendente" → exibir card novamente
+          if (o.status === "pendente") {
+            await apresentarOferta(o.id, o.corrida_id);
+            return;
+          }
+          setOferta((cur) => (cur && o.id === cur.ofertaId ? null : cur));
         },
       )
       .on(

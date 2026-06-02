@@ -33,6 +33,7 @@ function ChatMotoristasPage() {
   const [enviando, setEnviando] = useState(false);
   const [busca, setBusca] = useState("");
   const [apagando, setApagando] = useState<number | null>(null);
+  const [apagandoConversa, setApagandoConversa] = useState(false);
   const fimRef = useRef<HTMLDivElement>(null);
 
   const carregarConversas = async () => {
@@ -98,6 +99,23 @@ function ChatMotoristasPage() {
       toast.error(err instanceof Error ? err.message : "Erro ao apagar");
     } finally {
       setApagando(null);
+    }
+  };
+
+  const apagarConversa = async () => {
+    if (!selecionado) return;
+    if (!confirm("Tem certeza que deseja apagar TODA a conversa com este motorista? Esta ação não pode ser desfeita.")) return;
+    setApagandoConversa(true);
+    try {
+      await adminApagarConversa({ data: { motoristaCodigo: selecionado } });
+      setSelecionado(null);
+      setMensagens([]);
+      await carregarConversas();
+      toast.success("Conversa apagada com sucesso.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao apagar conversa");
+    } finally {
+      setApagandoConversa(false);
     }
   };
 

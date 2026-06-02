@@ -551,7 +551,9 @@ function LoginTela({
   return (
     <div className="tela tela-login">
       <div className="login-wrap">
-        <LogoRota013 className="text-[3.4rem]" />
+        <div className="login-logo">
+          <LogoRota013 className="text-[3.4rem]" />
+        </div>
         <p className="login-sub">App do Motorista</p>
         <div className="form-group">
           <label>Código</label>

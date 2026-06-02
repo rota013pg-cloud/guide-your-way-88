@@ -85,3 +85,9 @@
   html, body { background-color: var(--color-background); color: var(--color-foreground); }
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 }
+
+/* Leaflet: rebaixar panes/controles para não cobrir Dialogs (Radix usa z-50) */
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom { z-index: 0 !important; }
+.leaflet-container { z-index: 0 !important; }

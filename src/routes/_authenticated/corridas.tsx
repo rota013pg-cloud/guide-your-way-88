@@ -174,6 +174,18 @@ function CorridasPage() {
                     <div>{aberta.observacoes}</div>
                   </div>
                 )}
+                {aberta.status === "Agendada" && (
+                  <div className="pt-2">
+                    <Button onClick={() => handleLancarAgora(aberta.id)} className="w-full">
+                      <Rocket className="h-4 w-4 mr-2" /> Lançar agora
+                    </Button>
+                    {aberta.agendada_para && (
+                      <p className="text-xs text-muted-foreground mt-1 text-center">
+                        Agendada para {new Date(aberta.agendada_para).toLocaleString("pt-BR")}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div>
                   <div className="text-xs text-muted-foreground mb-2">Histórico de status</div>
                   <CorridaTimeline corridaId={aberta.id} />

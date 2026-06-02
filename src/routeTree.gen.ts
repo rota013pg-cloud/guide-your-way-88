@@ -19,12 +19,12 @@ import { Route as AuthenticatedTarifasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedMotoristasRouteImport } from './routes/_authenticated/motoristas'
 import { Route as AuthenticatedMensagensRouteImport } from './routes/_authenticated/mensagens'
+import { Route as AuthenticatedInstrucoesRouteImport } from './routes/_authenticated/instrucoes'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticated/corridas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
-import { Route as AuthenticatedCoberturaRouteImport } from './routes/_authenticated/cobertura'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedChatMotoristasRouteImport } from './routes/_authenticated/chat-motoristas'
 
@@ -77,6 +77,11 @@ const AuthenticatedMensagensRoute = AuthenticatedMensagensRouteImport.update({
   path: '/mensagens',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedInstrucoesRoute = AuthenticatedInstrucoesRouteImport.update({
+  id: '/instrucoes',
+  path: '/instrucoes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
@@ -103,11 +108,6 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedCoberturaRoute = AuthenticatedCoberturaRouteImport.update({
-  id: '/cobertura',
-  path: '/cobertura',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
@@ -127,12 +127,12 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
-  '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/mensagens': typeof AuthenticatedMensagensRoute
   '/motoristas': typeof AuthenticatedMotoristasRoute
   '/mural': typeof AuthenticatedMuralRoute
@@ -146,12 +146,12 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
-  '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/mensagens': typeof AuthenticatedMensagensRoute
   '/motoristas': typeof AuthenticatedMotoristasRoute
   '/mural': typeof AuthenticatedMuralRoute
@@ -167,12 +167,12 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
-  '/_authenticated/cobertura': typeof AuthenticatedCoberturaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corridas': typeof AuthenticatedCorridasRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
+  '/_authenticated/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/_authenticated/mensagens': typeof AuthenticatedMensagensRoute
   '/_authenticated/motoristas': typeof AuthenticatedMotoristasRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
@@ -188,12 +188,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/chat-motoristas'
     | '/clientes'
-    | '/cobertura'
     | '/configuracoes'
     | '/corridas'
     | '/dashboard'
     | '/financeiro'
     | '/historico'
+    | '/instrucoes'
     | '/mensagens'
     | '/motoristas'
     | '/mural'
@@ -207,12 +207,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/chat-motoristas'
     | '/clientes'
-    | '/cobertura'
     | '/configuracoes'
     | '/corridas'
     | '/dashboard'
     | '/financeiro'
     | '/historico'
+    | '/instrucoes'
     | '/mensagens'
     | '/motoristas'
     | '/mural'
@@ -227,12 +227,12 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/chat-motoristas'
     | '/_authenticated/clientes'
-    | '/_authenticated/cobertura'
     | '/_authenticated/configuracoes'
     | '/_authenticated/corridas'
     | '/_authenticated/dashboard'
     | '/_authenticated/financeiro'
     | '/_authenticated/historico'
+    | '/_authenticated/instrucoes'
     | '/_authenticated/mensagens'
     | '/_authenticated/motoristas'
     | '/_authenticated/mural'
@@ -320,6 +320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMensagensRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/instrucoes': {
+      id: '/_authenticated/instrucoes'
+      path: '/instrucoes'
+      fullPath: '/instrucoes'
+      preLoaderRoute: typeof AuthenticatedInstrucoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/historico': {
       id: '/_authenticated/historico'
       path: '/historico'
@@ -355,13 +362,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/cobertura': {
-      id: '/_authenticated/cobertura'
-      path: '/cobertura'
-      fullPath: '/cobertura'
-      preLoaderRoute: typeof AuthenticatedCoberturaRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/clientes': {
       id: '/_authenticated/clientes'
       path: '/clientes'
@@ -382,12 +382,12 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedChatMotoristasRoute: typeof AuthenticatedChatMotoristasRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
-  AuthenticatedCoberturaRoute: typeof AuthenticatedCoberturaRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorridasRoute: typeof AuthenticatedCorridasRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
+  AuthenticatedInstrucoesRoute: typeof AuthenticatedInstrucoesRoute
   AuthenticatedMensagensRoute: typeof AuthenticatedMensagensRoute
   AuthenticatedMotoristasRoute: typeof AuthenticatedMotoristasRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
@@ -398,12 +398,12 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChatMotoristasRoute: AuthenticatedChatMotoristasRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
-  AuthenticatedCoberturaRoute: AuthenticatedCoberturaRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorridasRoute: AuthenticatedCorridasRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
+  AuthenticatedInstrucoesRoute: AuthenticatedInstrucoesRoute,
   AuthenticatedMensagensRoute: AuthenticatedMensagensRoute,
   AuthenticatedMotoristasRoute: AuthenticatedMotoristasRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,

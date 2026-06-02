@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Rocket } from "lucide-react";
+import { Rocket, MessageSquare } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -16,6 +16,7 @@ import {
 import { listarCorridasRecentes, lancarCorridaAgendada, dispararOfertas } from "@/lib/corridas.functions";
 import { CorridaTimeline } from "@/components/corrida-timeline";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
+import { MensagensWhatsAppDialog } from "@/components/mensagens-whatsapp-dialog";
 
 export const Route = createFileRoute("/_authenticated/corridas")({
   ssr: false,
@@ -37,6 +38,7 @@ function CorridasPage() {
   const qc = useQueryClient();
   const [aberta, setAberta] = useState<any | null>(null);
   const [novaAberta, setNovaAberta] = useState(false);
+  const [msgCorrida, setMsgCorrida] = useState<any | null>(null);
 
   const { data: corridas = [], isLoading } = useQuery({
     queryKey: ["corridas-recentes"],

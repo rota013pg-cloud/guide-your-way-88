@@ -14,6 +14,7 @@ import {
   adminDesbloquearMotorista,
   adminResetarDispositivoMotorista,
 } from "@/lib/motoristas.functions";
+import { useRole } from "@/hooks/use-role";
 import { toast } from "sonner";
 
 type Props = {
@@ -29,6 +30,7 @@ type Props = {
 
 export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
   const qc = useQueryClient();
+  const { isAdmin } = useRole();
   const verSenhaFn = useServerFn(adminVerSenha);
   const alterarSenhaFn = useServerFn(adminAlterarSenha);
   const bloquearFn = useServerFn(adminBloquearMotorista);
@@ -97,50 +99,54 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
             </div>
           )}
 
-          {/* Ver senha */}
-          <div className="space-y-2">
-            <Label className="text-xs">Senha do app</Label>
-            {senha ? (
-              <div className="flex items-center gap-2">
-                <Input value={mostrarSenha ? senha : "•".repeat(senha.length)} readOnly />
-                <Button size="icon" variant="ghost" onClick={() => setMostrarSenha((v) => !v)}>
-                  {mostrarSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => {
-                    navigator.clipboard.writeText(senha);
-                    toast.success("Senha copiada");
-                  }}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+          {isAdmin && (
+            <>
+              {/* Ver senha */}
+              <div className="space-y-2">
+                <Label className="text-xs">Senha do app</Label>
+                {senha ? (
+                  <div className="flex items-center gap-2">
+                    <Input value={mostrarSenha ? senha : "•".repeat(senha.length)} readOnly />
+                    <Button size="icon" variant="ghost" onClick={() => setMostrarSenha((v) => !v)}>
+                      {mostrarSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(senha);
+                        toast.success("Senha copiada");
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => verMut.mutate()} disabled={verMut.isPending}>
+                    <Eye className="h-3 w-3 mr-2" /> Visualizar senha
+                  </Button>
+                )}
               </div>
-            ) : (
-              <Button variant="outline" size="sm" onClick={() => verMut.mutate()} disabled={verMut.isPending}>
-                <Eye className="h-3 w-3 mr-2" /> Visualizar senha
-              </Button>
-            )}
-          </div>
 
-          {/* Alterar senha */}
-          <div className="space-y-2">
-            <Label className="text-xs">Alterar senha</Label>
-            <div className="flex gap-2">
-              <Input
-                value={novaSenha}
-                onChange={(e) => setNovaSenha(e.target.value)}
-                placeholder="Nova senha (mín 4 caracteres)"
-              />
-              <Button
-                onClick={() => altMut.mutate()}
-                disabled={altMut.isPending || novaSenha.length < 4}
-              >
-                <KeyRound className="h-3 w-3 mr-2" /> Salvar
-              </Button>
-            </div>
-          </div>
+              {/* Alterar senha */}
+              <div className="space-y-2">
+                <Label className="text-xs">Alterar senha</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={novaSenha}
+                    onChange={(e) => setNovaSenha(e.target.value)}
+                    placeholder="Nova senha (mín 4 caracteres)"
+                  />
+                  <Button
+                    onClick={() => altMut.mutate()}
+                    disabled={altMut.isPending || novaSenha.length < 4}
+                  >
+                    <KeyRound className="h-3 w-3 mr-2" /> Salvar
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Resetar dispositivo */}
           <div className="space-y-2 border-t pt-3">
@@ -159,37 +165,38 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
             </Button>
           </div>
 
-          {/* Bloquear / Desbloquear */}
-          <div className="space-y-2 border-t pt-3">
-            {bloqueado ? (
-              <Button
-                variant="default"
-                className="w-full"
-                onClick={() => blockMut.mutate()}
-                disabled={blockMut.isPending}
-              >
-                <Unlock className="h-4 w-4 mr-2" /> Desbloquear acesso
-              </Button>
-            ) : (
-              <>
-                <Label className="text-xs">Motivo do bloqueio</Label>
-                <Textarea
-                  rows={2}
-                  value={motivo}
-                  onChange={(e) => setMotivo(e.target.value)}
-                  placeholder="Ex: não compareceu, problema com documentação…"
-                />
+          {isAdmin && (
+            <div className="space-y-2 border-t pt-3">
+              {bloqueado ? (
                 <Button
-                  variant="destructive"
+                  variant="default"
                   className="w-full"
                   onClick={() => blockMut.mutate()}
-                  disabled={blockMut.isPending || motivo.trim().length === 0}
+                  disabled={blockMut.isPending}
                 >
-                  <Lock className="h-4 w-4 mr-2" /> Bloquear acesso
+                  <Unlock className="h-4 w-4 mr-2" /> Desbloquear acesso
                 </Button>
-              </>
-            )}
-          </div>
+              ) : (
+                <>
+                  <Label className="text-xs">Motivo do bloqueio</Label>
+                  <Textarea
+                    rows={2}
+                    value={motivo}
+                    onChange={(e) => setMotivo(e.target.value)}
+                    placeholder="Ex: não compareceu, problema com documentação…"
+                  />
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => blockMut.mutate()}
+                    disabled={blockMut.isPending || motivo.trim().length === 0}
+                  >
+                    <Lock className="h-4 w-4 mr-2" /> Bloquear acesso
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <DialogFooter>

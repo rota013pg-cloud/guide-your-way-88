@@ -16,12 +16,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, FileDown, Trash2 } from "lucide-react";
+import { CheckCircle2, Loader2, FileDown, Trash2, Wallet, Plus, Minus } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 import {
   listarFinanceiroHoje,
   marcarDiariaPaga,
   removerPagamento,
   relatorioFinanceiro,
+  adicionarCreditosDiaria,
+  removerCreditoDiaria,
 } from "@/lib/financeiro.functions";
 // pdf-lib é pesado e só precisa ao clicar "Gerar PDF" — import dinâmico.
 

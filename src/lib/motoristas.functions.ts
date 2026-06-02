@@ -24,7 +24,6 @@ export const listarMotoristas = createServerFn({ method: "GET" })
     const { data: motoristas, error } = await supabaseAdmin
       .from("motoristas")
       .select("*")
-      .neq("status", "Excluido" as any)
       .order("codigo", { ascending: true });
     if (error) throw new Error(error.message);
     const { data: auths } = await supabaseAdmin

@@ -439,6 +439,30 @@ function MotoristaApp() {
     }
   };
 
+  const concluirParada = async (ordem: number) => {
+    if (!sessao || !corridaAtual) return;
+    setCarregando(true);
+    try {
+      await concluirParadaFn({
+        data: {
+          codigo: sessao.motorista.codigo,
+          token: sessao.token,
+          corridaId: corridaAtual.id,
+          ordem,
+        },
+      });
+      const { corrida } = await carregarCorridaFn({
+        data: { codigo: sessao.motorista.codigo, token: sessao.token, corridaId: corridaAtual.id },
+      });
+      if (corrida) setCorridaAtual(corrida as Corrida);
+      mostrarToast(`Parada ${ordem} concluída ✓`);
+    } catch (e: unknown) {
+      mostrarToast(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
   const irWaze = (lugar: string) =>
     window.open(`https://waze.com/ul?q=${encodeURIComponent(lugar)}`, "_blank");
 

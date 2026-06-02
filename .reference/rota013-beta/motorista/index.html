@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Rota013"/>
+  <meta name="theme-color" content="#f7c600"/>
+  <link rel="manifest" href="/motorista/manifest.json"/>
+  <link rel="stylesheet" href="/motorista/css/style.css"/>
+  <title>Rota 013 — Motorista</title>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="telaLogin" class="tela">
+  <div class="login-wrap">
+    <div class="login-logo">Rota<span>013</span></div>
+    <p class="login-sub">App do Motorista</p>
+    <div class="form-group">
+      <label>Código</label>
+      <input id="loginCodigo" type="text" placeholder="Ex: M0101"
+             style="text-transform:uppercase" autocomplete="username"/>
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input id="loginSenha" type="password" placeholder="Sua senha"
+             autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')fazerLogin()"/>
+    </div>
+    <button class="btn-primary" onclick="fazerLogin()">Entrar</button>
+    <p id="loginErro" class="erro-msg"></p>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="telaHome" class="tela hidden">
+  <header class="header">
+    <a class="app-logo" href="#">Rota<span>013</span></a>
+    <div class="header-center">
+      <div id="nomeMotorista" class="header-nome">-</div>
+      <div id="motoInfo" class="header-moto">-</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="fotoPerfil" class="avatar" style="width:34px;height:34px;font-size:13px"></div>
+      <button class="btn-icon" onclick="mostrarPerfil()">⚙️</button>
+    </div>
+  </header>
+
+  <div class="status-bar">
+    <div id="statusDot" class="status-dot offline"></div>
+    <span id="statusTexto">Offline</span>
+    <div class="toggle-switch" onclick="toggleStatus()" title="Ficar online/offline" style="cursor:pointer">
+      <span class="toggle-track">
+        <span class="toggle-thumb"></span>
+      </span>
+      <span id="toggleLabel" class="toggle-label">OFFLINE</span>
+    </div>
+  </div>
+
+  <div class="cards-row">
+    <div class="card-mini">
+      <div id="corridasHoje" class="card-num">0</div>
+      <div class="card-label">Corridas</div>
+    </div>
+    <div class="card-mini">
+      <div id="ganhoHoje" class="card-num gold">R$ 0</div>
+      <div class="card-label">Ganho hoje</div>
+    </div>
+    <div class="card-mini" id="cardDiaria">
+      <div id="diariaSt" class="card-num">⏳</div>
+      <div class="card-label">Diária</div>
+    </div>
+  </div>
+
+  <!-- Conteúdo scrollável da home -->
+  <div class="home-scroll">
+    <div class="section-title">Últimas corridas</div>
+    <div id="listaUltimas" class="lista-corridas">
+      <div class="empty-msg">Nenhuma corrida hoje</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CORRIDA EM ANDAMENTO -->
+<div id="telaCorrente" class="tela hidden">
+  <header class="header header-dark">
+    <button class="btn-icon-sm" onclick="voltarHome()">←</button>
+    <span class="header-titulo">Corrida em andamento</span>
+    <div id="corridaStatusBadge" class="badge-status">Aceita</div>
+  </header>
+
+  <!-- BLOCO SCROLLÁVEL — contém mapa, card e botões -->
+  <div class="corrente-scroll">
+
+    <!-- Mapa Google Maps -->
+    <div id="mapaGoogleDiv" class="mapa-div">
+      <div id="mapaPlaceholder" class="mapa-placeholder">
+        🗺️ Carregando mapa...
+      </div>
+      <div id="mapaGoogle" style="width:100%;height:100%;display:none"></div>
+    </div>
+
+    <!-- Card da corrida -->
+    <div class="corrida-card">
+      <div class="corrida-row">
+        <span class="ci">👤</span>
+        <div><span class="cl">CLIENTE</span><span id="cCliente" class="cv">-</span></div>
+      </div>
+      <div class="corrida-row">
+        <span class="ci">📍</span>
+        <div style="flex:1"><span class="cl">BUSCAR EM</span><span id="cOrigem" class="cv">-</span></div>
+        <button class="btn-waze" onclick="irOrigem()">🧭 Ir</button>
+      </div>
+      <div class="corrida-divider"></div>
+      <div class="corrida-row">
+        <span class="ci">🏁</span>
+        <div style="flex:1"><span class="cl">DESTINO</span><span id="cDestino" class="cv">-</span></div>
+        <button class="btn-waze" onclick="irDestino()">🧭 Ir</button>
+      </div>
+      <div class="corrida-row" style="border-top:1px solid var(--line)">
+        <span class="ci">💰</span>
+        <div><span class="cl">VALOR</span><span id="cValor" class="cv gold">-</span></div>
+      </div>
+    </div>
+
+    <!-- Botões de ação -->
+    <div id="acoesCorrente" class="acoes-corrida"></div>
+
+    <!-- Espaçador -->
+    <div style="height:24px"></div>
+
+  </div><!-- /corrente-scroll -->
+</div>
+
+<!-- MODAL OFERTA -->
+<div id="modalOferta" class="modal-oferta hidden">
+  <div class="oferta-card">
+    <div class="oferta-titulo">🏍️ Nova corrida disponível!</div>
+    <div class="oferta-info">
+      <div class="oferta-row"><span class="oferta-icone">👤</span><div><span class="oferta-label">CLIENTE</span><span id="ofCliente" class="oferta-valor">-</span></div></div>
+      <div class="oferta-row"><span class="oferta-icone">📍</span><div><span class="oferta-label">BUSCAR EM</span><span id="ofOrigem" class="oferta-valor">-</span></div></div>
+      <div class="oferta-row"><span class="oferta-icone">🏁</span><div><span class="oferta-label">DESTINO</span><span id="ofDestino" class="oferta-valor">-</span></div></div>
+      <div class="oferta-row"><span class="oferta-icone">💰</span><div><span class="oferta-label">VALOR</span><span id="ofValor" class="oferta-valor gold">-</span></div></div>
+    </div>
+    <div class="countdown-wrap">
+      <svg class="countdown-svg" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="34" fill="none" stroke="#333" stroke-width="6"/>
+        <circle id="cdCircle" cx="40" cy="40" r="34" fill="none" stroke="#f7c600" stroke-width="6"
+          stroke-dasharray="213.6" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 40 40)"/>
+      </svg>
+      <div id="cdNum" class="countdown-num">30</div>
+    </div>
+    <div class="oferta-botoes">
+      <button class="btn-recusar" onclick="recusarOferta()">✕ Recusar</button>
+      <button class="btn-aceitar" onclick="aceitarOferta()">✓ Aceitar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BLOQUEIO DIÁRIA -->
+<div id="modalBloqueio" class="modal-overlay hidden">
+  <div class="bloqueio-card">
+    <div style="font-size:40px;text-align:center;margin-bottom:12px">⚠️</div>
+    <h3 style="text-align:center;margin:0 0 8px">Pagamento da Diária</h3>
+    <p id="bloqueioMsg" style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:20px"></p>
+
+    <div class="pix-box">
+      <div class="pix-label">PIX — Chave para pagamento</div>
+      <div id="pixChave" class="pix-chave">-</div>
+      <button class="btn-copiar" onclick="copiarPix()">📋 Copiar chave Pix</button>
+    </div>
+
+    <div class="bloqueio-aviso">Após realizar o pagamento, avise pelo botão abaixo e aguarde a confirmação do operador.</div>
+    <button class="btn-jaenviei" id="btnJaEnviei" onclick="jaEnviei()">✅ Já enviei o pagamento</button>
+  </div>
+</div>
+
+<!-- MODAL AGUARDE -->
+<div id="modalAguarde" class="modal-overlay hidden">
+  <div class="aguarde-box">
+    <div class="spinner"></div>
+    <p>Aguarde...</p>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/motorista/js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/motorista/sw.js').catch(()=>{});
+  }
+</script>
+
+<!-- Bottom Nav -->
+<nav id="bottomNav">
+  <button onclick="mostrarHome()" id="navHome" style="
+    background:none;border:none;color:#888;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;
+    padding:4px 0;width:100%;transition:color .15s;">
+    <span style="font-size:22px">🏠</span>Início
+  </button>
+  <button id="navCorridaBtn" onclick="mostrarCorrente()" style="
+    background:none;border:none;color:#f97316;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;
+    padding:4px 0;width:100%;transition:color .15s;
+    display:none;">
+    <span style="font-size:22px">🚗</span>Corrida
+  </button>
+  <button onclick="mostrarPerfil()" id="navPerfil" style="
+    background:none;border:none;color:#888;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;
+    padding:4px 0;width:100%;transition:color .15s;">
+    <span style="font-size:22px">👤</span>Perfil
+  </button>
+</nav>
+
+<div id="modalPerfilMot" class="modal-overlay hidden" onclick="if(event.target===this)fecharPerfil()" style="align-items:flex-end;padding:0;z-index:400">
+  <div style="background:#1a1a1a;border-radius:24px 24px 0 0;padding:24px 20px calc(28px + env(safe-area-inset-bottom));width:100%;max-width:480px;margin:0 auto;max-height:90vh;overflow-y:auto">
+    <div style="width:40px;height:4px;background:#333;border-radius:2px;margin:0 auto 20px"></div>
+
+    <!-- Avatar + nome -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+      <div id="perfilAvatar" style="width:60px;height:60px;border-radius:50%;background:#f7c600;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#111;flex-shrink:0;background-size:cover;background-position:center">M</div>
+      <div style="flex:1;min-width:0">
+        <div id="perfilNome" style="font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+        <div id="perfilCodigo" style="font-size:13px;color:#f7c600;margin-top:2px;font-weight:700">—</div>
+      </div>
+    </div>
+
+    <!-- Infos do motorista -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:#222;border-radius:12px;padding:12px 14px">
+        <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Moto</div>
+        <div id="perfilMoto" style="font-size:13px;font-weight:700">—</div>
+      </div>
+      <div style="background:#222;border-radius:12px;padding:12px 14px">
+        <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Placa</div>
+        <div id="perfilPlaca" style="font-size:13px;font-weight:700">—</div>
+      </div>
+      <div style="background:#222;border-radius:12px;padding:12px 14px">
+        <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Telefone</div>
+        <div id="perfilTelefone" style="font-size:13px;font-weight:700">—</div>
+      </div>
+      <div style="background:#222;border-radius:12px;padding:12px 14px">
+        <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Status</div>
+        <div id="perfilStatus" style="font-size:13px;font-weight:700">—</div>
+      </div>
+    </div>
+
+    <!-- Trocar senha -->
+    <div style="background:#222;border-radius:14px;padding:16px;margin-bottom:16px">
+      <div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700">🔐 Alterar senha</div>
+      <div id="perfilSenhaForm">
+        <input id="perfilSenhaAtual" type="password" placeholder="Senha atual"
+               style="width:100%;background:#1a1a1a;border:1.5px solid #333;border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;margin-bottom:8px"/>
+        <input id="perfilSenhaNova" type="password" placeholder="Nova senha (mín. 4 caracteres)"
+               style="width:100%;background:#1a1a1a;border:1.5px solid #333;border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;margin-bottom:8px"/>
+        <input id="perfilSenhaConf" type="password" placeholder="Confirmar nova senha"
+               style="width:100%;background:#1a1a1a;border:1.5px solid #333;border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;margin-bottom:10px"/>
+        <button onclick="alterarSenhaPerfil()" style="width:100%;background:#f7c600;color:#111;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">
+          Alterar senha
+        </button>
+        <div id="perfilSenhaMsg" style="text-align:center;font-size:13px;margin-top:8px;min-height:18px"></div>
+      </div>
+    </div>
+
+    <button onclick="fecharPerfil()" style="width:100%;background:transparent;border:1px solid #333;color:#888;border-radius:12px;padding:13px;font-size:14px;cursor:pointer;margin-bottom:10px">Fechar</button>
+    <button onclick="fecharPerfil();setTimeout(sair,200)" style="width:100%;background:transparent;border:1.5px solid rgba(239,68,68,.5);color:#ef4444;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer">Sair do app</button>
+  </div>
+</div>
+<script>
+// Garantir bottom nav ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+  // Mostrar bottom nav assim que home for exibida
+  var origMostrarHome = window.mostrarHome;
+  window.mostrarHome = function() {
+    origMostrarHome && origMostrarHome();
+    var nav = document.getElementById('bottomNav');
+    if (nav) nav.classList.add('visivel');
+    var nh = document.getElementById('navHome');
+    if (nh) nh.style.color = '#f7c600';
+  };
+});
+// _forceNav
+</script>
+</body>
+</html>

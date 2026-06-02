@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Rota013"/>
+  <meta name="theme-color" content="#f7c600"/>
+  <link rel="manifest" href="/beta/manifest.json"/>
+  <link rel="apple-touch-icon" href="/img/apple-icon-180x180.png"/>
+  <title>Rota 013 | Painel Operador</title>
+  <link rel="stylesheet" href="/beta/css/style.css"/>
+  </script>
+<style id="dash-style">
+.dash-metricas{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.dash-metrica{background:var(--panel,#fff);border:1px solid var(--border,#e5e7eb);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.dm-num{font-size:28px;font-weight:800;color:var(--text,#111)}
+.dm-num.dm-orange{color:#f97316}.dm-num.dm-green{color:#16a34a}
+.dm-label{font-size:11px;color:var(--muted,#888);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.dash-main{display:grid;grid-template-columns:62% 38%;gap:14px;margin-bottom:14px;align-items:start}
+.dash-mapa-wrap{border-radius:16px;overflow:hidden;background:var(--panel,#fff);border:1px solid var(--border,#e5e7eb)}
+.dash-mapa{width:100%;height:380px;background:#dde;display:block}
+.dash-col-right{display:flex;flex-direction:column;gap:12px}
+.dash-acoes-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px}
+.dash-btn-acao{font-size:13px!important;padding:10px 8px!important;border-radius:10px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-online-wrap{}
+.dash-motoristas-lista{max-height:220px;overflow-y:auto;padding:6px 8px}
+.dash-mot-item{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:10px}
+.dash-mot-foto{width:36px;height:36px;border-radius:50%;background:#f7c600;color:#111;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background-size:cover;background-position:center}
+.dash-mot-info{flex:1;min-width:0}
+.dash-mot-nome{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-mot-sub{font-size:11px;color:var(--muted,#888)}
+.dash-bottom{display:grid;grid-template-columns:62% 38%;gap:14px;align-items:start;margin-bottom:80px}
+.dash-ativas-lista{max-height:360px;overflow-y:auto;padding:8px}
+.dash-ativa-item{border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.dash-ativa-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.dash-ativa-id{font-size:12px;font-weight:800;color:var(--muted,#888)}
+.dash-ativa-status{font-size:11px;font-weight:700}
+.dash-ativa-cliente{font-size:13px;font-weight:700;margin-bottom:4px}
+.dash-ativa-rota{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted,#888);margin-bottom:6px}
+.dash-ativa-footer{display:flex;justify-content:space-between;font-size:12px}
+.dash-ativa-valor{font-weight:800;color:#16a34a}
+.badge-online{background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.dash-empty{text-align:center;color:var(--muted,#888);padding:20px;font-size:13px}
+.fab-nova-corrida{position:fixed;bottom:28px;right:28px;width:56px;height:56px;border-radius:16px;background:#f7c600;color:#111;border:none;font-size:32px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:40;align-items:center;justify-content:center;line-height:1;display:flex}
+.fab-nova-corrida:hover{transform:scale(1.08)}
+#mapaDash .leaflet-pane,#mapaDash .leaflet-control-container{z-index:1!important}
+.modal.active,.modal-oferta{z-index:1000!important}
+@media(max-width:1100px){.dash-main,.dash-bottom{grid-template-columns:1fr}}
+@media(max-width:700px){.dash-metricas{grid-template-columns:repeat(2,1fr)}.fab-nova-corrida{bottom:80px;right:16px}}
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="icon" href="/beta/favicon.ico"/>
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <a href="#" style="font-size:3rem;font-weight:900;font-style:italic;letter-spacing:-2px;color:#fff;text-decoration:none;line-height:1;display:block;margin-bottom:8px;text-align:center">Rota<span style="color:#f7c600;font-size:3rem">013</span></a>
+      <p>Central operacional de transporte por motocicletas</p>
+      <label>Usuário<input id="loginUser" placeholder="Usuário" autocomplete="username"></label>
+      <label>Senha<input id="loginPass" type="password" placeholder="Senha" autocomplete="current-password"></label>
+      <button class="btn primary full-btn" onclick="tentarLogin()">Entrar</button>
+      
+    </div>
+  </section>
+
+  <div class="app hidden" id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand" style="flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:12px 0 20px">
+        <a href="#" style="font-size:2.8rem;font-weight:900;font-style:italic;letter-spacing:-2px;color:#fff;text-decoration:none;line-height:1;display:block">Rota<span style="color:#f7c600;font-size:2.8rem;letter-spacing:-2px">013</span></a>
+        <span style="font-size:11px;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-top:2px">Painel Operador</span>
+      </div>
+      <nav class="menu">
+        <button class="menu-item active" data-page="dashboard">Dashboard</button>
+        <button class="menu-item" data-page="corridas">Corridas</button>
+        <button class="menu-item" data-page="clientes">Clientes</button>
+        <button class="menu-item" data-page="motoristas">Motoristas</button>
+        <button class="menu-item" data-page="financeiro">Financeiro</button>
+        <button class="menu-item" data-page="tarifas">Tarifas</button>
+        <button class="menu-item" data-page="mensagens">Mensagens</button>
+        <button class="menu-item" data-page="historico">Histórico</button>
+        <button class="menu-item admin-only" data-page="admin">Admin</button>
+        <button class="menu-item" data-page="configuracoes">Configurações</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="hamburger" id="btnMenu">☰</button>
+        <div>
+          <h2 id="pageTitle">Dashboard</h2>
+          <p id="statusBackend" style="font-size:12px;color:var(--muted)">Conectando...</p>
+        </div>
+        <button class="btn" onclick="fazerLogout()" style="margin-right:8px;font-size:12px">Sair</button><button class="btn" id="btnDarkMode" onclick="toggleDarkMode()" title="Alternar tema" style="padding:8px 12px;font-size:18px;border-radius:12px">🌙</button><div class="operator-card">
+          <div class="operator-photo" id="operatorAvatar" style="background-size:cover;background-position:center">OP</div>
+          <div>
+            <strong>Operador Online</strong>
+            <span id="operatorName">Operador</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="content">
+        <section class="page active" id="dashboard">
+  <div class="dash-metricas">
+    <div class="dash-metrica"><span class="dm-num" id="dashCorridas">0</span><span class="dm-label">Corridas hoje</span></div>
+    <div class="dash-metrica"><span class="dm-num dm-orange" id="dashAndamento">0</span><span class="dm-label">Em andamento</span></div>
+    <div class="dash-metrica"><span class="dm-num dm-green" id="dashMotoristas">0</span><span class="dm-label">Online</span></div>
+    <div class="dash-metrica"><span class="dm-num" id="dashDiarias">R$ 0</span><span class="dm-label">Diárias hoje</span></div>
+  </div>
+  <div class="dash-main">
+    <div class="dash-mapa-wrap panel">
+      <div class="panel-header" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <h3>🗺️ Mapa ao vivo</h3>
+        <span id="dashOnlineCount" class="badge-online">0 online</span>
+      </div>
+      <div id="mapaDash" class="dash-mapa"></div>
+    </div>
+    <div class="dash-col-right">
+      <div class="panel">
+        <div class="panel-header" style="padding:10px 14px"><h3>⚡ Ações rápidas</h3></div>
+        <div class="dash-acoes-grid">
+          <button class="btn primary dash-btn-acao" onclick="openModal('modalCorrida')">🏍️ Nova Corrida</button>
+          <button class="btn dash-btn-acao" onclick="novoCliente()">👤 Novo Cliente</button>
+          <button class="btn dash-btn-acao" onclick="novoMotorista()">➕ Motorista</button>
+          <button class="btn dash-btn-acao" onclick="goToPage('tarifas')">📋 Tarifas</button>
+          <button class="btn dash-btn-acao" onclick="goToPage('financeiro')">💰 Financeiro</button>
+          <button class="btn dash-btn-acao" onclick="goToPage('mensagens')">💬 Mensagens</button>
+        </div>
+      </div>
+      <div class="panel dash-online-wrap">
+        <div class="panel-header" style="padding:10px 14px"><h3>🏍️ Motoristas online</h3></div>
+        <div id="dashMotoristasList" class="dash-motoristas-lista">
+          <div class="dash-empty">Nenhum motorista online</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="dash-bottom">
+    <div class="panel">
+      <div class="panel-header" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <h3>📋 Histórico de corridas</h3>
+        <button class="btn" onclick="goToPage('corridas')" style="font-size:12px;padding:5px 10px">Ver todas</button>
+      </div>
+      <div class="table-wrap" style="max-height:360px;overflow-y:auto">
+        <table>
+          <thead><tr><th>Cliente</th><th>Origem → Destino</th><th>Valor</th><th>Motorista</th><th>Status</th><th></th></tr></thead>
+          <tbody id="dashboardCorridas"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <h3>🔴 Corridas ativas</h3>
+        <span id="dashAtivasCount" class="badge-online">0</span>
+      </div>
+      <div id="dashCorridasAtivas" class="dash-ativas-lista">
+        <div class="dash-empty">Nenhuma corrida ativa</div>
+      </div>
+    </div>
+  </div>
+  <button class="fab-nova-corrida" onclick="openModal('modalCorrida')" title="Nova Corrida">＋</button>
+</section>
+
+        <section class="page" id="corridas">
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>Gestão de Corridas</h3><small>Criação, cálculo, mensagens e acompanhamento</small></div>
+              <button class="btn primary" onclick="openModal('modalCorrida')">Cadastrar Corrida</button>
+            </div>
+            <div class="filters">
+              <input id="buscaCorrida" placeholder="Buscar código, cliente, origem ou destino..." oninput="renderCorridas()">
+              <select id="filtroStatus" onchange="renderCorridas()">
+                <option value="">Todos</option><option>Nova</option><option>Divulgada</option><option>Aceita</option><option>Em andamento</option><option>Finalizada</option><option>Cancelada</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>Cliente</th><th>Origem</th><th>Destino</th><th>Método</th><th>Valor</th><th>Motorista</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody id="tabelaCorridas"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="clientes">
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>Clientes</h3><small>Contato salvo como: 0012 - Nome</small></div>
+              <button class="btn" onclick="gerarFichaClientesPDF()">📄 PDF</button><button class="btn primary" onclick="novoCliente()">Novo Cliente</button>
+            </div>
+            <div class="filters one"><input id="buscaCliente" placeholder="Buscar por código, nome ou telefone..." oninput="renderClientes()"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Código</th><th>Nome</th><th>WhatsApp</th><th>Contato sugerido</th><th>Corridas</th><th>Ações</th></tr></thead>
+                <tbody id="tabelaClientes"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="motoristas">
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>Motoristas</h3><small>ID, documentos, foto, histórico e diária</small></div>
+              <button class="btn" onclick="gerarFichaMotoristasPDF()">📄 PDF</button><button class="btn primary" onclick="novoMotorista()">Novo Motorista</button>
+            </div>
+            <div class="filters one"><input id="buscaMotorista" placeholder="Buscar ID, nome, telefone, placa ou moto..." oninput="renderMotoristas()"></div>
+            <div class="drivers-grid" id="gridMotoristas"></div>
+          </div>
+        </section>
+
+        <section class="page" id="financeiro">
+          <div class="cards">
+            <div class="card"><span>Pagas</span><strong id="finPagas">0</strong><small>Diárias</small></div>
+            <div class="card"><span>Pendentes</span><strong id="finPendentes">0</strong><small>Diárias</small></div>
+            <div class="card"><span>Total</span><strong id="finTotal">R$ 0,00</strong><small>Hoje</small></div>
+            <div class="card"><span>Valor diária</span><strong id="finValorDiaria">R$ 0,00</strong><small>Configuração</small></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h3>Controle de Diárias</h3></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>Motorista</th><th>Status</th><th>Pagamento</th><th>Ações</th></tr></thead>
+                <tbody id="tabelaFinanceiro"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- RELATÓRIO FINANCEIRO -->
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>📊 Relatório por Período</h3><small>Consulte e exporte diárias por período</small></div>
+            </div>
+            <div class="filters" style="flex-wrap:wrap;gap:8px">
+              <button class="btn" onclick="atalhoRelatorio('hoje')">Hoje</button>
+              <button class="btn" onclick="atalhoRelatorio('7dias')">7 dias</button>
+              <button class="btn" onclick="atalhoRelatorio('semana')">Esta semana</button>
+              <button class="btn" onclick="atalhoRelatorio('mes')">Este mês</button>
+              <button class="btn" onclick="atalhoRelatorio('30dias')">30 dias</button>
+            </div>
+            <div class="form-grid" style="margin-top:12px">
+              <label>De<input type="date" id="relDe"></label>
+              <label>Até<input type="date" id="relAte"></label>
+              <label>Tipo
+                <select id="relTipo">
+                  <option value="">Todos</option>
+                  <option value="Diária">Diária</option>
+                  <option value="Extra">Extra</option>
+                </select>
+              </label>
+              <label>Motorista
+                <input id="relMotorista" placeholder="Código ou nome...">
+              </label>
+            </div>
+            <div class="actions" style="margin-top:10px">
+              <button class="btn primary" onclick="buscarRelatorio()">🔍 Buscar</button>
+              <button class="btn" onclick="exportarRelatorioPDF()">📄 Exportar PDF</button>
+            </div>
+            <div id="relTotal" style="margin:10px 0;font-size:14px;font-weight:600"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Data/Hora</th><th>Código</th><th>Motorista</th><th>Tipo</th><th>Valor</th><th>Operador</th></tr></thead>
+                <tbody id="tabelaRelatorio"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="tarifas">
+
+  <!-- ═══════════════════════════════════════════════════════
+       TABELAS FIXAS — uma por rota de destino
+  ════════════════════════════════════════════════════════════ -->
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>⚙️ Tabelas Fixas por Destino</h3>
+        <small>Cada rota tem sua própria tarifa mínima e valor/km. Os valores são calculados automaticamente pela distância real (Google Maps).</small>
+      </div>
+    </div>
+
+    <div class="tariff-grid" id="tabelasFixasEditor"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       TABELA HÍBRIDA — rotas fora das tabelas fixas
+  ════════════════════════════════════════════════════════════ -->
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>🔀 Tabela Híbrida</h3>
+        <small>Usada quando a rota não está em nenhuma tabela fixa. Calcula pelo endereço real via geocodificação.</small>
+      </div>
+    </div>
+
+    <div class="tariff-grid" style="grid-template-columns:1fr">
+      <div class="tariff-card" id="tabelaHibridaEditor"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SIMULADOR DE CORRIDA
+  ════════════════════════════════════════════════════════════ -->
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>🧮 Simular Corrida</h3>
+        <small>Selecione origem e destino para calcular o valor usando a tabela correta</small>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <label>Cidade de Origem
+        <select id="simCidadeOrigem" onchange="atualizarBairrosOrigem()">
+          <option value="pg">Praia Grande</option>
+        </select>
+      </label>
+      <label>Bairro de Origem
+        <select id="simBairroOrigem" onchange="simularCorrida()">
+          <option value="">Selecione...</option>
+        </select>
+      </label>
+      <label>Cidade de Destino
+        <select id="simCidadeDestino" onchange="atualizarBairrosDestino()">
+          <option value="pgpg">Praia Grande</option>
+          <option value="pgsv">São Vicente</option>
+          <option value="pgsantos">Santos</option>
+          <option value="pgcubatao">Cubatão</option>
+        </select>
+      </label>
+      <label>Bairro de Destino
+        <select id="simBairroDestino" onchange="simularCorrida()">
+          <option value="">Selecione...</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="summary-box" id="simResultado" style="display:none; margin-top:14px">
+      <div class="form-grid">
+        <div>
+          <span class="note">Tabela usada</span>
+          <strong id="simMetodo">—</strong>
+        </div>
+        <div>
+          <span class="note">Distância</span>
+          <strong id="simDistancia">—</strong>
+        </div>
+        <div>
+          <span class="note">Valor/km aplicado</span>
+          <strong id="simValorKm">—</strong>
+        </div>
+        <div>
+          <span class="note">💰 Valor da corrida</span>
+          <strong id="simValor" style="font-size:22px; color:var(--green)">—</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       TABELA DE DISTÂNCIAS
+  ════════════════════════════════════════════════════════════ -->
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>📍 Tabela de Distâncias</h3>
+        <small>Base completa gerada via Google Maps API</small>
+      </div>
+    </div>
+
+    <div class="filters">
+      <select id="filtroTabelaDist" onchange="renderTabelaDistancias()">
+        <option value="pgpg">Praia Grande → Praia Grande</option>
+        <option value="pgsv">Praia Grande → São Vicente</option>
+        <option value="pgsantos">Praia Grande → Santos</option>
+        <option value="pgcubatao">Praia Grande → Cubatão</option>
+      </select>
+      <input id="buscaTabelaDist" placeholder="Buscar bairro..." oninput="renderTabelaDistancias()">
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Origem</th>
+            <th>Destino</th>
+            <th>Distância</th>
+            <th>Valor (Tabela Fixa)</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaDistanciasBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+        
+
+        <section class="page" id="mensagens">
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>💬 Mensagens WhatsApp</h3><small>Mensagens personalizadas para enviar ao motorista e cliente</small></div>
+            </div>
+
+            <!-- Seletor de corrida + motorista -->
+            <div class="form-grid" style="margin-bottom:18px">
+              <label>Corrida (ID ou código cliente)
+                <div class="input-button">
+                  <input id="msgCorridaCod" placeholder="Ex: 1 ou 0012">
+                  <button class="btn" onclick="gerarMensagensPorCorrida()">Carregar</button>
+                </div>
+              </label>
+              <label>Código do motorista
+                <div class="input-button">
+                  <input id="msgMotCodigo" placeholder="Ex: M0101" oninput="gerarMensagens()">
+                  <button class="btn primary" onclick="gerarMensagens()">Gerar</button>
+                </div>
+              </label>
+            </div>
+
+            <div class="message-box">
+              <h4>👥 Grupo de motoristas</h4>
+              <textarea id="msgGrupo" rows="8"></textarea>
+              <div class="actions" style="margin-top:10px">
+                <button class="btn" onclick="copiarTexto('msgGrupo')">📋 Copiar</button>
+              </div>
+            </div>
+
+            <div class="message-box">
+              <h4>🏍️ Motorista direcionado <button class="btn" onclick="verFotoMotoristaMsg()" style="font-size:11px;padding:3px 8px">📷 Foto</button></h4>
+              <small style="color:var(--muted)">Inclui link para o motorista iniciar conversa com o cliente</small>
+              <textarea id="msgMotorista" rows="10" style="margin-top:8px"></textarea>
+              <div class="actions" style="margin-top:10px">
+                <button class="btn" onclick="copiarTexto('msgMotorista')">📋 Copiar</button>
+              </div>
+            </div>
+
+            <div class="message-box">
+              <h4>👤 Cliente</h4>
+              <small style="color:var(--muted)">Inclui dados do motorista e link para contato direto</small>
+              <textarea id="msgCliente" rows="10" style="margin-top:8px"></textarea>
+              <div class="actions" style="margin-top:10px">
+                <button class="btn" onclick="copiarTexto('msgCliente')">📋 Copiar</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="historico">
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>Histórico e Relatórios</h3><small>Relatórios de operação, corridas, regiões e ranking</small></div>
+              <button class="btn primary" onclick="window.print()">Gerar PDF / Imprimir</button>
+            </div>
+            <div id="printArea">
+              <div class="cards">
+                <div class="card"><span>Região destaque</span><strong>Boqueirão</strong><small>Maior procura</small></div>
+                <div class="card"><span>Horário pico</span><strong>18h-20h</strong><small>Maior demanda</small></div>
+                <div class="card"><span>Cliente top</span><strong>Mariana</strong><small>Mais corridas</small></div>
+                <div class="card"><span>Motorista top</span><strong>João</strong><small>Mais corridas</small></div>
+              </div>
+
+              <div class="grid-2">
+                <div class="report-box"><h3>Ranking clientes</h3><ol id="rankingClientes"></ol></div>
+                <div class="report-box"><h3>Ranking motoristas</h3><ol id="rankingMotoristas"></ol></div>
+              </div>
+
+              <div class="report-box">
+                <h3>Log operacional</h3>
+                <div class="table-wrap">
+                  <table><thead><tr><th>Data/Hora</th><th>Operador</th><th>Ação</th></tr></thead><tbody id="logOperacao"></tbody></table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="admin">
+
+          <!-- OPERADORES -->
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>👮 Operadores</h3><small>Login e acessos ao sistema</small></div>
+              <button class="btn primary" onclick="abrirModalOperador()">+ Novo Operador</button>
+            </div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Nome</th><th>Usuário</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="tabelaOperadores"></tbody></table>
+            </div>
+          </div>
+
+          <!-- CORRIDAS -->
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>🏍️ Corridas — Gestão completa</h3><small>Editar e excluir registros</small></div>
+            </div>
+            <div class="filters">
+              <input id="adminBuscaCorrida" placeholder="Buscar por ID, cliente, motorista..." oninput="renderAdminCorridas()">
+            </div>
+            <div class="table-wrap">
+              <table><thead><tr><th>#</th><th>Cliente</th><th>Valor</th><th>Motorista</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="adminTabelaCorridas"></tbody></table>
+            </div>
+          </div>
+
+          <!-- CLIENTES -->
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>👤 Clientes — Gestão completa</h3><small>Editar e excluir registros</small></div>
+            </div>
+            <div class="filters">
+              <input id="adminBuscaCliente" placeholder="Buscar cliente..." oninput="renderAdminClientes()">
+            </div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Código</th><th>Nome</th><th>WhatsApp</th><th>Corridas</th><th>Ações</th></tr></thead>
+              <tbody id="adminTabelaClientes"></tbody></table>
+            </div>
+          </div>
+
+          <!-- MOTORISTAS -->
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>🏍️ Motoristas — Gestão completa</h3></div>
+            </div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Código</th><th>Nome</th><th>WhatsApp</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="adminTabelaMotoristas"></tbody></table>
+            </div>
+          </div>
+
+          <!-- RANKING EDITÁVEL -->
+          <div class="panel">
+            <div class="panel-header">
+              <div><h3>📊 Ranking — Corrigir lançamentos</h3><small>Ajuste manual do número de corridas por motorista</small></div>
+            </div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Motorista</th><th>Corridas (editar)</th></tr></thead>
+              <tbody id="adminRankingMotoristas"></tbody></table>
+            </div>
+          </div>
+
+        </section>
+
+        <section class="page" id="configuracoes">
+          <div class="panel">
+            <div class="panel-header"><h3>Configurações</h3></div>
+            <div class="form-grid">
+              <label>Empresa<input id="cfgEmpresa" value="Rota 013"></label>
+              <label>WhatsApp central<input id="cfgWhats" value="(13) 99999-9999"></label>
+              <label>Chave PIX<input id="cfgPix" type="text" placeholder="CPF, telefone, e-mail ou chave aleatória"></label>
+              <label>Valor diária<input id="cfgDiaria" type="number" value="20"></label>
+              <label>Cidade base<input id="cfgCidade" value="Praia Grande - SP"></label>
+            </div>
+            <div class="actions"><button class="btn primary" onclick="salvarConfiguracoes()">Salvar</button></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="modalCorrida">
+    <div class="modal-content xl">
+      <div class="modal-header"><h3>Nova Corrida</h3><button onclick="closeModalCorrida()">×</button></div>
+      <div class="form-grid">
+        <input type="hidden" id="corridaEditId">
+        <label>Código cliente
+          <div class="input-button"><input id="corridaClienteCodigo" autocomplete="off" placeholder="Ex: 0012" oninput="buscarClienteAoDigitar()"><button class="btn" onclick="buscarClientePorCodigo()">Buscar</button></div>
+        </label>
+        <label>Tipo<select id="corridaTipo" onchange="ajustarTipoCorrida()"><option>Agora</option><option>Agendada</option></select></label>
+        <label>Nome<input id="corridaClienteNome" autocomplete="off" data-capitalize></label>
+        <label>WhatsApp<input id="corridaClienteWhats" autocomplete="off" data-mask="fone"></label>
+        <label>Origem
+        <div class="autocomplete-wrap">
+          <div class="input-clear-wrap">
+            <input id="corridaOrigem" placeholder="Ex: Av. das Nações, Ocian..." autocomplete="off" oninput="autocompleteBuscar(this,'sugestoes-origem');toggleClearBtn('corridaOrigem')">
+            <button class="btn-clear-field" onclick="limparCampoEndereco('corridaOrigem','sugestoes-origem')" title="Limpar">×</button>
+          </div>
+          <div class="autocomplete-list" id="sugestoes-origem"></div>
+        </div>
+      </label>
+        <label>Destino
+        <div class="autocomplete-wrap">
+          <div class="input-clear-wrap">
+            <input id="corridaDestino" placeholder="Ex: Av. Ana Costa, Santos..." autocomplete="off" oninput="autocompleteBuscar(this,'sugestoes-destino');toggleClearBtn('corridaDestino')">
+            <button class="btn-clear-field" onclick="limparCampoEndereco('corridaDestino','sugestoes-destino')" title="Limpar">×</button>
+          </div>
+          <div class="autocomplete-list" id="sugestoes-destino"></div>
+        </div>
+      </label>
+        <label>Data/Hora
+          <div class="input-button">
+            <input id="corridaDataHora" type="datetime-local">
+            <button class="btn" onclick="preencherDataHoraAgora()" title="Preencher com agora">⏰ Agora</button>
+          </div>
+        </label>
+        <label>Tarifa<select id="corridaTarifa" onchange="calcularValorCorrida()"></select></label>
+        <label>Método de cálculo<input id="corridaMetodo" readonly></label>
+        <label>Distância<input id="corridaDistancia" readonly></label>
+        <label>Tempo estimado<input id="corridaDuracao" readonly placeholder="calculando..."></label>
+        <label>Valor sugerido<input id="corridaValor" readonly></label>
+        <label>Valor final<input id="corridaValorFinal"></label>
+        <label>Motorista opcional<select id="corridaMotorista"></select></label>
+        <label>Pagamento<select id="corridaPagamento"><option>Pix</option><option>Dinheiro</option><option>Cartão</option></select></label>
+        <label id="labelCorridaStatus" style="display:none">Status
+          <select id="corridaStatus">
+            <option>Nova</option><option>Aceita</option><option>A caminho</option>
+            <option>Em curso</option><option>Finalizada</option><option>Cancelada</option>
+          </select>
+        </label>
+      </div>
+      <label class="full">Motivo do ajuste manual / observações<textarea id="corridaObs" autocomplete="off" rows="3"></textarea></label>
+      <div class="actions space-between">
+        <button class="btn" onclick="calcularValorCorrida()">Calcular valor</button>
+        <div>
+          <button class="btn" onclick="limparFormCorrida()">🗑 Limpar</button>
+          <button class="btn" onclick="closeModalCorrida()">Cancelar</button>
+          <button class="btn primary" onclick="salvarCorrida()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalCliente">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Cliente</h3><button onclick="closeModal('modalCliente')">×</button></div>
+      <input type="hidden" id="clienteEditCodigo">
+      <label>Código<input id="clienteCodigo" readonly></label>
+      <label>Nome<input id="clienteNome" data-capitalize></label>
+      <label>WhatsApp<input id="clienteWhats" data-mask="fone"></label>
+      <label>Bairro/Cidade<input id="clienteCidade"></label>
+      <label>Observações<textarea id="clienteObs" rows="3"></textarea></label>
+      <div class="actions"><button class="btn" onclick="closeModal('modalCliente')">Cancelar</button><button class="btn primary" onclick="salvarCliente()">Salvar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalClienteDepois">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Cliente não cadastrado</h3><button onclick="closeModal('modalClienteDepois')">×</button></div>
+      <p>O ideal é cadastrar o cliente antes da corrida. Deseja cadastrar agora com os dados informados?</p>
+      <div class="summary-box" id="clienteDepoisResumo"></div>
+      <div class="actions"><button class="btn" onclick="salvarCorridaSemCliente()">Salvar só corrida</button><button class="btn primary" onclick="cadastrarClienteDepois()">Cadastrar e salvar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalMotorista">
+    <div class="modal-content xl">
+      <div class="modal-header"><h3 id="tituloModalMotorista">Motorista</h3><button onclick="closeModal('modalMotorista')">×</button></div>
+      <input type="hidden" id="motoristaEditCodigo">
+      <div class="form-grid">
+        <label>ID<input id="motoristaCodigo" readonly></label>
+        <label>Nome<input id="motoristaNome" data-capitalize></label>
+        <label>WhatsApp<input id="motoristaWhats" data-mask="fone"></label>
+        <label>CPF<input id="motoristaCpf" data-mask="cpf"></label>
+        <label>CNH<input id="motoristaCnh"></label>
+        <label>Tel. Familiar<input id="motoristaTelFamiliar" data-mask="fone" placeholder="(13) 99999-0000"></label>
+        <label>Nome Familiar<input id="motoristaNomeFamiliar" data-capitalize placeholder="Nome do contato familiar"></label>
+        <label>Placa<input id="motoristaPlaca" data-mask="placa" data-upper></label>
+        <label>Modelo moto<input id="motoristaMoto"></label>
+        <label>Cor<input id="motoristaCor"></label>
+        <label>Cidade/Base<input id="motoristaCidade"></label>
+        <label>Status<select id="motoristaStatus"><option>Pendente</option><option>Ativo</option><option>Bloqueado</option></select></label>
+        <label>Foto motorista<input type="file" accept="image/*" onchange="previewFotoMotorista(event)"></label>
+        <label>
+          CNH (PDF ou imagem)
+          <input type="file" id="inputDocCnh" accept="application/pdf,image/*" onchange="uploadDocMotorista(event,'cnh')">
+          <small id="statusDocCnh" style="color:var(--muted)">— não enviado</small>
+        </label>
+        <label>
+          Comprovante Endereço (PDF ou imagem)
+          <input type="file" id="inputDocEndereco" accept="application/pdf,image/*" onchange="uploadDocMotorista(event,'endereco')">
+          <small id="statusDocEndereco" style="color:var(--muted)">— não enviado</small>
+        </label>
+        <label>
+          Documento da Moto (PDF ou imagem)
+          <input type="file" id="inputDocVeiculo" accept="application/pdf,image/*" onchange="uploadDocMotorista(event,'veiculo')">
+          <small id="statusDocVeiculo" style="color:var(--muted)">— não enviado</small>
+        </label>
+        <label>Endereço<input id="motoristaEndereco" placeholder="Rua, número, bairro"></label>
+        <label>Foto da Moto<input type="file" id="inputFotoMoto" accept="image/*" onchange="uploadDocMotorista(event,'fotoMoto')">
+          <small id="statusFotoMoto" style="color:var(--muted)">— não enviado</small>
+        </label>
+      </div>
+      <div class="preview-row">
+        <div class="driver-photo big" id="previewMotoristaFoto">FT</div>
+        <div><strong>Histórico</strong><ul id="historicoMotoristaModal"></ul></div>
+      </div>
+      <div class="actions"><button class="btn" onclick="closeModal('modalMotorista')">Cancelar</button><button class="btn primary" onclick="salvarMotorista()">Salvar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalOperador">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Novo Operador</h3><button onclick="closeModal('modalOperador')">×</button></div>
+      <input type="hidden" id="opEditId">
+      <div class="form-grid">
+        <label>Nome<input id="opNome" data-capitalize placeholder="Nome completo"></label>
+        <label>Usuário<input id="opUsuario" placeholder="login"></label>
+        <label>Senha<input id="opSenha" type="password" placeholder="Nova senha (deixe em branco para manter)"></label>
+        <label>Perfil<select id="opPerfil"><option value="operador">Operador</option><option value="admin">Administrador</option></select></label>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="closeModal('modalOperador')">Cancelar</button>
+        <button class="btn primary" onclick="salvarOperador()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL MENSAGENS (acessível de qualquer página) -->
+  <div class="modal" id="modalMensagens">
+    <div class="modal-content xl">
+      <div class="modal-header">
+        <h3>💬 Mensagens WhatsApp</h3>
+        <button onclick="closeModal('modalMensagens')">×</button>
+      </div>
+
+      <div id="dashMsgCorridaInfo" class="summary-box" style="margin-bottom:14px;font-size:13px"></div>
+      <input type="hidden" id="dashMsgCorridaId">
+
+      <div class="form-grid" style="margin-bottom:14px">
+        <label>Código do motorista
+          <div class="input-button">
+            <input id="dashMsgMotCodigo" placeholder="Ex: M0101" oninput="atualizarMsgComMotorista()">
+            <button class="btn" onclick="atualizarMsgComMotorista()">Aplicar</button>
+          </div>
+        </label>
+        <div></div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr">
+
+        <div class="message-box">
+          <h4>👥 Grupo de motoristas</h4>
+          <textarea id="dashMsgGrupo" rows="7"></textarea>
+          <div class="actions" style="margin-top:8px">
+            <button class="btn" onclick="copiarMsgModal('dashMsgGrupo')">📋 Copiar</button>
+          </div>
+        </div>
+
+        <div class="message-box">
+          <h4>🏍️ Motorista direcionado <button class="btn" onclick="verFotoMotoristaMsg()" style="font-size:11px;padding:3px 8px">📷 Foto</button></h4>
+          <textarea id="dashMsgMotorista" rows="9"></textarea>
+          <div class="actions" style="margin-top:8px">
+            <button class="btn" onclick="copiarMsgModal('dashMsgMotorista')">📋 Copiar</button>
+          </div>
+        </div>
+
+        <div class="message-box">
+          <h4>👤 Cliente</h4>
+          <textarea id="dashMsgCliente" rows="9"></textarea>
+          <div class="actions" style="margin-top:8px">
+            <button class="btn" onclick="copiarMsgModal('dashMsgCliente')">📋 Copiar</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="actions" style="margin-top:14px">
+        <button class="btn" onclick="closeModal('modalMensagens')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL VER MOTORISTA -->
+  <div class="modal" id="modalVerMotorista">
+    <div class="modal-content xl">
+      <div class="modal-header">
+        <h3>📋 Ficha do Motorista</h3>
+        <button onclick="closeModal('modalVerMotorista')">×</button>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;align-items:start">
+        <div id="viewMotFoto" class="driver-photo" style="width:120px;height:120px;font-size:36px;border-radius:12px">FT</div>
+        <div>
+          <h2 id="viewMotNome" style="margin:0 0 4px"></h2>
+          <div style="margin-bottom:8px"><span id="viewMotCodigo" style="color:var(--muted);font-size:13px"></span> &nbsp; <span id="viewMotStatus"></span></div>
+          <div class="form-grid" style="margin-top:8px">
+            <div><span class="note">WhatsApp</span><br><b id="viewMotTel"></b></div>
+            <div><span class="note">Tel. Familiar</span><br><b id="viewMotTelFam"></b></div>
+            <div><span class="note">Nome Familiar</span><br><b id="viewMotNomeFam"></b></div>
+            <div><span class="note">Moto / Placa</span><br><b id="viewMotMoto"></b></div>
+            <div><span class="note">CPF</span><br><b id="viewMotCpf"></b></div>
+            <div><span class="note">CNH</span><br><b id="viewMotCnh"></b></div>
+            <div><span class="note">Cidade/Base</span><br><b id="viewMotCidade"></b></div>
+            <div style="grid-column:1/-1"><span class="note">Endereço</span><br><b id="viewMotEndereco"></b></div>
+            <div><span class="note">Corridas</span><br><b id="viewMotCorridas">0</b></div>
+            <div><span class="note">Diárias</span><br><b id="viewMotDiarias">0</b></div>
+          </div>
+        </div>
+      </div>
+      <div id="viewMotStatusCadastro" style="margin:16px 0;padding:12px 16px;border-radius:10px;font-size:13px;"></div>
+      <div id="viewMotFotoMotoWrap" style="margin:12px 0">
+        <span class="note" style="display:block;margin-bottom:6px">FOTO DA MOTO</span>
+        <div id="viewMotFotoMoto" style="width:100%;height:160px;border-radius:12px;background-size:cover;background-position:center;background-color:var(--line);display:none"></div>
+      </div>
+      <div style="margin:12px 0">
+        <span class="note" style="display:block;margin-bottom:6px">DOCUMENTOS</span>
+        <div id="viewMotDocumentos" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+      <div style="margin-top:20px">
+        <h4>Últimas corridas</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Status</th></tr></thead>
+            <tbody id="viewMotCorridasList"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn primary" onclick="editarMotorista(document.getElementById('viewMotCodigo').textContent);closeModal('modalVerMotorista')">✏️ Editar / Documentos</button>
+        <button class="btn" onclick="closeModal('modalVerMotorista')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL ACEITAR CORRIDA -->
+  <div class="modal" id="modalAceitarCorrida">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✅ Aceitar Corrida</h3>
+        <button onclick="closeModal('modalAceitarCorrida')">×</button>
+      </div>
+      <input type="hidden" id="aceitarCorridaId">
+      <div id="aceitarCorridaInfo" class="summary-box" style="margin-bottom:14px;font-size:13px"></div>
+      <label>Código do Motorista
+        <div class="input-button">
+          <input id="aceitarMotoristaCod" placeholder="Ex: M0101" oninput="this.value=this.value.toUpperCase();previewMotoristaAceitar()">
+          <button class="btn" onclick="previewMotoristaAceitar()">Buscar</button>
+        </div>
+      </label>
+      <div id="aceitarMotoristaInfo" class="summary-box" style="margin-top:10px;display:none;font-size:13px"></div>
+      <div class="actions" style="margin-top:16px">
+        <button class="btn" onclick="closeModal('modalAceitarCorrida')">Cancelar</button>
+        <button class="btn primary" onclick="confirmarAceitarCorrida()">✅ Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV — só aparece no mobile -->
+  <nav class="mobile-nav" id="mobileNav">
+    <button class="mobile-nav-item" onclick="showPage('dashboard');mobileNavAtivo(this)">
+      <span class="mobile-nav-icon">🏠</span>
+      <span>Início</span>
+    </button>
+    <button class="mobile-nav-item" onclick="showPage('corridas');mobileNavAtivo(this)">
+      <span class="mobile-nav-icon">🏍️</span>
+      <span>Corridas</span>
+    </button>
+    <button class="mobile-nav-item mobile-nav-new" onclick="openModalCorrida()">
+      <span class="mobile-nav-icon" style="font-size:26px;font-weight:900">＋</span>
+      <span>Nova</span>
+    </button>
+    <button class="mobile-nav-item" onclick="showPage('clientes');mobileNavAtivo(this)">
+      <span class="mobile-nav-icon">👤</span>
+      <span>Clientes</span>
+    </button>
+    <button class="mobile-nav-item" onclick="showPage('financeiro');mobileNavAtivo(this)">
+      <span class="mobile-nav-icon">💰</span>
+      <span>Financeiro</span>
+    </button>
+  </nav>
+
+  <div id="modalAguarde">
+    <div class="aguarde-box">
+      <div class="aguarde-spinner"></div>
+      <b>Salvando...</b>
+      <p style="color:var(--muted);margin:4px 0 0;font-size:13px">Aguarde um momento</p>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <!-- Rota 013 V5 — Módulos JS -->
+  <script src="/beta/js/state.js"></script>
+  <script src="/beta/js/helpers.js"></script>
+  <script src="/beta/js/masks.js"></script>
+  <script src="/beta/js/ui.js"></script>
+  <script src="/beta/js/tarifas.js"></script>
+  <script src="/beta/js/autocomplete.js"></script>
+  <script src="/beta/js/corridas.js"></script>
+  <script src="/beta/js/clientes.js"></script>
+  <script src="/beta/js/motoristas.js"></script>
+  <script src="/beta/js/financeiro.js"></script>
+  <script src="/beta/js/mensagens.js"></script>
+  <script src="/beta/js/modulos.js"></script>
+  <script src="/beta/js/historico.js"></script>
+  <script src="/beta/js/config.js"></script>
+  <script src="/beta/js/dashboard.js"></script>
+  <script src="/beta/js/app.js"></script>
+  <script src="/beta/js/auth.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAooFL5cJ-udcB7MWxSme4ZYSvRLz80DgM&libraries=places&language=pt-BR&v=weekly&loading=async&callback=initAutocomplete" async></script>
+  <script>
+    // PWA Service Worker
+    // Fechar sidebar ao clicar fora
+document.addEventListener('click', function(e) {
+  const sidebar = document.getElementById('sidebar');
+  const btnMenu = document.getElementById('btnMenu');
+  if (sidebar && sidebar.classList.contains('open')) {
+    if (!sidebar.contains(e.target) && e.target !== btnMenu) {
+      sidebar.classList.remove('open');
+    }
+  }
+});
+// PWA Service Worker
+if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    }
+    // Dark mode
+    function toggleDarkMode() {
+      const dark = document.body.classList.toggle('dark');
+      localStorage.setItem('rota013-theme', dark ? 'dark' : 'light');
+      document.getElementById('btnDarkMode').textContent = dark ? '☀️' : '🌙';
+    }
+    (function() {
+      if (localStorage.getItem('rota013-theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.addEventListener('DOMContentLoaded', () => {
+          const btn = document.getElementById('btnDarkMode');
+          if (btn) btn.textContent = '☀️';
+        });
+      }
+    })();
+  </script>
+
+<script>
+(function(){
+  var orig = window.showPage;
+  window.showPage = function(id) {
+    orig && orig(id);
+    var fab = document.querySelector('.fab-nova-corrida');
+    if(fab) fab.style.display = id==='dashboard' ? 'flex' : 'none';
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    var fab = document.querySelector('.fab-nova-corrida');
+    if(fab) fab.style.display = 'flex';
+  });
+})();
+</script>
+
+  <!-- Modal Acesso App Motorista -->
+  <div class="modal" id="modalAcesso">
+    <div class="modal-content" style="max-width:460px">
+      <div class="modal-header">
+        <h3 id="acessoTitulo">Acesso App</h3>
+        <button class="btn-close" onclick="closeModal('modalAcesso')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="acessoInfo" style="margin-bottom:16px;font-size:13px;color:var(--muted)"></div>
+        <div id="acessoDispositivo" class="hidden" style="background:#f0f9ff;border-radius:10px;padding:12px;margin-bottom:14px">
+          <div style="color:#888;font-size:10px;text-transform:uppercase;margin-bottom:4px">Dispositivo</div>
+          <div id="acessoDevice" style="font-weight:700;margin-bottom:8px;font-size:13px"></div>
+          <button onclick="resetarDispositivoMotorista()" class="btn" style="background:#dbeafe;color:#1d4ed8;border:none;font-size:12px;padding:6px 12px">📱 Reset dispositivo</button>
+        </div>
+        <label style="display:block;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Nova senha</label>
+        <input id="acessoSenha" type="password" placeholder="Mínimo 4 caracteres" class="input" style="margin-bottom:16px"/>
+        <div style="display:flex;gap:10px">
+          <button class="btn primary" onclick="salvarAcesso()" style="flex:1">💾 Salvar senha</button>
+          <button class="btn danger" onclick="bloquearMotoApp()" style="flex:1">🔒 Bloquear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+<script src="/beta/js/beta-socket.js"></script>
+<script src="/beta/js/financeiro-beta.js"></script>
+
+<script>
+(function(){
+  var _ok = false;
+  function initMapa() {
+    if (_ok) return;
+    var el = document.getElementById('mapaDash');
+    if (!el || el.offsetHeight === 0) return; // elemento oculto ainda
+    if (typeof L === 'undefined') { setTimeout(initMapa, 300); return; }
+    _ok = true;
+    var map = L.map(el).setView([-24.0122, -46.4097], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {attribution:'© OpenStreetMap', maxZoom:19}).addTo(map);
+    setTimeout(function(){ map.invalidateSize(); }, 200);
+    window._mapaDash = map;
+    window._mapaDashPins = {};
+    window._atualizarPinMapa = function(cod, lat, lng, nome) {
+      if (!window._mapaDash) return;
+      if (window._mapaDashPins[cod]) {
+        window._mapaDashPins[cod].setLatLng([lat,lng]);
+      } else {
+        var ic = L.divIcon({className:'',
+          html:'<div style="display:flex;flex-direction:column;align-items:center;gap:1px">' +
+               '<div style="background:#f7c600;color:#111;font-size:10px;font-weight:800;' +
+               'padding:1px 5px;border-radius:6px;white-space:nowrap">' + cod + '</div>' +
+               '<div style="font-size:20px;line-height:1">🏍️</div></div>',
+          iconSize:[40,38], iconAnchor:[20,34]});
+        window._mapaDashPins[cod] = L.marker([lat,lng],{icon:ic})
+          .addTo(window._mapaDash)
+          .bindPopup('<b>'+(nome||cod)+'</b>');
+      }
+    };
+    console.log('✅ Mapa iniciado');
+  }
+  // Patch showPage para inicializar mapa quando dashboard ficar visível
+  var _origShowPage = window.showPage;
+  window.showPage = function(id) {
+    _origShowPage && _origShowPage(id);
+    if (id === 'dashboard') setTimeout(initMapa, 150);
+    // FAB
+    var fab = document.querySelector('.fab-nova-corrida');
+    if (fab) fab.style.display = id === 'dashboard' ? 'flex' : 'none';
+  };
+  // Tentar na abertura do painel
+  var _origAbrirPainel = window.abrirPainel;
+  window.abrirPainel = async function(op) {
+    await (_origAbrirPainel && _origAbrirPainel(op));
+    setTimeout(initMapa, 800);
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(initMapa, 1000);
+    var fab = document.querySelector('.fab-nova-corrida');
+    if (fab) fab.style.display = 'flex';
+  });
+})();
+</script>
+<script>
+(function(){
+  var done=false;
+  function tryMap(){
+    if(window._mapaDash && window._mapaDash._loaded) return;
+    if(done)return;
+    var el=document.getElementById('mapaDash');
+    if(!el)return;
+    if(typeof L==='undefined'){setTimeout(tryMap,400);return;}
+    done=true;
+    el.style.height='380px'; // forçar altura
+    var m=L.map(el).setView([-24.0122,-46.4097],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(m);
+    setTimeout(function(){m.invalidateSize();},300);
+    window._mapaDash=m; window._mapaDashPins={};
+    window._atualizarPinMapa=function(cod,lat,lng,nome){
+      if(!window._mapaDash)return;
+      if(window._mapaDashPins[cod]){window._mapaDashPins[cod].setLatLng([lat,lng]);}
+      else{
+        var ic=L.divIcon({className:'',html:'<div style="display:flex;flex-direction:column;align-items:center"><div style="background:#f7c600;color:#111;font-size:10px;font-weight:800;padding:1px 5px;border-radius:6px">'+cod+'</div><div style="font-size:20px">🏍️</div></div>',iconSize:[40,36],iconAnchor:[20,32]});
+        window._mapaDashPins[cod]=L.marker([lat,lng],{icon:ic}).addTo(window._mapaDash).bindPopup('<b>'+(nome||cod)+'</b>');
+      }
+    };
+    console.log('✅ Mapa OK');
+  }
+  // Tentar em múltiplos momentos
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(tryMap,600);});
+  // Patch showPage
+  var op=window.showPage;
+  window.showPage=function(id){
+    op&&op(id);
+    if(id==='dashboard')setTimeout(tryMap,200);
+    var fab=document.querySelector('.fab-nova-corrida');
+    if(fab)fab.style.display=id==='dashboard'?'flex':'none';
+  };
+  // Patch abrirPainel
+  var oa=window.abrirPainel;
+  window.abrirPainel=async function(op2){
+    await(oa&&oa(op2));
+    setTimeout(tryMap,1000);
+  };
+  window._tryMapaDash=tryMap; // expor para debug
+})();
+</script>
+
+<!-- Modal Acesso Motorista -->
+<div id="modalAcesso" class="modal hidden">
+  <div class="modal-content" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="acessoTitulo">Acesso</h3>
+      <button onclick="fecharModal('modalAcesso')" class="btn-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="acessoInfo" style="margin-bottom:16px;font-size:13px;color:var(--muted)"></div>
+      <div id="acessoDispositivo" class="hidden" style="background:#f0f9ff;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px">
+        <div style="color:#888;font-size:11px;text-transform:uppercase;margin-bottom:4px">Dispositivo registrado</div>
+        <div id="acessoDevice" style="font-weight:700"></div>
+        <button onclick="resetarDispositivoMotorista()" style="margin-top:8px;background:#dbeafe;color:#1d4ed8;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">
+          📱 Reset dispositivo
+        </button>
+      </div>
+      <label style="display:block;margin-bottom:6px;font-size:12px;color:var(--muted);text-transform:uppercase">Nova senha</label>
+      <input id="acessoSenha" type="password" placeholder="Mínimo 4 caracteres" class="input" style="margin-bottom:16px"/>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" onclick="salvarAcesso()" style="flex:1">💾 Salvar senha</button>
+        <button class="btn danger" onclick="bloquearMotoApp()" style="flex:1">🔒 Bloquear</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

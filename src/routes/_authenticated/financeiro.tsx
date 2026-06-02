@@ -118,6 +118,17 @@ function FinanceiroPage() {
   const [ate, setAte] = useState(hojeISO());
   const [gerando, setGerando] = useState(false);
 
+  const termoBusca = busca.trim().toLowerCase();
+  const linhasFiltradas = useMemo(() => {
+    if (!data?.linhas) return [];
+    if (!termoBusca) return data.linhas;
+    return data.linhas.filter(
+      (l) =>
+        l.codigo.toLowerCase().includes(termoBusca) ||
+        l.nome.toLowerCase().includes(termoBusca),
+    );
+  }, [data?.linhas, termoBusca]);
+
   const gerarRelatorio = async () => {
     setGerando(true);
     try {

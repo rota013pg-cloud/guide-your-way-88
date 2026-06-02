@@ -11,10 +11,7 @@ export function LogoRota013({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <div
-        className={`logo-r013 leading-none ${className}`}
-        style={{ color: "hsl(var(--foreground))" }}
-      >
+      <div className={`logo-r013 leading-none ${className}`}>
         Rota<span>013</span>
       </div>
       {showBeta && (

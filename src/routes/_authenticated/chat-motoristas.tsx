@@ -6,6 +6,7 @@ import {
   operadorListarChat,
   operadorEnviarMensagem,
   adminApagarMensagem,
+  adminApagarConversa,
 } from "@/lib/chat-motorista.functions";
 import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";

@@ -8,12 +8,20 @@ import {
   adminApagarMensagem,
   adminApagarConversa,
 } from "@/lib/chat-motorista.functions";
+import { listarMotoristas } from "@/lib/motoristas.functions";
 import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Send, MessageSquare, RefreshCw, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Send, MessageSquare, RefreshCw, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chat-motoristas")({

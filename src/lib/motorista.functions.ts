@@ -100,6 +100,29 @@ export const motoristaLogin = createServerFn({ method: "POST" })
     return { token, motorista };
   });
 
+// ─── ALTERAR SENHA ──────────────────────────────────────
+export const motoristaAlterarSenha = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      codigo: z.string(),
+      token: z.string(),
+      senhaAtual: z.string().min(1),
+      senhaNova: z.string().min(4).max(100),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await validarToken(data.codigo, data.token);
+    const { data: auth } = await supabaseAdmin
+      .from("motorista_auth").select("senha_hash").eq("motorista_codigo", data.codigo).maybeSingle();
+    if (!auth) throw new Error("Motorista não encontrado");
+    if (auth.senha_hash !== hashSenha(data.senhaAtual)) throw new Error("Senha atual incorreta");
+    await supabaseAdmin
+      .from("motorista_auth")
+      .update({ senha_hash: hashSenha(data.senhaNova), senha_plain: data.senhaNova })
+      .eq("motorista_codigo", data.codigo);
+    return { ok: true };
+  });
+
 // ─── LOGOUT ─────────────────────────────────────────────
 export const motoristaLogout = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ codigo: z.string(), token: z.string() }).parse(d))

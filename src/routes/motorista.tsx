@@ -18,6 +18,7 @@ import {
   motoristaSolicitarLiberacao,
 } from "@/lib/cobranca.functions";
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
+import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 
 export const Route = createFileRoute("/motorista")({
   ssr: false,
@@ -110,6 +111,7 @@ function MotoristaApp() {
   const [cobranca, setCobranca] = useState<{ status: string; faturamento_dia: number; valor_diaria: number; comprovante_enviado_em: string | null } | null>(null);
   const [cobrancaCfg, setCobrancaCfg] = useState<{ pixChave?: string; tipoChavePix?: string; whatsappCentral?: string; empresa?: string }>({});
   const [enviandoLib, setEnviandoLib] = useState(false);
+  const [forcarCobranca, setForcarCobranca] = useState(false);
   const minhaCobrancaFn = useServerFn(motoristaMinhaCobranca);
   const solicitarLibFn = useServerFn(motoristaSolicitarLiberacao);
 
@@ -482,6 +484,7 @@ function MotoristaApp() {
       )}
 
       {cobranca && (
+        forcarCobranca ||
         cobranca.status === "Bloqueado" ||
         cobranca.status === "Aguardando" ||
         (cobranca.status === "Pendente" && Number(cobranca.faturamento_dia) >= Number(cobranca.valor_diaria))
@@ -500,8 +503,19 @@ function MotoristaApp() {
               mostrarToast(e instanceof Error ? e.message : "Erro");
             } finally {
               setEnviandoLib(false);
+              setForcarCobranca(false);
             }
           }}
+        />
+      )}
+
+      {sessao && tela !== "login" && (
+        <MotoristaBottomNav
+          motorista={sessao.motorista}
+          token={sessao.token}
+          corridasHoje={corridasHoje}
+          cobranca={cobranca}
+          onAbrirCobranca={() => setForcarCobranca(true)}
         />
       )}
 

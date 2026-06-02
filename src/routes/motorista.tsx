@@ -815,8 +815,8 @@ function CorridaTela({
             </div>
             <button
               className="btn-waze"
-              onClick={() => {
-                if (corrida.status === "Aceita") onMudarStatus("A caminho");
+              onClick={async () => {
+                if (corrida.status === "Aceita") await onMudarStatus("A caminho");
                 onWaze(corrida.origem);
               }}
             >

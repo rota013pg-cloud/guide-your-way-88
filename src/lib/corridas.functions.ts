@@ -61,9 +61,19 @@ export const dispararOfertas = createServerFn({ method: "POST" })
     if (corrida.modelo === "Agendada") {
       return { ok: true, ofertados: 0, modo: "agendada" as const };
     }
-    if (corrida.status !== "Pendente") {
+    if (corrida.status !== "Pendente" && !reofertar) {
       return { ok: true, ofertados: 0, motivo: "corrida não está pendente" };
     }
+
+    // Reoferta: expira ofertas pendentes anteriores para liberar os mesmos motoristas
+    if (reofertar) {
+      await supabaseAdmin
+        .from("corrida_ofertas")
+        .update({ status: "expirada" })
+        .eq("corrida_id", corridaId)
+        .eq("status", "pendente");
+    }
+
 
     // WhatsApp: não insere ofertas, retorna sinal para o cliente gerar o texto
     if (corrida.despacho === "WhatsApp") {

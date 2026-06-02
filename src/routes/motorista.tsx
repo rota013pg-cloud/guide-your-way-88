@@ -12,6 +12,7 @@ import {
   motoristaAtualizarStatusCorrida,
   motoristaCarregarContexto,
   motoristaCarregarCorrida,
+  motoristaConcluirParada,
 } from "@/lib/motorista.functions";
 import {
   motoristaMinhaCobranca,

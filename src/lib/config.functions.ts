@@ -18,9 +18,11 @@ export type AppConfig = {
   cidadeBase: string;
   whatsappCentral: string;
   pixChave: string;
+  tipoChavePix: string;
   valorDiaria: number;
   valorParadaExtra: number;
   alertaAgendadaMin: number;
+  percentualBloqueio: number;
   templates: MensagemTemplate[];
 };
 
@@ -29,9 +31,11 @@ const CONFIG_DEFAULT: AppConfig = {
   cidadeBase: "Santos",
   whatsappCentral: "",
   pixChave: "",
+  tipoChavePix: "Aleatória",
   valorDiaria: 19.9,
   valorParadaExtra: 3,
   alertaAgendadaMin: 15,
+  percentualBloqueio: 50,
   templates: [],
 };
 
@@ -46,9 +50,11 @@ const ConfigSchema = z.object({
   cidadeBase: z.string().min(1).max(80),
   whatsappCentral: z.string().max(20).regex(/^\d*$/, "Só números (DDI+DDD+número)"),
   pixChave: z.string().max(120),
+  tipoChavePix: z.enum(["CPF", "CNPJ", "E-mail", "Telefone", "Aleatória"]).default("Aleatória"),
   valorDiaria: z.number().positive().max(9999),
   valorParadaExtra: z.number().min(0).max(999),
   alertaAgendadaMin: z.number().int().min(1).max(180),
+  percentualBloqueio: z.number().int().min(0).max(500).default(50),
   templates: z.array(TemplateSchema).max(50).optional().default([]),
 });
 

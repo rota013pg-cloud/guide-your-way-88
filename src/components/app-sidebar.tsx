@@ -13,6 +13,8 @@ import {
   LogOut,
   Sun,
   Moon,
+  UserCog,
+  StickyNote,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +42,7 @@ const operacional: Item[] = [
   { title: "Corridas", url: "/corridas", icon: ListChecks },
   { title: "Motoristas", url: "/motoristas", icon: Users },
   { title: "Clientes", url: "/clientes", icon: UserSquare },
+  { title: "Mural", url: "/mural", icon: StickyNote },
 ];
 
 const gestao: Item[] = [
@@ -47,6 +50,7 @@ const gestao: Item[] = [
   { title: "Tarifas", url: "/tarifas", icon: Tag, adminOnly: true },
   { title: "Histórico", url: "/historico", icon: History },
   { title: "Mensagens", url: "/mensagens", icon: MessageSquare },
+  { title: "Usuários", url: "/usuarios", icon: UserCog, adminOnly: true },
   { title: "Configurações", url: "/configuracoes", icon: Settings, adminOnly: true },
   { title: "Cobertura", url: "/cobertura", icon: ShieldCheck, adminOnly: true },
 ];

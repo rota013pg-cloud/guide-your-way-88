@@ -239,3 +239,33 @@ export const listarCorridasRecentes = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
+
+// ─── Lançar corrida agendada imediatamente ───────────────────────
+export const lancarCorridaAgendada = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ corridaId: z.number().int().positive() }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { data: c } = await supabaseAdmin
+      .from("corridas")
+      .select("id, motorista_codigo, motoristas_manuais")
+      .eq("id", data.corridaId)
+      .maybeSingle();
+    if (!c) throw new Error("Corrida não encontrada");
+
+    const updates: any = { modelo: "Imediata", status: "Pendente" };
+    if (c.motorista_codigo && (!c.motoristas_manuais || c.motoristas_manuais.length === 0)) {
+      updates.despacho = "Manual";
+      updates.motoristas_manuais = [c.motorista_codigo];
+    }
+
+    const { error } = await supabaseAdmin
+      .from("corridas")
+      .update(updates)
+      .eq("id", data.corridaId);
+    if (error) throw new Error(error.message);
+
+    await registrarLog(data.corridaId, "Lançada manualmente", null, "Operador lançou corrida agendada");
+    return { ok: true };
+  });

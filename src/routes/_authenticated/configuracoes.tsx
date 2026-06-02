@@ -147,6 +147,24 @@ function ConfiguracoesPage() {
                   Somado ao valor da corrida para cada parada intermediária.
                 </p>
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="alertaAgendadaMin">Alerta de agendamento (min)</Label>
+                <Input
+                  id="alertaAgendadaMin"
+                  type="number"
+                  step="1"
+                  min="1"
+                  max="180"
+                  value={form.alertaAgendadaMin}
+                  disabled={!isAdmin}
+                  onChange={(e) => upd("alertaAgendadaMin", Math.max(1, Number(e.target.value) || 15))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Minutos antes do horário em que o operador é notificado.
+                </p>
+              </div>
+
+
 
             </div>
 

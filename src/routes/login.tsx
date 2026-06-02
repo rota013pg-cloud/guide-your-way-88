@@ -90,7 +90,7 @@ function LoginPage() {
       <Card className="w-full max-w-md p-8">
         <div className="mb-6 text-center">
           <div className="logo-r013 text-6xl leading-none mb-3">
-            R<span>013</span>
+            Rota<span>013</span>
           </div>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Beta 2.0 · Painel do operador</p>
         </div>

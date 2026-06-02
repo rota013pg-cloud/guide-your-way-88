@@ -205,13 +205,13 @@ export const dispararOfertas = createServerFn({ method: "POST" })
       motorista_codigo: codigo,
       status: "pendente",
       criado_em: new Date().toISOString(),
-      respondido_em: null,
     }));
 
     const { error: insErr } = await supabaseAdmin
       .from("corrida_ofertas")
       .upsert(rows, { onConflict: "corrida_id,motorista_codigo" });
     if (insErr) throw new Error(insErr.message);
+
 
 
     await supabaseAdmin

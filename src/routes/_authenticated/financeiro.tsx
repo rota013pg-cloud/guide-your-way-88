@@ -30,6 +30,7 @@ import {
 } from "@/lib/financeiro.functions";
 import { listarCobrancasHoje, liberarMotorista, bloquearMotorista } from "@/lib/cobranca.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { CobrancasExtrasPanel, MarcarDiariaComExtrasDialog } from "@/components/cobrancas-extras-panel";
 // pdf-lib é pesado e só precisa ao clicar "Gerar PDF" — import dinâmico.
 
 export const Route = createFileRoute("/_authenticated/financeiro")({

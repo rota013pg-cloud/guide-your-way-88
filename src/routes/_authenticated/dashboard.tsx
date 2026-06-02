@@ -185,6 +185,8 @@ function DashboardPage() {
                   onAtribuir={(cod) => atribuir(c.id, cod)}
                   onFinalizar={() => finalizar(c.id)}
                   onCancelar={() => cancelar(c.id)}
+                  onReofertar={() => reofertar(c.id)}
+                  onLancarAgora={() => lancarAgora(c.id)}
                   corStatus={corStatus(c.status)}
                 />
               ))}

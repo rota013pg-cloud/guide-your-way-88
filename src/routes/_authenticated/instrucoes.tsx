@@ -48,7 +48,7 @@ const SECOES: Secao[] = [
     resumo: "Como o painel se conecta com o app do motorista e o fluxo geral.",
     itens: [
       {
-        q: "O que é o Rota 013 Beta?",
+        q: "O que é o Rota 013?",
         a: (
           <>
             É a central de operações da plataforma. O <b>Painel do Operador</b> é
@@ -575,7 +575,7 @@ function InstrucoesPage() {
         <div className="flex-1">
           <h1 className="text-2xl font-bold tracking-tight">Manual do Operador</h1>
           <p className="text-sm text-muted-foreground">
-            Guia completo de operação do Rota 013 Beta — fluxos do painel,
+            Guia completo de operação do Rota 013 — fluxos do painel,
             atendimento ao motorista e respostas para dúvidas comuns.
           </p>
         </div>

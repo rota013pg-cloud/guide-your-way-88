@@ -19,6 +19,7 @@ import {
 } from "@/lib/cobranca.functions";
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
+import { playChatBeep } from "@/lib/notification-sound";
 
 export const Route = createFileRoute("/motorista")({
   ssr: false,
@@ -197,6 +198,7 @@ function MotoristaApp() {
           } catch {
             /* ignore */
           }
+          try { playChatBeep(); } catch { /* ignore */ }
         },
       )
       .on(
@@ -729,7 +731,13 @@ function CorridaTela({
               <span className="cl">BUSCAR EM</span>
               <span className="cv">{corrida.origem}</span>
             </div>
-            <button className="btn-waze" onClick={() => onWaze(corrida.origem)}>
+            <button
+              className="btn-waze"
+              onClick={() => {
+                if (corrida.status === "Aceita") onMudarStatus("A caminho");
+                onWaze(corrida.origem);
+              }}
+            >
               🧭 Ir
             </button>
           </div>
@@ -740,7 +748,15 @@ function CorridaTela({
               <span className="cv">{corrida.destino || "-"}</span>
             </div>
             {corrida.destino && (
-              <button className="btn-waze" onClick={() => onWaze(corrida.destino!)}>
+              <button
+                className="btn-waze"
+                onClick={() => {
+                  if (corrida.status === "Chegou" || corrida.status === "A caminho") {
+                    onMudarStatus("Em viagem");
+                  }
+                  onWaze(corrida.destino!);
+                }}
+              >
                 🧭 Ir
               </button>
             )}

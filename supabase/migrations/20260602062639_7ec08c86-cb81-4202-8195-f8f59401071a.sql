@@ -1,0 +1,1 @@
+ALTER TABLE public.usuarios_painel ADD COLUMN IF NOT EXISTS foto TEXT;

@@ -51,6 +51,7 @@ const CriarSchema = z.object({
   login: LoginField,
   senha: z.string().min(6).max(72),
   role: z.enum(["admin", "operador"]).default("operador"),
+  foto: z.string().url().max(1000).optional().nullable(),
 });
 
 export const criarUsuario = createServerFn({ method: "POST" })
@@ -79,6 +80,7 @@ export const criarUsuario = createServerFn({ method: "POST" })
       email: data.email,
       login: data.login,
       senha_plain: data.senha,
+      foto: data.foto ?? null,
       status: "Ativo",
     });
     if (insErr) {
@@ -201,4 +203,24 @@ export const verSenhaUsuario = createServerFn({ method: "POST" })
       .eq("user_id", data.userId)
       .maybeSingle();
     return { senha: row?.senha_plain ?? null };
+  });
+
+// ─── ATUALIZAR FOTO ─────────────────────────────────
+export const atualizarFotoUsuario = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      userId: z.string().uuid(),
+      foto: z.string().url().max(1000).nullable(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    // Admin pode alterar qualquer usuário; usuário pode alterar a própria.
+    if (data.userId !== context.userId) await exigirAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("usuarios_painel")
+      .update({ foto: data.foto })
+      .eq("user_id", data.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

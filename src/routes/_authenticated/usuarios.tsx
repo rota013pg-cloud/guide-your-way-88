@@ -22,7 +22,9 @@ import { useRole } from "@/hooks/use-role";
 import {
   listarUsuarios, criarUsuario, alterarSenhaUsuario, alterarRoleUsuario,
   bloquearUsuario, desbloquearUsuario, excluirUsuario, verSenhaUsuario,
+  atualizarFotoUsuario,
 } from "@/lib/usuarios.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   ssr: false,
@@ -42,6 +44,16 @@ function UsuariosPage() {
   const excluirFn = useServerFn(excluirUsuario);
   const verSenhaFn = useServerFn(verSenhaUsuario);
   const roleFn = useServerFn(alterarRoleUsuario);
+  const fotoFn = useServerFn(atualizarFotoUsuario);
+
+  async function uploadFotoUsuario(userId: string, file: File): Promise<string | null> {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `usuarios-painel/${userId}/foto-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("motoristas-docs").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) { toast.error(error.message); return null; }
+    const { data: signed } = await supabase.storage.from("motoristas-docs").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+    return signed?.signedUrl ?? null;
+  }
 
   const { data: usuarios = [] } = useQuery({
     queryKey: ["usuarios-painel"],
@@ -49,7 +61,8 @@ function UsuariosPage() {
     enabled: isAdmin,
   });
 
-  const [novo, setNovo] = useState<{ nome: string; email: string; login: string; senha: string; role: "admin" | "operador" }>({ nome: "", email: "", login: "", senha: "", role: "operador" });
+  const [novo, setNovo] = useState<{ nome: string; email: string; login: string; senha: string; role: "admin" | "operador"; foto: string | null }>({ nome: "", email: "", login: "", senha: "", role: "operador", foto: null });
+  const [novoFotoUploading, setNovoFotoUploading] = useState(false);
   const [openNovo, setOpenNovo] = useState(false);
   const [senhaDialog, setSenhaDialog] = useState<{ userId: string; nome: string } | null>(null);
   const [novaSenha, setNovaSenha] = useState("");
@@ -64,7 +77,7 @@ function UsuariosPage() {
     onSuccess: () => {
       toast.success("Usuário criado");
       setOpenNovo(false);
-      setNovo({ nome: "", email: "", login: "", senha: "", role: "operador" });
+      setNovo({ nome: "", email: "", login: "", senha: "", role: "operador", foto: null });
       refresh();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -113,6 +126,7 @@ function UsuariosPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">Foto</TableHead>
               <TableHead>Login</TableHead>
               <TableHead>Nome</TableHead>
               <TableHead className="hidden md:table-cell">E-mail</TableHead>
@@ -123,10 +137,26 @@ function UsuariosPage() {
           </TableHeader>
           <TableBody>
             {usuarios.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum usuário.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Nenhum usuário.</TableCell></TableRow>
             )}
-            {usuarios.map((u: any) => (
+            {usuarios.map((u: any) => {
+              const iniciais = (u.nome || "U").split(" ").map((p: string) => p[0]).slice(0, 2).join("").toUpperCase();
+              return (
               <TableRow key={u.user_id}>
+                <TableCell>
+                  <label className="relative group cursor-pointer block h-9 w-9" title="Alterar foto">
+                    <div className="h-9 w-9 rounded-full overflow-hidden bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold ring-1 ring-border">
+                      {u.foto ? <img src={u.foto} alt={u.nome} className="h-full w-full object-cover" /> : iniciais}
+                    </div>
+                    <span className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] text-white transition">Editar</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      const f = e.target.files?.[0]; e.target.value = "";
+                      if (!f) return;
+                      const url = await uploadFotoUsuario(u.user_id, f);
+                      if (url) { await fotoFn({ data: { userId: u.user_id, foto: url } }); toast.success("Foto atualizada"); refresh(); }
+                    }} />
+                  </label>
+                </TableCell>
                 <TableCell className="font-mono text-xs">{u.login}</TableCell>
                 <TableCell>{u.nome}</TableCell>
                 <TableCell className="hidden md:table-cell text-sm">{u.email}</TableCell>
@@ -183,7 +213,7 @@ function UsuariosPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            );})}
           </TableBody>
         </Table>
       </Card>
@@ -196,6 +226,34 @@ function UsuariosPage() {
             <DialogDescription>Login é convertido em e-mail interno para autenticação.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 py-2">
+            <div className="grid gap-1.5">
+              <Label>Foto (opcional)</Label>
+              <div className="flex items-center gap-3">
+                <div className="h-14 w-14 rounded-full overflow-hidden bg-muted ring-1 ring-border flex items-center justify-center text-xs text-muted-foreground">
+                  {novo.foto ? <img src={novo.foto} alt="" className="h-full w-full object-cover" /> : "—"}
+                </div>
+                <label className="text-xs text-primary cursor-pointer underline">
+                  {novoFotoUploading ? "Enviando..." : novo.foto ? "Trocar foto" : "Enviar foto"}
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const f = e.target.files?.[0]; e.target.value = "";
+                    if (!f) return;
+                    setNovoFotoUploading(true);
+                    try {
+                      const ext = f.name.split(".").pop()?.toLowerCase() || "jpg";
+                      const path = `usuarios-painel/novos/${Date.now()}.${ext}`;
+                      const { error } = await supabase.storage.from("motoristas-docs").upload(path, f, { upsert: true, contentType: f.type });
+                      if (error) throw error;
+                      const { data: signed } = await supabase.storage.from("motoristas-docs").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+                      setNovo((s) => ({ ...s, foto: signed?.signedUrl ?? null }));
+                    } catch (err: any) { toast.error(err.message); }
+                    finally { setNovoFotoUploading(false); }
+                  }} />
+                </label>
+                {novo.foto && (
+                  <button type="button" className="text-xs text-destructive underline" onClick={() => setNovo({ ...novo, foto: null })}>Remover</button>
+                )}
+              </div>
+            </div>
             <div className="grid gap-1.5"><Label>Nome</Label>
               <Input value={novo.nome} onChange={(e) => setNovo({ ...novo, nome: e.target.value })} /></div>
             <div className="grid gap-1.5"><Label>E-mail de contato</Label>

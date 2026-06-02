@@ -66,6 +66,10 @@ export function AppSidebar() {
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   const isActive = (path: string) => currentPath === path;
   const [userNome, setUserNome] = useState<string>("");
+  const [userFoto, setUserFoto] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  
 
   useEffect(() => {
     let active = true;
@@ -74,10 +78,14 @@ export function AppSidebar() {
       const uid = u.user?.id;
       if (!uid) return;
       const { data } = await supabase
-        .from("usuarios_painel").select("nome").eq("user_id", uid).maybeSingle();
+        .from("usuarios_painel").select("nome, foto").eq("user_id", uid).maybeSingle();
       const email = u.user?.email ?? "";
       const emailLimpo = email.endsWith("@painel.local") ? "" : email;
-      if (active) setUserNome(data?.nome ?? emailLimpo ?? "");
+      if (active) {
+        setUserId(uid);
+        setUserNome(data?.nome ?? emailLimpo ?? "");
+        setUserFoto(data?.foto ?? null);
+      }
     })();
     return () => { active = false; };
   }, []);
@@ -85,6 +93,26 @@ export function AppSidebar() {
   const sair = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/login", replace: true });
+  };
+
+  const onPickFoto = async (file: File) => {
+    if (!userId) return;
+    if (file.size > 5 * 1024 * 1024) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `usuarios-painel/${userId}/foto-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("motoristas-docs").upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      const { data: signed } = await supabase.storage.from("motoristas-docs").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      const url = signed?.signedUrl ?? null;
+      if (url) {
+        await supabase.from("usuarios_painel").update({ foto: url }).eq("user_id", userId);
+        setUserFoto(url);
+      }
+    } finally {
+      setUploading(false);
+    }
   };
 
   const visibleGestao = gestao.filter((i) => !i.adminOnly || isAdmin);
@@ -137,9 +165,28 @@ export function AppSidebar() {
 
       <SidebarFooter className="gap-2">
         <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/40">
-          <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
-            {iniciais}
-          </div>
+          <label className="relative group cursor-pointer shrink-0" title="Alterar foto">
+            <div className="h-8 w-8 rounded-full overflow-hidden bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold ring-1 ring-border">
+              {userFoto ? (
+                <img src={userFoto} alt={userNome} className="h-full w-full object-cover" />
+              ) : (
+                iniciais
+              )}
+            </div>
+            <span className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] text-white transition">
+              {uploading ? "..." : "Editar"}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) onPickFoto(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
           {!collapsed && (
             <div className="leading-tight min-w-0 flex-1">
               <div className="text-xs font-semibold truncate">{userNome || "—"}</div>

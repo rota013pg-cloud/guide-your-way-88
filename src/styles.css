@@ -1,7 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@900&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import url("https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@900&display=swap");
 
 .logo-r013 {
   font-family: "Saira Condensed", system-ui, sans-serif;

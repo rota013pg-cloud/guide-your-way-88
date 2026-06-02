@@ -226,6 +226,34 @@ function UsuariosPage() {
             <DialogDescription>Login é convertido em e-mail interno para autenticação.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 py-2">
+            <div className="grid gap-1.5">
+              <Label>Foto (opcional)</Label>
+              <div className="flex items-center gap-3">
+                <div className="h-14 w-14 rounded-full overflow-hidden bg-muted ring-1 ring-border flex items-center justify-center text-xs text-muted-foreground">
+                  {novo.foto ? <img src={novo.foto} alt="" className="h-full w-full object-cover" /> : "—"}
+                </div>
+                <label className="text-xs text-primary cursor-pointer underline">
+                  {novoFotoUploading ? "Enviando..." : novo.foto ? "Trocar foto" : "Enviar foto"}
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const f = e.target.files?.[0]; e.target.value = "";
+                    if (!f) return;
+                    setNovoFotoUploading(true);
+                    try {
+                      const ext = f.name.split(".").pop()?.toLowerCase() || "jpg";
+                      const path = `usuarios-painel/novos/${Date.now()}.${ext}`;
+                      const { error } = await supabase.storage.from("motoristas-docs").upload(path, f, { upsert: true, contentType: f.type });
+                      if (error) throw error;
+                      const { data: signed } = await supabase.storage.from("motoristas-docs").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+                      setNovo((s) => ({ ...s, foto: signed?.signedUrl ?? null }));
+                    } catch (err: any) { toast.error(err.message); }
+                    finally { setNovoFotoUploading(false); }
+                  }} />
+                </label>
+                {novo.foto && (
+                  <button type="button" className="text-xs text-destructive underline" onClick={() => setNovo({ ...novo, foto: null })}>Remover</button>
+                )}
+              </div>
+            </div>
             <div className="grid gap-1.5"><Label>Nome</Label>
               <Input value={novo.nome} onChange={(e) => setNovo({ ...novo, nome: e.target.value })} /></div>
             <div className="grid gap-1.5"><Label>E-mail de contato</Label>

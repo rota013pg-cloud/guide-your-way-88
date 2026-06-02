@@ -930,8 +930,10 @@ const cssMotorista = `
 }
 .moto-app .header-dark { background:#111; }
 .moto-app .app-logo {
-  font-weight:900; font-style:italic; font-size:22px; color:#fff;
-  text-decoration:none; letter-spacing:-1px;
+  font-family:"Bowlby One", system-ui, sans-serif;
+  font-weight:400; font-style:italic; font-size:24px; color:#fff;
+  text-decoration:none; letter-spacing:-1px; transform:skewX(-8deg);
+  display:inline-block;
 }
 .moto-app .app-logo span { color:var(--gold); }
 .moto-app .header-center { flex:1; text-align:center; padding:0 8px; }

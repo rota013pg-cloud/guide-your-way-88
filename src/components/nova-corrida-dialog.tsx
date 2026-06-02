@@ -73,7 +73,7 @@ export function NovaCorridaDialog({
     else setOpenInternal(v);
   };
 
-  const [tarifas, setTarifas] = useState<Tarifa[]>([]);
+  const [tarifas, setTarifas] = useState<TarifaOpt[]>([]);
   const [motoristas, setMotoristas] = useState<MotoristaMini[]>([]);
 
   // Cliente

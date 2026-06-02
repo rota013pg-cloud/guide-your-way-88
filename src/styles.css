@@ -1,6 +1,17 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import url("https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap");
+
+.logo-r013 {
+  font-family: "Bowlby One", system-ui, sans-serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  transform: skewX(-8deg);
+  display: inline-block;
+}
+.logo-r013 span { color: #f7c600; }
 
 @custom-variant dark (&:is(.dark *));
 

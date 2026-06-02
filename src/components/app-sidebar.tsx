@@ -108,7 +108,7 @@ export function AppSidebar() {
             className="logo-r013 text-2xl leading-none"
             style={{ color: "hsl(var(--foreground))" }}
           >
-            R<span>013</span>
+            Rota<span>013</span>
           </div>
           {!collapsed && (
             <div className="leading-tight ml-1">

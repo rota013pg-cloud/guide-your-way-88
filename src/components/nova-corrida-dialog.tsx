@@ -9,6 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { dispararOfertas } from "@/lib/corridas.functions";
+import { AddressAutocomplete, type AddressValue } from "@/components/address-autocomplete";
+import { calcularRota } from "@/lib/maps.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 type Tarifa = { id: number; nome: string; bandeirada: number; minimo: number; por_km: number };
 type ClienteMini = { codigo: string; nome: string; telefone: string | null };
@@ -21,12 +24,14 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
 
   const [cliente, setCliente] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [origem, setOrigem] = useState("");
-  const [destino, setDestino] = useState("");
+  const [origem, setOrigem] = useState<AddressValue>({ text: "" });
+  const [destino, setDestino] = useState<AddressValue>({ text: "" });
   const [distancia, setDistancia] = useState("");
   const [tarifaId, setTarifaId] = useState<string>("");
   const [pagamento, setPagamento] = useState<"Dinheiro" | "Pix" | "Cartão" | "Maquininha" | "Conta">("Dinheiro");
   const [obs, setObs] = useState("");
+  const [calculandoRota, setCalculandoRota] = useState(false);
+  const calcRota = useServerFn(calcularRota);
 
   useEffect(() => {
     if (!open) return;
@@ -41,13 +46,31 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
     });
   }, [open]);
 
+  // Calcula distância automaticamente quando ambos têm coordenadas
+  useEffect(() => {
+    if (origem.lat == null || origem.lng == null || destino.lat == null || destino.lng == null) return;
+    let cancel = false;
+    setCalculandoRota(true);
+    calcRota({ data: { origem: { lat: origem.lat, lng: origem.lng }, destino: { lat: destino.lat, lng: destino.lng } } })
+      .then((r) => {
+        if (cancel) return;
+        if (r.km > 0) {
+          setDistancia(r.km.toFixed(1).replace(".", ","));
+          toast.success(`📍 ${r.km.toFixed(1)} km calculados via Google Maps`);
+        }
+      })
+      .catch((e) => { if (!cancel) toast.error("Rota: " + e.message); })
+      .finally(() => { if (!cancel) setCalculandoRota(false); });
+    return () => { cancel = true; };
+  }, [origem.lat, origem.lng, destino.lat, destino.lng]);
+
   const tarifa = tarifas.find((t) => String(t.id) === tarifaId);
   const km = parseFloat(distancia.replace(",", ".")) || 0;
   const valorBruto = tarifa ? tarifa.bandeirada + km * tarifa.por_km : 0;
   const valor = tarifa ? Math.max(valorBruto, tarifa.minimo) : 0;
 
   const reset = () => {
-    setCliente(""); setTelefone(""); setOrigem(""); setDestino("");
+    setCliente(""); setTelefone(""); setOrigem({ text: "" }); setDestino({ text: "" });
     setDistancia(""); setPagamento("Dinheiro" as const); setObs("");
   };
 
@@ -57,13 +80,13 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
   };
 
   const salvar = async () => {
-    if (!origem.trim()) { toast.error("Informe a origem."); return; }
+    if (!origem.text.trim()) { toast.error("Informe a origem."); return; }
     setSalvando(true);
     const { data: inserted, error } = await supabase.from("corridas").insert({
       cliente: cliente || null,
       telefone_cliente: telefone || null,
-      origem,
-      destino: destino || null,
+      origem: origem.text,
+      destino: destino.text || null,
       distancia_km: km || null,
       valor_final: valor,
       pagamento,
@@ -130,17 +153,17 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
 
           <div className="grid gap-1.5">
             <Label htmlFor="ori">Origem *</Label>
-            <Input id="ori" value={origem} onChange={(e) => setOrigem(e.target.value)} placeholder="Endereço de partida" />
+            <AddressAutocomplete id="ori" value={origem.text} onChange={setOrigem} placeholder="Endereço de partida" />
           </div>
 
           <div className="grid gap-1.5">
             <Label htmlFor="dest">Destino</Label>
-            <Input id="dest" value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="Endereço de destino" />
+            <AddressAutocomplete id="dest" value={destino.text} onChange={setDestino} placeholder="Endereço de destino" />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="km">Distância (km)</Label>
+              <Label htmlFor="km">Distância (km){calculandoRota ? " …" : ""}</Label>
               <Input id="km" inputMode="decimal" value={distancia} onChange={(e) => setDistancia(e.target.value)} placeholder="0,0" />
             </div>
             <div className="grid gap-1.5">

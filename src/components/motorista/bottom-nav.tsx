@@ -80,10 +80,46 @@ export function MotoristaBottomNav({
           if (m.autor !== "operador") return;
           if (tabRef.current !== "chat") {
             setUnread((u) => u + 1);
-            toast.message(`💬 ${m.autor_nome ?? "Central"}`, {
-              description: m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto,
-              action: { label: "Abrir", onClick: () => setTab("chat") },
-            });
+            playChatBeep();
+            const nome = m.autor_nome ?? "Central";
+            const preview = m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
+            toast.custom(
+              (id) => (
+                <button
+                  onClick={() => {
+                    toast.dismiss(id);
+                    setTab("chat");
+                  }}
+                  style={{
+                    display: "flex", gap: 10, alignItems: "flex-start",
+                    width: 320, maxWidth: "88vw",
+                    background: "#1a1a1a", color: "#f1f1f1",
+                    border: "1px solid #2a2a2a", borderRadius: 12,
+                    padding: 12, textAlign: "left",
+                    boxShadow: "0 10px 30px rgba(0,0,0,.5)", cursor: "pointer",
+                  }}
+                >
+                  <div style={{
+                    height: 40, width: 40, borderRadius: "50%",
+                    background: "#f7c600", color: "#111",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 800, flexShrink: 0,
+                  }}>
+                    {(nome[0] ?? "C").toUpperCase()}
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>💬 {nome}</div>
+                    <div style={{
+                      fontSize: 12, color: "#aaa", marginTop: 2,
+                      display: "-webkit-box", WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical", overflow: "hidden",
+                      whiteSpace: "pre-wrap", wordBreak: "break-word",
+                    }}>{preview}</div>
+                  </div>
+                </button>
+              ),
+              { duration: 6000 },
+            );
           }
         },
       )

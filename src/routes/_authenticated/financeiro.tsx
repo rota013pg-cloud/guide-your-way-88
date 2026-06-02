@@ -50,6 +50,8 @@ function FinanceiroPage() {
   const marcarFn = useServerFn(marcarDiariaPaga);
   const removerFn = useServerFn(removerPagamento);
   const relatorioFn = useServerFn(relatorioFinanceiro);
+  const addCreditosFn = useServerFn(adicionarCreditosDiaria);
+  const remCreditoFn = useServerFn(removerCreditoDiaria);
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -75,6 +77,29 @@ function FinanceiroPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const addCreditos = useMutation({
+    mutationFn: (v: { motoristaCodigo: string; dias: number }) =>
+      addCreditosFn({ data: v }),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["financeiro"] });
+      toast.success(`+${r.novosCreditos} créditos · ${brl(r.valorPago)} registrado`);
+      setCredOpen(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const remCredito = useMutation({
+    mutationFn: (codigo: string) => remCreditoFn({ data: { motoristaCodigo: codigo } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["financeiro"] });
+      toast.success("1 crédito removido");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const [credOpen, setCredOpen] = useState<{ codigo: string; nome: string } | null>(null);
+  const [credDias, setCredDias] = useState(5);
 
   const [de, setDe] = useState(hojeISO());
   const [ate, setAte] = useState(hojeISO());

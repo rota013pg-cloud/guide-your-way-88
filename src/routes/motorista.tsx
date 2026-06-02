@@ -106,6 +106,7 @@ function MotoristaApp() {
   const statusCorridaFn = useServerFn(motoristaAtualizarStatusCorrida);
   const contextoFn = useServerFn(motoristaCarregarContexto);
   const carregarCorridaFn = useServerFn(motoristaCarregarCorrida);
+  const concluirParadaFn = useServerFn(motoristaConcluirParada);
 
   const [sessao, setSessao] = useState<{ motorista: Motorista; token: string } | null>(null);
   const [tela, setTela] = useState<"login" | "home" | "corrida">("login");

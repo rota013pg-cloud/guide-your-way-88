@@ -61,7 +61,8 @@ function UsuariosPage() {
     enabled: isAdmin,
   });
 
-  const [novo, setNovo] = useState<{ nome: string; email: string; login: string; senha: string; role: "admin" | "operador" }>({ nome: "", email: "", login: "", senha: "", role: "operador" });
+  const [novo, setNovo] = useState<{ nome: string; email: string; login: string; senha: string; role: "admin" | "operador"; foto: string | null }>({ nome: "", email: "", login: "", senha: "", role: "operador", foto: null });
+  const [novoFotoUploading, setNovoFotoUploading] = useState(false);
   const [openNovo, setOpenNovo] = useState(false);
   const [senhaDialog, setSenhaDialog] = useState<{ userId: string; nome: string } | null>(null);
   const [novaSenha, setNovaSenha] = useState("");
@@ -76,7 +77,7 @@ function UsuariosPage() {
     onSuccess: () => {
       toast.success("Usuário criado");
       setOpenNovo(false);
-      setNovo({ nome: "", email: "", login: "", senha: "", role: "operador" });
+      setNovo({ nome: "", email: "", login: "", senha: "", role: "operador", foto: null });
       refresh();
     },
     onError: (e: Error) => toast.error(e.message),

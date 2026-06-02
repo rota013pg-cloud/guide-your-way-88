@@ -610,6 +610,9 @@ export type Database = {
           moto: string | null
           nome: string
           nome_familiar: string | null
+          pausado: boolean
+          pausado_em: string | null
+          pausado_motivo: string | null
           placa: string | null
           status: Database["public"]["Enums"]["status_motorista"]
           telefone: string | null
@@ -634,6 +637,9 @@ export type Database = {
           moto?: string | null
           nome: string
           nome_familiar?: string | null
+          pausado?: boolean
+          pausado_em?: string | null
+          pausado_motivo?: string | null
           placa?: string | null
           status?: Database["public"]["Enums"]["status_motorista"]
           telefone?: string | null
@@ -658,6 +664,9 @@ export type Database = {
           moto?: string | null
           nome?: string
           nome_familiar?: string | null
+          pausado?: boolean
+          pausado_em?: string | null
+          pausado_motivo?: string | null
           placa?: string | null
           status?: Database["public"]["Enums"]["status_motorista"]
           telefone?: string | null

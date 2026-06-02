@@ -43,6 +43,7 @@ const operacional: Item[] = [
   { title: "Corridas", url: "/corridas", icon: ListChecks },
   { title: "Motoristas", url: "/motoristas", icon: Users },
   { title: "Clientes", url: "/clientes", icon: UserSquare },
+  { title: "Chat motoristas", url: "/chat-motoristas", icon: MessageSquare },
   { title: "Mural", url: "/mural", icon: StickyNote },
 ];
 

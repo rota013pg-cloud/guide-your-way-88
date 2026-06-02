@@ -26,6 +26,7 @@ import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedCoberturaRouteImport } from './routes/_authenticated/cobertura'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
+import { Route as AuthenticatedChatMotoristasRouteImport } from './routes/_authenticated/chat-motoristas'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -112,12 +113,19 @@ const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
   path: '/clientes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedChatMotoristasRoute =
+  AuthenticatedChatMotoristasRouteImport.update({
+    id: '/chat-motoristas',
+    path: '/chat-motoristas',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -136,6 +144,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/cobertura': typeof AuthenticatedCoberturaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -156,6 +165,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/cobertura': typeof AuthenticatedCoberturaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/motorista'
     | '/reset-password'
+    | '/chat-motoristas'
     | '/clientes'
     | '/cobertura'
     | '/configuracoes'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/motorista'
     | '/reset-password'
+    | '/chat-motoristas'
     | '/clientes'
     | '/cobertura'
     | '/configuracoes'
@@ -213,6 +225,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/motorista'
     | '/reset-password'
+    | '/_authenticated/chat-motoristas'
     | '/_authenticated/clientes'
     | '/_authenticated/cobertura'
     | '/_authenticated/configuracoes'
@@ -356,10 +369,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/chat-motoristas': {
+      id: '/_authenticated/chat-motoristas'
+      path: '/chat-motoristas'
+      fullPath: '/chat-motoristas'
+      preLoaderRoute: typeof AuthenticatedChatMotoristasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedChatMotoristasRoute: typeof AuthenticatedChatMotoristasRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedCoberturaRoute: typeof AuthenticatedCoberturaRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
@@ -375,6 +396,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedChatMotoristasRoute: AuthenticatedChatMotoristasRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedCoberturaRoute: AuthenticatedCoberturaRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,

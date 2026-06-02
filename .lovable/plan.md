@@ -1,122 +1,95 @@
-## Visão geral
 
-Implementar 3 frentes:
-1. **Cadastro de Clientes** — CRUD completo com código sequencial `C0001`.
-2. **Cadastro de Motoristas** — CRUD completo com uploads (foto/PDF), máscaras, código sequencial `M0001`, e painel admin de gerenciamento de acesso (ver/alterar senha, bloquear/desbloquear com motivo).
-3. **Mapa** — tiles coloridos (estilo da imagem) + pin customizado de moto exibindo o ID do motorista.
+# Fluxo de Nova Corrida — Plano de Implementação
 
----
+## 1. Banco de dados (migração)
 
-## 1. Banco de dados (migrations)
+**Tabela `corridas` — novas colunas**
+- `modelo` (enum: `Imediata` | `Agendada`) — default `Imediata`
+- `agendada_para` (timestamptz, null) — quando `modelo = Agendada`
+- `despacho` (enum: `Automatico` | `Manual` | `WhatsApp`) — default `Automatico`
+- `paradas` (jsonb) — array `[{ ordem, endereco, lat, lng, concluida_em }]`
+- `valor_paradas` (numeric) — total cobrado por paradas extras
+- `motoristas_manuais` (text[]) — códigos quando despacho = Manual
+- `rodada_atual` (int, default 1) — usado pelo auto-disparo (5 → 10 → 15…)
 
-### Campos novos
-- `clientes`: adicionar coluna `indicacao text` (código de motorista OU texto livre).
-- `motoristas`: já existem todos os campos necessários (`foto`, `doc_cnh`, `doc_veiculo`, `doc_endereco`, `foto_moto`, `nome_familiar`, `telefone_familiar`, etc).
-- `motorista_auth`: adicionar `motivo_bloqueio text` (preenchido ao bloquear).
+**Nova tabela `corrida_status_log`**
+- `id`, `corrida_id`, `status` (text), `criado_em` (timestamptz)
+- Registra: Pendente, Ofertada, Aceita, Cheguei, A caminho, Parada 1/2…, Finalizada, Cancelada
+- RLS: operadores leem/escrevem; motorista escreve só do próprio (via server fn)
 
-### Geração de código sequencial (anti-colisão)
-Função RPC server-side dentro de transaction:
-```sql
-CREATE FUNCTION public.proximo_codigo_cliente() RETURNS text ...
-CREATE FUNCTION public.proximo_codigo_motorista() RETURNS text ...
-```
-Lê `MAX(substring(codigo,2)::int)` + 1, formata `C0001`/`M0001`. Chamado **apenas no momento do INSERT** (não na abertura do dialog) para garantir unicidade. O dialog exibe um **preview** ("Próximo código: C0007") buscado via server fn separada, mas o código real é alocado no salvar com `ON CONFLICT (codigo) DO NOTHING` + retry caso colida.
+**`app_config.config_json`** — adicionar chave `valor_parada_extra` (number, default 3.00)
 
-### Storage
-Criar bucket `motoristas-docs` (privado), com policies permitindo `operadores` lerem/escreverem.
+## 2. Lógica de valor (server)
 
----
+`src/lib/tarifas-calc.ts` — adicionar:
+- `arredondarParaBaixo(v)` → `Math.floor(v)` (sempre zera centavos)
+- `calcularValorComParadas(base, qtdParadas, valorParada)` → `floor(base + qtd * valorParada)`
 
-## 2. Server functions
+## 3. UI — Dialog Nova Corrida (reescrita de `nova-corrida-dialog.tsx`)
 
-`src/lib/clientes.functions.ts`
-- `listarClientes`, `salvarCliente` (create/update), `excluirCliente`, `proximoCodigoCliente`.
+**Campos novos/alterados:**
+- Busca de cliente **por código** (input "C0001" → autopreenche Nome + Telefone)
+- Endereço origem + destino (já existe)
+- **Paradas intermediárias**: lista com botão "+ Adicionar parada" usando `AddressAutocomplete`. Reordenável (drag opcional, v2). Cada parada soma `valor_parada_extra` no total.
+- Tarifa (já existe)
+- **Modelo**: `Imediata` | `Agendada` (com `datetime-local` quando agendada)
+- **Despacho**: `Automatico` | `Manual` | `WhatsApp`
+  - `Manual` → MultiSelect de motoristas (códigos M0001…)
+  - `WhatsApp` → após salvar, abre dialog com texto formatado + botão "Copiar"
+- Pagamento (já existe)
+- Observações
+- **Box de valor**: mostra valor base + adicional de paradas, total em destaque (centavos zerados)
+- Rodapé: **Limpar** / **Cancelar** / **Lançar corrida**
 
-`src/lib/motoristas.functions.ts`
-- `listarMotoristas`, `salvarMotorista`, `excluirMotorista`, `proximoCodigoMotorista`.
-- `adminVerSenha(codigo)` — apenas admin, retorna `senha_plain`.
-- `adminAlterarSenha(codigo, novaSenha)` — apenas admin, atualiza `senha_hash` + `senha_plain`.
-- `adminBloquearMotorista(codigo, motivo)` / `adminDesbloquear(codigo)` — atualiza `motorista_auth.status` + `motivo_bloqueio`, encerra sessões ativas.
+**Agendadas** ficam só salvas (`status = Agendada`); aparecem em aba/lista nova em `/corridas` com botão "Iniciar agora" que chama o disparo conforme `despacho`.
 
-Todas protegidas com `requireSupabaseAuth`; as `admin*` checam `has_role(uid, 'admin')`.
+## 4. Despacho (server functions)
 
----
+**`dispararOfertas` (existe — estender):**
+- Se `despacho = Manual` → insere ofertas só para os códigos em `motoristas_manuais`, sem filtrar por status.
+- Se `despacho = Automatico` → mantém top 5 por proximidade; agendar revisão (rodada 2 = 10, rodada 3 = 15) via `setTimeout` curto no client OU via cron leve. Implementação simples: campo `rodada_atual` + server fn `expandirOfertas(corridaId)` chamada pelo dashboard em polling de 30s para corridas pendentes.
+- Se `despacho = WhatsApp` → NÃO insere ofertas; retorna `{ modo: "whatsapp", texto }` montado a partir da corrida.
 
-## 3. UI
+**Bloqueio motorista ocupado:** ao aceitar uma oferta, server fn `aceitarCorrida` marca motorista como `Em corrida` e filtra das próximas ofertas até `finalizarCorrida`.
 
-### `src/routes/_authenticated/clientes.tsx`
-- Listagem em tabela: Código, Nome, Telefone, Endereço, Corridas.
-- Busca por nome/telefone/código.
-- Dialog "Novo cliente" / "Editar":
-  - Campos: Nome, Telefone (máscara `(DD) 9XXXX-XXXX`), Endereço (com `AddressAutocomplete`), Indicação (opcional).
-  - Mostra próximo código como label.
+## 5. Timeline de status
 
-### `src/routes/_authenticated/motoristas.tsx`
-- Listagem em cards/tabela: foto, código, nome, telefone, status (Online/Offline/Bloqueado), nº corridas.
-- Dialog "Novo motorista" / "Editar":
-  - Dados pessoais: Nome, Telefone (máscara), CPF (máscara `XXX.XXX.XXX-XX`), Endereço (autocomplete).
-  - Contato familiar: Nome parente, Telefone parente (máscara).
-  - Uploads (aceita imagem ou PDF): Foto, CNH, Doc moto, Foto moto, Comprovante endereço → vai pro bucket `motoristas-docs/{codigo}/{tipo}.ext`, URL salva no campo correspondente.
-  - Preview do arquivo (thumb para imagem, ícone PDF para PDF, link "Abrir").
-- **Painel admin** (visível só com `useRole().isAdmin`):
-  - Botão "Ver senha" → modal com senha em texto + botão copiar.
-  - Botão "Alterar senha" → input nova senha.
-  - Toggle Bloquear/Desbloquear → ao bloquear, exige `motivo` (textarea).
-  - Badge mostra "Bloqueado: {motivo}" no card.
+- Server fn `registrarStatusCorrida({corridaId, status})` — escreve em `corrida_status_log` + atualiza `corridas.status`.
+- Componente `<CorridaTimeline corridaId/>` — lista cronológica usada em `/corridas` e na tela de detalhe.
+- Botão "Marcar parada concluída" no app do motorista (motorista.tsx) atualiza `paradas[i].concluida_em` e cria log.
 
-### Máscaras
-Usar funções utilitárias em `src/lib/masks.ts` (formatadores `formatTelefone`, `formatCPF`) aplicadas via `onChange`.
+## 6. PDF financeiro
 
----
+`src/lib/financeiro-pdf.ts` — quando a corrida tiver log, anexar tabela "Linha do tempo" (status × hora) no recibo.
 
-## 4. Mapa
+## 7. Botão "Nova corrida" no cliente
 
-`src/components/map-leaflet-inner.tsx`:
-- Trocar tile layer atual pelo **CartoDB Voyager** (`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`) — visual colorido similar ao da imagem.
-- Criar `divIcon` customizado para motoristas:
-  ```
-  <div class="moto-marker">
-    <span class="moto-id">M0001</span>
-    <Bike icon SVG />
-  </div>
-  ```
-  Estilizado em `src/styles.css` (badge com ID acima do ícone de moto, cores conforme status: verde online, azul em corrida).
+Em `/clientes` (e no `ClienteDialog`), adicionar botão 🏍️ "Nova corrida" que abre o NovaCorridaDialog já com cliente preenchido.
 
 ---
 
-## 5. Detalhes técnicos
+## Escopo desta primeira entrega
 
-- **Sequência sem buraco/colisão**: a função SQL é `SECURITY DEFINER` + `LOCK TABLE ... IN SHARE ROW EXCLUSIVE MODE` no momento do insert para serializar concorrência.
-- **Upload**: usa `supabase.storage.from("motoristas-docs").upload()` direto do browser (operadores autenticados).
-- **Validação Zod** em todas as server fns.
-- **RLS**: clientes/motoristas já tem policy `operadores acessam`. `motorista_auth` ganha checagem extra `is_admin` nas server fns para campos sensíveis.
-- **Auditoria**: ao bloquear/alterar senha, registrar log (opcional — pular nesta fase para manter escopo).
+Para entregar funcional sem ficar gigante demais, vou implementar nesta rodada:
 
----
+1. Migração (colunas + tabela log + config valor_parada)
+2. UI completa do novo NovaCorridaDialog (paradas, modelo, despacho, arredondamento, busca por código)
+3. Server fn `dispararOfertas` estendida (Manual / WhatsApp / Automático rodada 1)
+4. Server fn `registrarStatusCorrida` + componente `<CorridaTimeline/>` na aba Corridas
+5. Botão "Nova corrida" no card do cliente
+6. Config "Valor por parada extra" em `/configuracoes`
 
-## Arquivos criados/modificados
+**Fica para a rodada seguinte** (aviso antes):
+- Auto-expansão de rodadas (5→10→15) — precisa de cron/polling
+- Lista de "Agendadas" com botão "Iniciar agora"
+- Botão de parada concluída no app do motorista
+- Anexar timeline no PDF financeiro
+- Chat operador ↔ motorista (mencionado pela sua sugestão)
 
-**Migration**: 1 (adiciona colunas, função SQL, bucket + policies)
+## Sugestões adicionais
 
-**Criados:**
-- `src/lib/clientes.functions.ts`
-- `src/lib/motoristas.functions.ts`
-- `src/lib/masks.ts`
-- `src/components/cliente-dialog.tsx`
-- `src/components/motorista-dialog.tsx`
-- `src/components/motorista-admin-panel.tsx`
-- `src/components/file-upload-field.tsx`
+- **Cancelamento via chat**: concordo com sua ideia — proponho criar uma tabela `corrida_mensagens` (motorista_codigo, corrida_id, texto, autor) com Realtime. Faço junto com o chat na rodada 2.
+- **Agendadas**: além do "iniciar manual", recomendo um aviso visual 10 min antes do horário no dashboard.
+- **WhatsApp**: o texto copiado vai incluir origem, destino, paradas, valor, pagamento e link `https://wa.me/?text=...` para colar direto no grupo.
 
-**Modificados:**
-- `src/routes/_authenticated/clientes.tsx` (lista + CRUD)
-- `src/routes/_authenticated/motoristas.tsx` (lista + CRUD + admin)
-- `src/components/map-leaflet-inner.tsx` (tile + pin)
-- `src/styles.css` (estilo do pin de moto)
-
----
-
-## Fora deste escopo (confirmar)
-
-- Histórico de bloqueios/auditoria de alterações de senha.
-- Validação real do CPF (apenas máscara).
-- Geração automática da primeira senha do motorista no cadastro (manter fluxo atual: definida no `motorista_auth` existente).
+Pode confirmar para eu seguir com a rodada 1?

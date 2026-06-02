@@ -21,7 +21,14 @@ export const loginSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Entrar — Rota 013" }] }),
+  head: () => ({
+    meta: [
+      { title: "Entrar — Rota 013" },
+      { name: "application-name", content: "Rota 013 Operador" },
+      { name: "apple-mobile-web-app-title", content: "Rota 013 Operador" },
+    ],
+    links: [{ rel: "manifest", href: "/manifest-operador.webmanifest" }],
+  }),
   validateSearch: zodValidator(loginSearchSchema),
   component: LoginPage,
 });

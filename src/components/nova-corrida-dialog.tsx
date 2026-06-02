@@ -153,17 +153,17 @@ export function NovaCorridaDialog({ onCriada }: { onCriada?: () => void }) {
 
           <div className="grid gap-1.5">
             <Label htmlFor="ori">Origem *</Label>
-            <Input id="ori" value={origem} onChange={(e) => setOrigem(e.target.value)} placeholder="Endereço de partida" />
+            <AddressAutocomplete id="ori" value={origem.text} onChange={setOrigem} placeholder="Endereço de partida" />
           </div>
 
           <div className="grid gap-1.5">
             <Label htmlFor="dest">Destino</Label>
-            <Input id="dest" value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="Endereço de destino" />
+            <AddressAutocomplete id="dest" value={destino.text} onChange={setDestino} placeholder="Endereço de destino" />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="km">Distância (km)</Label>
+              <Label htmlFor="km">Distância (km){calculandoRota ? " …" : ""}</Label>
               <Input id="km" inputMode="decimal" value={distancia} onChange={(e) => setDistancia(e.target.value)} placeholder="0,0" />
             </div>
             <div className="grid gap-1.5">

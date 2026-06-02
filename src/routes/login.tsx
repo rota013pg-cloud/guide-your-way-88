@@ -39,6 +39,7 @@ function LoginPage() {
   const [modo, setModo] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
+  const [adminExiste, setAdminExiste] = useState<boolean | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -47,6 +48,15 @@ function LoginPage() {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session) navigate({ to: "/dashboard", replace: true });
     });
+    supabase
+      .from("user_roles")
+      .select("user_id", { count: "exact", head: true })
+      .eq("role", "admin")
+      .then(({ count }) => {
+        const tem = (count ?? 0) > 0;
+        setAdminExiste(tem);
+        if (tem) setModo("login");
+      });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 

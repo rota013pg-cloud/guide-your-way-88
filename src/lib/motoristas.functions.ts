@@ -214,6 +214,26 @@ export const adminDesbloquearMotorista = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// Libera o "trava de dispositivo" do motorista: encerra sessões ativas e
+// limpa o device_id em motorista_auth para permitir login em novo aparelho.
+export const adminResetarDispositivoMotorista = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ codigo: z.string() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await exigirAdmin(context.userId);
+    const { error: e1 } = await supabaseAdmin
+      .from("motorista_auth")
+      .update({ device_id: null, device_nome: null } as any)
+      .eq("motorista_codigo", data.codigo);
+    if (e1) throw new Error(e1.message);
+    await supabaseAdmin
+      .from("motorista_sessoes")
+      .update({ status: "encerrada" })
+      .eq("motorista_codigo", data.codigo)
+      .eq("status", "ativa");
+    return { ok: true };
+  });
+
 // ─── PAUSAR / RETOMAR MOTORISTA ─────────────────────────
 // Quando pausado, o motorista não recebe novas ofertas de corrida.
 // O app do motorista não exibe esse estado.

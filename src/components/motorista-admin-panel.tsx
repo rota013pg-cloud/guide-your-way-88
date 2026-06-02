@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, EyeOff, Copy, Lock, Unlock, KeyRound } from "lucide-react";
+import { Eye, EyeOff, Copy, Lock, Unlock, KeyRound, Smartphone } from "lucide-react";
 import {
   adminVerSenha,
   adminAlterarSenha,
   adminBloquearMotorista,
   adminDesbloquearMotorista,
+  adminResetarDispositivoMotorista,
 } from "@/lib/motoristas.functions";
 import { toast } from "sonner";
 
@@ -32,6 +33,7 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
   const alterarSenhaFn = useServerFn(adminAlterarSenha);
   const bloquearFn = useServerFn(adminBloquearMotorista);
   const desbloquearFn = useServerFn(adminDesbloquearMotorista);
+  const resetarDispositivoFn = useServerFn(adminResetarDispositivoMotorista);
 
   const [senha, setSenha] = useState<string | null>(null);
   const [novaSenha, setNovaSenha] = useState("");
@@ -68,6 +70,15 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
       toast.success(bloqueado ? "Acesso liberado" : "Motorista bloqueado");
       qc.invalidateQueries({ queryKey: ["motoristas"] });
       setMotivo("");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const resetDevMut = useMutation({
+    mutationFn: () => resetarDispositivoFn({ data: { codigo: motorista.codigo } }),
+    onSuccess: () => {
+      toast.success("Dispositivo liberado. O motorista pode entrar em outro aparelho.");
+      qc.invalidateQueries({ queryKey: ["motoristas"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -129,6 +140,23 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
                 <KeyRound className="h-3 w-3 mr-2" /> Salvar
               </Button>
             </div>
+          </div>
+
+          {/* Resetar dispositivo */}
+          <div className="space-y-2 border-t pt-3">
+            <Label className="text-xs">Dispositivo vinculado</Label>
+            <p className="text-xs text-muted-foreground">
+              Use quando o motorista trocou de aparelho e está vendo "logado em outro dispositivo".
+              Encerra a sessão atual e libera o login em um novo aparelho.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => resetDevMut.mutate()}
+              disabled={resetDevMut.isPending}
+            >
+              <Smartphone className="h-4 w-4 mr-2" /> Resetar dispositivo
+            </Button>
           </div>
 
           {/* Bloquear / Desbloquear */}

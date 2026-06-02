@@ -97,12 +97,49 @@ export const dispararOfertas = createServerFn({ method: "POST" })
       const { data: motoristas, error: motErr } = await supabaseAdmin
         .from("motoristas")
         .select("codigo")
-        .eq("status", "Online");
+        .eq("status", "Online")
+        .eq("pausado", false);
       if (motErr) throw new Error(motErr.message);
       candidatosCodigos = (motoristas ?? []).map((m) => m.codigo);
       if (candidatosCodigos.length === 0) {
         return { ok: true, ofertados: 0, motivo: "nenhum motorista online" };
       }
+    }
+
+    // Exclui motoristas pausados (vale também para despacho Manual)
+    const { data: pausados } = await supabaseAdmin
+      .from("motoristas")
+      .select("codigo")
+      .in("codigo", candidatosCodigos)
+      .eq("pausado", true);
+    const pausadosSet = new Set((pausados ?? []).map((p) => p.codigo));
+
+    // Exclui motoristas com corrida ativa (evita aceitar várias e cancelar)
+    const STATUS_ATIVOS = [
+      "Aceita",
+      "A caminho",
+      "Chegou",
+      "Em viagem",
+      "Parada",
+    ];
+    const { data: ocupados } = await supabaseAdmin
+      .from("corridas")
+      .select("motorista_codigo")
+      .in("motorista_codigo", candidatosCodigos)
+      .in("status", STATUS_ATIVOS as any);
+    const ocupadosSet = new Set(
+      (ocupados ?? []).map((o) => o.motorista_codigo).filter(Boolean) as string[],
+    );
+
+    candidatosCodigos = candidatosCodigos.filter(
+      (c) => !pausadosSet.has(c) && !ocupadosSet.has(c),
+    );
+    if (candidatosCodigos.length === 0) {
+      return {
+        ok: true,
+        ofertados: 0,
+        motivo: "nenhum motorista disponível (pausados ou em corrida)",
+      };
     }
 
     // Já ofertados (não duplicar)

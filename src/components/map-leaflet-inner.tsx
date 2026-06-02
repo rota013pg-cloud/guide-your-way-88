@@ -28,11 +28,11 @@ export default function MapInner({ motoristas }: { motoristas: MapMotorista[] })
       center={center}
       zoom={13}
       scrollWheelZoom
-      style={{ height: "100%", width: "100%", borderRadius: "0.5rem", background: "#1a1a1a" }}
+      style={{ height: "100%", width: "100%", borderRadius: "0.5rem", background: "#f5f5f5", zIndex: 0 }}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        attribution='&copy; OpenStreetMap &copy; CARTO'
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />
       {motoristas.map((m) => (
         <Marker key={m.codigo} position={[Number(m.lat), Number(m.lng)]} icon={buildIcon(m.status)}>

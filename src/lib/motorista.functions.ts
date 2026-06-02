@@ -322,10 +322,11 @@ export const motoristaCarregarContexto = createServerFn({ method: "POST" })
     if (ofertaPendente) {
       const { data: corridaOferta } = await supabaseAdmin
         .from("corridas")
-        .select("id, cliente, origem, destino, valor_final, distancia_km")
+        .select("id, cliente, origem, destino, valor_final, distancia_km, status")
         .eq("id", ofertaPendente.corrida_id)
         .maybeSingle();
-      if (corridaOferta) {
+      // Só mostra se a corrida ainda está Pendente (não foi atribuída a outro)
+      if (corridaOferta && corridaOferta.status === "Pendente") {
         oferta = {
           ofertaId: ofertaPendente.id,
           corridaId: corridaOferta.id,

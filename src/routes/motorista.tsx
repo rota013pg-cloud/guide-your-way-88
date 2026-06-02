@@ -192,9 +192,7 @@ function MotoristaApp() {
         },
         (payload) => {
           const o = payload.new as { id: number; status: string };
-          if (oferta && o.id === oferta.ofertaId && o.status !== "pendente") {
-            setOferta(null);
-          }
+          setOferta((cur) => (cur && o.id === cur.ofertaId && o.status !== "pendente" ? null : cur));
         },
       )
       .on(
@@ -214,7 +212,7 @@ function MotoristaApp() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessao, carregarCorridaFn, recarregarContexto, oferta]);
+  }, [sessao, carregarCorridaFn, recarregarContexto]);
 
   // ─── Countdown da oferta ────────────────────────────
   useEffect(() => {

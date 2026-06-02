@@ -178,8 +178,20 @@ function ChatMotoristasPage() {
                           meu ? "bg-primary text-primary-foreground" : "bg-card border border-border"
                         }`}
                       >
-                        <div className="text-[10px] opacity-70 mb-0.5">
-                          {m.autor_nome ?? (meu ? "Central" : "Motorista")}
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-[10px] opacity-70 flex-1">
+                            {m.autor_nome ?? (meu ? "Central" : "Motorista")}
+                          </span>
+                          {isAdmin && (
+                            <button
+                              onClick={() => apagar(m.id)}
+                              disabled={apagando === m.id}
+                              className="opacity-50 hover:opacity-100 transition disabled:opacity-30"
+                              title="Apagar mensagem"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          )}
                         </div>
                         <div className="whitespace-pre-wrap break-words">{m.texto}</div>
                         <div className="text-[10px] opacity-60 mt-1 text-right">

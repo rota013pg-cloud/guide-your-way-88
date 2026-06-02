@@ -559,7 +559,9 @@ function MotoristaApp() {
               setForcarCobranca(false);
             }
           }}
+          onFechar={() => setForcarCobranca(false)}
         />
+
       )}
 
       {sessao && tela !== "login" && (

@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Bike } from "lucide-react";
 import { listarClientes, excluirCliente } from "@/lib/clientes.functions";
 import { ClienteDialog } from "@/components/cliente-dialog";
+import { NovaCorridaDialog, type ClientePrefill } from "@/components/nova-corrida-dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
@@ -26,6 +27,9 @@ function ClientesPage() {
   const [filtro, setFiltro] = useState("");
   const [open, setOpen] = useState(false);
   const [editando, setEditando] = useState<any>(null);
+
+  const [corridaOpen, setCorridaOpen] = useState(false);
+  const [corridaPrefill, setCorridaPrefill] = useState<ClientePrefill | null>(null);
 
   const { data: clientes = [], isLoading } = useQuery({
     queryKey: ["clientes"],
@@ -50,6 +54,11 @@ function ClientesPage() {
       c.telefone?.toLowerCase().includes(q)
     );
   });
+
+  const novaCorrida = (c: any) => {
+    setCorridaPrefill({ codigo: c.codigo, nome: c.nome, telefone: c.telefone });
+    setCorridaOpen(true);
+  };
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -102,6 +111,9 @@ function ClientesPage() {
                 </TableCell>
                 <TableCell className="hidden lg:table-cell text-sm">{c.indicacao || "—"}</TableCell>
                 <TableCell className="text-right space-x-1">
+                  <Button size="icon" variant="ghost" title="Nova corrida" onClick={() => novaCorrida(c)}>
+                    <Bike className="h-4 w-4 text-primary" />
+                  </Button>
                   <Button size="icon" variant="ghost" onClick={() => { setEditando(c); setOpen(true); }}>
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -122,6 +134,11 @@ function ClientesPage() {
       </Card>
 
       <ClienteDialog open={open} onOpenChange={setOpen} cliente={editando} />
+      <NovaCorridaDialog
+        open={corridaOpen}
+        onOpenChange={setCorridaOpen}
+        clientePrefill={corridaPrefill}
+      />
     </div>
   );
 }

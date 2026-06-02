@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, EyeOff, Copy, Lock, Unlock, KeyRound } from "lucide-react";
+import { Eye, EyeOff, Copy, Lock, Unlock, KeyRound, Smartphone } from "lucide-react";
 import {
   adminVerSenha,
   adminAlterarSenha,
   adminBloquearMotorista,
   adminDesbloquearMotorista,
+  adminResetarDispositivoMotorista,
 } from "@/lib/motoristas.functions";
 import { toast } from "sonner";
 

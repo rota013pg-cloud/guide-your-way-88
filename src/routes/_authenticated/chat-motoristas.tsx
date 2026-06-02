@@ -24,12 +24,14 @@ type Conversa = Awaited<ReturnType<typeof operadorListarConversas>>["conversas"]
 type Mensagem = Awaited<ReturnType<typeof operadorListarChat>>["mensagens"][number];
 
 function ChatMotoristasPage() {
+  const { isAdmin } = useRole();
   const [conversas, setConversas] = useState<Conversa[]>([]);
   const [selecionado, setSelecionado] = useState<string | null>(null);
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [busca, setBusca] = useState("");
+  const [apagando, setApagando] = useState<number | null>(null);
   const fimRef = useRef<HTMLDivElement>(null);
 
   const carregarConversas = async () => {

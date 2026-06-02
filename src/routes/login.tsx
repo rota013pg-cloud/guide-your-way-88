@@ -202,5 +202,5 @@ function EsqueciSenhaDialog({ open, onClose, initial }: { open: boolean; onClose
   );
 }
 
-// Link export para satisfazer linter quando re-utilizado por outras telas.
-export { Link };
+
+

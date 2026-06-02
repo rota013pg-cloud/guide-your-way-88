@@ -613,11 +613,18 @@ export function NovaCorridaDialog({
               {paradas.length > 0 && (
                 <> · +{paradas.length}× parada: R$ {floorReal(adicional)},00</>
               )}
+              {descontoNum > 0 && (
+                <> · <span className="text-destructive">−R$ {descontoNum.toFixed(2).replace(".", ",")} desc.</span></>
+              )}
+              {extraNum > 0 && (
+                <> · <span className="text-emerald-600">+R$ {extraNum.toFixed(2).replace(".", ",")} extra</span></>
+              )}
             </div>
-            <div className="text-xs text-muted-foreground italic">centavos zerados</div>
+            <div className="text-xs text-muted-foreground italic">centavos zerados na base</div>
           </div>
-          <span className="text-3xl font-black text-primary">R$ {total},00</span>
+          <span className="text-3xl font-black text-primary">R$ {total.toFixed(2).replace(".", ",")}</span>
         </div>
+
       </div>
 
       <DialogFooter className="gap-2 sm:gap-2 flex-wrap">

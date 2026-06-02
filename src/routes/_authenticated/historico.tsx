@@ -20,7 +20,7 @@ import { gerarPdfHistorico, baixarPdf } from "@/lib/historico-pdf";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Histórico — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Histórico — Rota 013" }] }),
   component: HistoricoPage,
 });
 

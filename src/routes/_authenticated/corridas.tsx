@@ -20,7 +20,7 @@ import { MensagensWhatsAppDialog } from "@/components/mensagens-whatsapp-dialog"
 
 export const Route = createFileRoute("/_authenticated/corridas")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Corridas — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Corridas — Rota 013" }] }),
   component: CorridasPage,
 });
 

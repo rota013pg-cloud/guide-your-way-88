@@ -28,7 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Usuários — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Usuários — Rota 013" }] }),
   component: UsuariosPage,
 });
 

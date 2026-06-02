@@ -35,7 +35,7 @@ import { CobrancasExtrasPanel, MarcarDiariaComExtrasDialog } from "@/components/
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Financeiro — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Financeiro — Rota 013" }] }),
   component: FinanceiroPage,
 });
 

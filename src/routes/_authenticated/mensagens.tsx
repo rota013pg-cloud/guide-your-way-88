@@ -18,7 +18,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/mensagens")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Mensagens — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Mensagens — Rota 013" }] }),
   component: MensagensPage,
 });
 

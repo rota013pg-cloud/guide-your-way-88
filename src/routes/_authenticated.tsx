@@ -69,7 +69,7 @@ function AuthenticatedLayout() {
         ? "Falha ao verificar sessão"
         : redirecting
         ? "Sessão não encontrada"
-        : "Rota 013 Beta";
+        : "Rota 013";
     const subtitulo = redirecting
       ? `${redirectMessage} Redirecionando para o login...`
       : "Verificando sessão...";

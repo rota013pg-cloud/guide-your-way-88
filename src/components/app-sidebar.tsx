@@ -134,7 +134,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
-          <LogoRota013 className="text-2xl" showBeta={!collapsed} />
+          <LogoRota013 className="text-2xl" />
         </div>
       </SidebarHeader>
 

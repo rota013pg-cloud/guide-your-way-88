@@ -15,7 +15,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/mural")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Mural — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Mural — Rota 013" }] }),
   component: MuralPage,
 });
 

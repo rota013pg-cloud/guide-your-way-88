@@ -42,7 +42,7 @@ import { lerConfig } from "@/lib/config.functions";
 
 export const Route = createFileRoute("/_authenticated/tarifas")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Tarifas — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Tarifas — Rota 013" }] }),
   component: TarifasPage,
 });
 

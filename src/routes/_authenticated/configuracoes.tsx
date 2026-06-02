@@ -13,7 +13,7 @@ import { useRole } from "@/hooks/use-role";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Configurações — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Configurações — Rota 013" }] }),
   component: ConfiguracoesPage,
 });
 

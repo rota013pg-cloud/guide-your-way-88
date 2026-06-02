@@ -21,7 +21,7 @@ export const loginSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Entrar — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Entrar — Rota 013" }] }),
   validateSearch: zodValidator(loginSearchSchema),
   component: LoginPage,
 });
@@ -88,7 +88,7 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md p-8">
         <div className="mb-6 text-center">
-          <LogoRota013 className="text-6xl mb-3" showBeta betaText="Beta 2.0 · Painel do operador" betaClassName="text-xs uppercase tracking-widest text-muted-foreground" />
+          <LogoRota013 className="text-6xl mb-3" />
         </div>
         {reason && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">

@@ -13,7 +13,7 @@ import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus, DollarSign 
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Painel — Rota 013 Beta" }] }),
+  head: () => ({ meta: [{ title: "Painel — Rota 013" }] }),
   component: DashboardPage,
 });
 

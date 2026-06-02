@@ -1,5 +1,5 @@
 /**
- * Server functions do app do Motorista (Rota 013 Beta).
+ * Server functions do app do Motorista (Rota 013).
  *
  * Sessão é autenticada via token gerado em /login e armazenada
  * em motorista_sessoes. Como os motoristas NÃO são auth.users do

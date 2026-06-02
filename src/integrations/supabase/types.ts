@@ -428,6 +428,98 @@ export type Database = {
         }
         Relationships: []
       }
+      motorista_cobranca_lancamentos: {
+        Row: {
+          cobranca_id: number
+          data: string
+          dia_op: string | null
+          financeiro_id: number | null
+          id: number
+          motorista_codigo: string
+          observacoes: string | null
+          operador: string | null
+          valor: number
+        }
+        Insert: {
+          cobranca_id: number
+          data?: string
+          dia_op?: string | null
+          financeiro_id?: number | null
+          id?: number
+          motorista_codigo: string
+          observacoes?: string | null
+          operador?: string | null
+          valor: number
+        }
+        Update: {
+          cobranca_id?: number
+          data?: string
+          dia_op?: string | null
+          financeiro_id?: number | null
+          id?: number
+          motorista_codigo?: string
+          observacoes?: string | null
+          operador?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motorista_cobranca_lancamentos_cobranca_id_fkey"
+            columns: ["cobranca_id"]
+            isOneToOne: false
+            referencedRelation: "motorista_cobrancas_extras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      motorista_cobrancas_extras: {
+        Row: {
+          atualizado_em: string
+          categoria: Database["public"]["Enums"]["categoria_cobranca_extra"]
+          criado_em: string
+          descricao: string
+          forma_cobranca: Database["public"]["Enums"]["forma_cobranca_extra"]
+          id: number
+          motorista_codigo: string
+          observacoes: string | null
+          operador: string | null
+          quitada_em: string | null
+          status: Database["public"]["Enums"]["status_cobranca_extra"]
+          valor_parcela_dia: number
+          valor_total: number
+        }
+        Insert: {
+          atualizado_em?: string
+          categoria?: Database["public"]["Enums"]["categoria_cobranca_extra"]
+          criado_em?: string
+          descricao: string
+          forma_cobranca?: Database["public"]["Enums"]["forma_cobranca_extra"]
+          id?: number
+          motorista_codigo: string
+          observacoes?: string | null
+          operador?: string | null
+          quitada_em?: string | null
+          status?: Database["public"]["Enums"]["status_cobranca_extra"]
+          valor_parcela_dia?: number
+          valor_total: number
+        }
+        Update: {
+          atualizado_em?: string
+          categoria?: Database["public"]["Enums"]["categoria_cobranca_extra"]
+          criado_em?: string
+          descricao?: string
+          forma_cobranca?: Database["public"]["Enums"]["forma_cobranca_extra"]
+          id?: number
+          motorista_codigo?: string
+          observacoes?: string | null
+          operador?: string | null
+          quitada_em?: string | null
+          status?: Database["public"]["Enums"]["status_cobranca_extra"]
+          valor_parcela_dia?: number
+          valor_total?: number
+        }
+        Relationships: []
+      }
       motorista_gps: {
         Row: {
           criado_em: string
@@ -750,8 +842,18 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "operador"
+      categoria_cobranca_extra:
+        | "uniforme"
+        | "itens_cliente"
+        | "manutencao"
+        | "equipamento"
+        | "multa"
+        | "adiantamento"
+        | "outros"
       despacho_corrida: "Automatico" | "Manual" | "WhatsApp"
+      forma_cobranca_extra: "por_dia" | "parcela_fixa" | "avulsa"
       modelo_corrida: "Imediata" | "Agendada"
+      status_cobranca_extra: "aberta" | "quitada" | "cancelada"
       status_corrida:
         | "Pendente"
         | "Ofertada"
@@ -899,8 +1001,19 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "operador"],
+      categoria_cobranca_extra: [
+        "uniforme",
+        "itens_cliente",
+        "manutencao",
+        "equipamento",
+        "multa",
+        "adiantamento",
+        "outros",
+      ],
       despacho_corrida: ["Automatico", "Manual", "WhatsApp"],
+      forma_cobranca_extra: ["por_dia", "parcela_fixa", "avulsa"],
       modelo_corrida: ["Imediata", "Agendada"],
+      status_cobranca_extra: ["aberta", "quitada", "cancelada"],
       status_corrida: [
         "Pendente",
         "Ofertada",

@@ -30,6 +30,7 @@ import {
 } from "@/lib/financeiro.functions";
 import { listarCobrancasHoje, liberarMotorista, bloquearMotorista } from "@/lib/cobranca.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { CobrancasExtrasPanel, MarcarDiariaComExtrasDialog } from "@/components/cobrancas-extras-panel";
 // pdf-lib é pesado e só precisa ao clicar "Gerar PDF" — import dinâmico.
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
@@ -63,10 +64,18 @@ function FinanceiroPage() {
   });
 
   const marcar = useMutation({
-    mutationFn: (codigo: string) => marcarFn({ data: { motoristaCodigo: codigo } }),
+    mutationFn: (v: { codigo: string; valor?: number; extras?: { cobrancaId: number; valor: number }[] }) =>
+      marcarFn({ data: { motoristaCodigo: v.codigo, valor: v.valor, extras: v.extras } }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["financeiro"] });
-      toast.success(r.jaExistia ? "Diária já estava registrada hoje" : "Diária registrada ✓");
+      qc.invalidateQueries({ queryKey: ["cobrancas-extras"] });
+      const erros = r.extrasErro?.length ?? 0;
+      toast.success(
+        (r.jaExistia ? "Diária já registrada" : "Diária registrada ✓") +
+        (r.extrasOk?.length ? ` · ${r.extrasOk.length} extra(s) lançado(s)` : "") +
+        (erros ? ` · ${erros} extra(s) com erro` : ""),
+      );
+      setMarcarOpen(null);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -102,6 +111,7 @@ function FinanceiroPage() {
 
   const [credOpen, setCredOpen] = useState<{ codigo: string; nome: string } | null>(null);
   const [credDias, setCredDias] = useState(5);
+  const [marcarOpen, setMarcarOpen] = useState<{ codigo: string; nome: string } | null>(null);
 
   const [de, setDe] = useState(hojeISO());
   const [ate, setAte] = useState(hojeISO());
@@ -269,7 +279,7 @@ function FinanceiroPage() {
                         ) : (
                           <Button
                             size="sm"
-                            onClick={() => marcar.mutate(l.codigo)}
+                            onClick={() => setMarcarOpen({ codigo: l.codigo, nome: l.nome })}
                             disabled={marcar.isPending}
                           >
                             <CheckCircle2 className="h-4 w-4 mr-1" /> Marcar pago
@@ -285,8 +295,23 @@ function FinanceiroPage() {
         </div>
       </Card>
 
+      {/* ─── Cobranças extras (camiseta, itens, manutenção…) ─── */}
+      <CobrancasExtrasPanel
+        motoristas={(data?.linhas ?? []).map((l) => ({ codigo: l.codigo, nome: l.nome }))}
+      />
+
       {/* ─── Cobranças automáticas (gatilho de bloqueio) ─── */}
       <CobrancasAutomaticasPanel />
+
+      {/* ─── Dialog: marcar diária paga com extras ─── */}
+      <MarcarDiariaComExtrasDialog
+        open={!!marcarOpen}
+        onClose={() => setMarcarOpen(null)}
+        motorista={marcarOpen}
+        valorDiaria={data?.valorDiaria ?? 0}
+        pending={marcar.isPending}
+        onConfirm={(p) => marcarOpen && marcar.mutate({ codigo: marcarOpen.codigo, valor: p.valor, extras: p.extras })}
+      />
 
       {/* ─── Relatório ─── */}
       <Card className="p-4">

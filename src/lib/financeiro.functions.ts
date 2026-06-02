@@ -93,13 +93,22 @@ export const listarFinanceiroHoje = createServerFn({ method: "POST" })
     };
   });
 
-// ─── MARCAR DIÁRIA PAGA ───────────────────────────────────
+// ─── MARCAR DIÁRIA PAGA (com extras opcionais) ────────────
 export const marcarDiariaPaga = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z.object({
       motoristaCodigo: z.string().min(1).max(20),
       valor: z.number().positive().optional(),
+      extras: z
+        .array(
+          z.object({
+            cobrancaId: z.number().int().positive(),
+            valor: z.number().positive(),
+          }),
+        )
+        .max(20)
+        .optional(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -117,6 +126,7 @@ export const marcarDiariaPaga = createServerFn({ method: "POST" })
       (context.userId as string | undefined) ??
       "Painel";
 
+    let jaExistia = false;
     const { data: inserido, error } = await supabaseAdmin
       .from("financeiro")
       .insert({
@@ -130,13 +140,27 @@ export const marcarDiariaPaga = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (error) {
-      // Conflito por uniq_diaria_dia => já existia
-      if (error.code === "23505") {
-        return { ok: true, jaExistia: true };
-      }
-      throw new Error(error.message);
+      if (error.code === "23505") jaExistia = true;
+      else throw new Error(error.message);
     }
-    return { ok: true, jaExistia: false, registro: inserido };
+
+    // Lança pagamentos parciais nas cobranças extras (não bloqueia se diária já existia)
+    const extrasOk: number[] = [];
+    const extrasErro: { id: number; motivo: string }[] = [];
+    for (const e of data.extras ?? []) {
+      const { error: errLanc } = await supabaseAdmin
+        .from("motorista_cobranca_lancamentos")
+        .insert({
+          cobranca_id: e.cobrancaId,
+          motorista_codigo: mot.codigo,
+          valor: e.valor,
+          operador,
+        });
+      if (errLanc) extrasErro.push({ id: e.cobrancaId, motivo: errLanc.message });
+      else extrasOk.push(e.cobrancaId);
+    }
+
+    return { ok: true, jaExistia, registro: inserido, extrasOk, extrasErro };
   });
 
 // ─── REMOVER PAGAMENTO ────────────────────────────────────

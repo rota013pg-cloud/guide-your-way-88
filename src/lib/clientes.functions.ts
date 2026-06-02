@@ -23,7 +23,7 @@ export const previewProximoCodigoCliente = createServerFn({ method: "GET" })
   });
 
 const ClienteSchema = z.object({
-  codigo: z.string().regex(/^C\d{4,}$/).optional(),
+  codigo: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.string().regex(/^C\d{4,}$/).optional()),
   nome: z.string().trim().min(1).max(120),
   telefone: z.string().trim().max(20).optional().default(""),
   endereco: z.string().trim().max(255).optional().default(""),

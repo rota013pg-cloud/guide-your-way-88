@@ -185,9 +185,9 @@ export function NovaCorridaDialog({
     return () => { cancel = true; };
   }, [origem.lat, origem.lng, destino.lat, destino.lng]);
 
-  const tarifa = tarifas.find((t) => String(t.id) === tarifaId);
+  const tarifa = tarifas.find((t) => t.id === tarifaId);
   const km = parseFloat(distancia.replace(",", ".")) || 0;
-  const valorBase = tarifa ? Math.max(tarifa.bandeirada + km * tarifa.por_km, tarifa.minimo) : 0;
+  const valorBase = tarifa && km > 0 ? Math.max(km * tarifa.valorKm, tarifa.tarifaMinima) : 0;
   const { total, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
 
   const buscarCliente = async () => {

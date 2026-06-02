@@ -155,7 +155,7 @@ function ChatMotoristasPage() {
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-sm truncate">{c.motorista_nome}</span>
+                  <span className="font-semibold text-sm truncate">{c.motorista_codigo} — {c.motorista_nome}</span>
                   {c.nao_lidas > 0 && (
                     <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
                       {c.nao_lidas}

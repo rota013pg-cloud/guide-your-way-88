@@ -5,17 +5,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          # token padrão já consegue dar push de volta no mesmo branch
-          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -27,17 +21,8 @@ jobs:
       - name: Run tests with coverage
         run: bun run test:coverage
 
-      - name: Sync coverage into /public
-        run: node scripts/sync-coverage.mjs
-
-      - name: Commit updated coverage
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/coverage-report public/coverage-lcov.info public/coverage-summary.json
-          if git diff --cached --quiet; then
-            echo "Sem mudanças na cobertura."
-          else
-            git commit -m "chore(coverage): atualizar relatório [skip ci]"
-            git push
-          fi
+      - name: Upload coverage to Lovable Cloud bucket
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/upload-coverage.mjs

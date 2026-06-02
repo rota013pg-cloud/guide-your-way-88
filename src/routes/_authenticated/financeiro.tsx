@@ -279,7 +279,7 @@ function FinanceiroPage() {
                         ) : (
                           <Button
                             size="sm"
-                            onClick={() => marcar.mutate(l.codigo)}
+                            onClick={() => setMarcarOpen({ codigo: l.codigo, nome: l.nome })}
                             disabled={marcar.isPending}
                           >
                             <CheckCircle2 className="h-4 w-4 mr-1" /> Marcar pago

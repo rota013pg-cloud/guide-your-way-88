@@ -250,10 +250,10 @@ export const motoristaAtualizarStatusCorrida = createServerFn({ method: "POST" }
   .handler(async ({ data }) => {
     await validarToken(data.codigo, data.token);
 
-    const patch: Record<string, unknown> = { status: data.status };
-    if (data.status === "Finalizada") {
-      patch.finalizada_em = new Date().toISOString();
-    }
+    const patch =
+      data.status === "Finalizada"
+        ? { status: data.status, finalizada_em: new Date().toISOString() }
+        : { status: data.status };
 
     const { error } = await supabaseAdmin
       .from("corridas")
@@ -263,8 +263,6 @@ export const motoristaAtualizarStatusCorrida = createServerFn({ method: "POST" }
     if (error) throw new Error(error.message);
 
     if (data.status === "Finalizada") {
-      // incrementa contador da corrida no motorista
-      await supabaseAdmin.rpc as unknown; // placeholder; usa update simples abaixo
       const { data: mot } = await supabaseAdmin
         .from("motoristas")
         .select("corridas")

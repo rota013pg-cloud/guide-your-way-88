@@ -208,7 +208,10 @@ export function NovaCorridaDialog({
   const tarifa = tarifas.find((t) => t.id === tarifaId);
   const km = parseFloat(distancia.replace(",", ".")) || 0;
   const valorBase = tarifa && km > 0 ? Math.max(km * tarifa.valorKm, tarifa.tarifaMinima) : 0;
-  const { total, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
+  const { total: totalBase, adicional } = calcularValorComParadas(valorBase, paradas.length, valorParadaExtra);
+  const descontoNum = Math.max(0, parseFloat(desconto.replace(",", ".")) || 0);
+  const extraNum = Math.max(0, parseFloat(extra.replace(",", ".")) || 0);
+  const total = Math.max(0, totalBase - descontoNum + extraNum);
 
   // Busca automática de cliente com debounce (apenas Nome + Telefone, não toca endereço)
   useEffect(() => {

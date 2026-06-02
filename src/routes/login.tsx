@@ -101,7 +101,7 @@ function LoginPage() {
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="identificador">E-mail ou usuário</Label>
+            <Label htmlFor="identificador" className="mb-1.5 block">E-mail ou usuário</Label>
             <Input
               id="identificador"
               type="text"
@@ -114,7 +114,7 @@ function LoginPage() {
             />
           </div>
           <div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-1.5">
               <Label htmlFor="senha">Senha</Label>
               {modo === "login" && (
                 <button
@@ -189,7 +189,7 @@ function EsqueciSenhaDialog({ open, onClose, initial }: { open: boolean; onClose
         </DialogHeader>
         <form onSubmit={enviar} className="space-y-3">
           <div>
-            <Label htmlFor="reset-id">E-mail ou usuário</Label>
+            <Label htmlFor="reset-id" className="mb-1.5 block">E-mail ou usuário</Label>
             <Input
               id="reset-id"
               type="text"

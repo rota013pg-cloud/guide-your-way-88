@@ -34,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import { useRole } from "@/hooks/use-role";
 import { useTheme } from "@/hooks/use-theme";
+import { useEffect, useState } from "react";
 
 type Item = { title: string; url: string; icon: typeof LayoutDashboard; adminOnly?: boolean };
 

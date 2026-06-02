@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, FileDown, Trash2, Wallet, Plus, Minus, ShieldAlert, Unlock } from "lucide-react";
+import { CheckCircle2, Loader2, FileDown, Trash2, Wallet, Plus, Minus, ShieldAlert, Unlock, Search } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -112,10 +112,22 @@ function FinanceiroPage() {
   const [credOpen, setCredOpen] = useState<{ codigo: string; nome: string } | null>(null);
   const [credDias, setCredDias] = useState(5);
   const [marcarOpen, setMarcarOpen] = useState<{ codigo: string; nome: string } | null>(null);
+  const [busca, setBusca] = useState("");
 
   const [de, setDe] = useState(hojeISO());
   const [ate, setAte] = useState(hojeISO());
   const [gerando, setGerando] = useState(false);
+
+  const termoBusca = busca.trim().toLowerCase();
+  const linhasFiltradas = useMemo(() => {
+    if (!data?.linhas) return [];
+    if (!termoBusca) return data.linhas;
+    return data.linhas.filter(
+      (l) =>
+        l.codigo.toLowerCase().includes(termoBusca) ||
+        l.nome.toLowerCase().includes(termoBusca),
+    );
+  }, [data?.linhas, termoBusca]);
 
   const gerarRelatorio = async () => {
     setGerando(true);
@@ -166,10 +178,23 @@ function FinanceiroPage() {
       {/* ─── Tabela motoristas × diária do dia ─── */}
       <Card className="overflow-hidden">
         <div className="p-4 border-b">
-          <h2 className="font-semibold">Diárias de hoje</h2>
-          <p className="text-xs text-muted-foreground">
-            Dia operacional: {data?.diaOp ?? "—"}
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Diárias de hoje</h2>
+              <p className="text-xs text-muted-foreground">
+                Dia operacional: {data?.diaOp ?? "—"}
+              </p>
+            </div>
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por código ou nome…"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <Table>
@@ -191,14 +216,14 @@ function FinanceiroPage() {
                   </TableCell>
                 </TableRow>
               )}
-              {!isLoading && data?.linhas.length === 0 && (
+              {!isLoading && linhasFiltradas.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    Nenhum motorista cadastrado.
+                    {busca.trim() ? "Nenhum motorista encontrado." : "Nenhum motorista cadastrado."}
                   </TableCell>
                 </TableRow>
               )}
-              {data?.linhas.map((l) => {
+              {linhasFiltradas.map((l) => {
                 const online = ["Online", "Em corrida"].includes(l.status);
                 return (
                   <TableRow key={l.codigo}>

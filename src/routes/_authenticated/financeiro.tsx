@@ -23,7 +23,7 @@ import {
   removerPagamento,
   relatorioFinanceiro,
 } from "@/lib/financeiro.functions";
-import { gerarPdfFinanceiro, baixarPdf } from "@/lib/financeiro-pdf";
+// pdf-lib é pesado e só precisa ao clicar "Gerar PDF" — import dinâmico.
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   ssr: false,
@@ -78,7 +78,10 @@ function FinanceiroPage() {
   const gerarRelatorio = async () => {
     setGerando(true);
     try {
-      const r = await relatorioFn({ data: { de, ate } });
+      const [{ gerarPdfFinanceiro, baixarPdf }, r] = await Promise.all([
+        import("@/lib/financeiro-pdf"),
+        relatorioFn({ data: { de, ate } }),
+      ]);
       const bytes = await gerarPdfFinanceiro(r);
       baixarPdf(bytes, `financeiro-${de}-a-${ate}.pdf`);
       toast.success("Relatório gerado");

@@ -37,10 +37,16 @@ async function registrarLog(
 
 export const dispararOfertas = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z.object({ corridaId: z.number().int().positive() }).parse(input),
+    z.object({
+      corridaId: z.number().int().positive(),
+      quantidade: z.number().int().min(1).max(50).optional(),
+      reofertar: z.boolean().optional(),
+    }).parse(input),
   )
   .handler(async ({ data }) => {
-    const { corridaId } = data;
+    const { corridaId, reofertar } = data;
+    const qtd = data.quantidade ?? QTD_MOT;
+
 
     const { data: corrida, error: corridaErr } = await supabaseAdmin
       .from("corridas")

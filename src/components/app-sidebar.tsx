@@ -66,6 +66,10 @@ export function AppSidebar() {
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   const isActive = (path: string) => currentPath === path;
   const [userNome, setUserNome] = useState<string>("");
+  const [userFoto, setUserFoto] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useState<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -74,10 +78,14 @@ export function AppSidebar() {
       const uid = u.user?.id;
       if (!uid) return;
       const { data } = await supabase
-        .from("usuarios_painel").select("nome").eq("user_id", uid).maybeSingle();
+        .from("usuarios_painel").select("nome, foto").eq("user_id", uid).maybeSingle();
       const email = u.user?.email ?? "";
       const emailLimpo = email.endsWith("@painel.local") ? "" : email;
-      if (active) setUserNome(data?.nome ?? emailLimpo ?? "");
+      if (active) {
+        setUserId(uid);
+        setUserNome(data?.nome ?? emailLimpo ?? "");
+        setUserFoto(data?.foto ?? null);
+      }
     })();
     return () => { active = false; };
   }, []);
@@ -85,6 +93,26 @@ export function AppSidebar() {
   const sair = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/login", replace: true });
+  };
+
+  const onPickFoto = async (file: File) => {
+    if (!userId) return;
+    if (file.size > 5 * 1024 * 1024) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `usuarios-painel/${userId}/foto-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("motoristas-docs").upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      const { data: signed } = await supabase.storage.from("motoristas-docs").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      const url = signed?.signedUrl ?? null;
+      if (url) {
+        await supabase.from("usuarios_painel").update({ foto: url }).eq("user_id", userId);
+        setUserFoto(url);
+      }
+    } finally {
+      setUploading(false);
+    }
   };
 
   const visibleGestao = gestao.filter((i) => !i.adminOnly || isAdmin);

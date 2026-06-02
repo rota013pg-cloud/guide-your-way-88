@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "coverage:sync": "vitest run --coverage && node scripts/sync-coverage.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {

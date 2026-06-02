@@ -688,6 +688,7 @@ export type Database = {
           atualizado_em: string
           criado_em: string
           email: string
+          foto: string | null
           id: string
           login: string
           motivo_bloqueio: string | null
@@ -700,6 +701,7 @@ export type Database = {
           atualizado_em?: string
           criado_em?: string
           email: string
+          foto?: string | null
           id?: string
           login: string
           motivo_bloqueio?: string | null
@@ -712,6 +714,7 @@ export type Database = {
           atualizado_em?: string
           criado_em?: string
           email?: string
+          foto?: string | null
           id?: string
           login?: string
           motivo_bloqueio?: string | null

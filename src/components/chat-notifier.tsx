@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { playChatBeep } from "@/lib/notification-sound";
 
 type Msg = {
   id: number;
@@ -57,18 +58,46 @@ export function ChatNotifier() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_motorista" },
-        (payload) => {
+        async (payload) => {
           const m = payload.new as Msg;
           if (m.autor !== "motorista") return;
           recarregar();
           if (!noChatRef.current) {
-            toast.message(`💬 ${m.autor_nome ?? m.motorista_codigo}`, {
-              description: m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto,
-              action: {
-                label: "Abrir",
-                onClick: () => navigate({ to: "/chat-motoristas" }),
-              },
-            });
+            playChatBeep();
+            const { data: mot } = await supabase
+              .from("motoristas")
+              .select("foto,nome")
+              .eq("codigo", m.motorista_codigo)
+              .maybeSingle();
+            const nome = mot?.nome ?? m.autor_nome ?? m.motorista_codigo;
+            const inicial = (nome[0] ?? "M").toUpperCase();
+            const preview =
+              m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
+            toast.custom(
+              (id) => (
+                <button
+                  onClick={() => {
+                    toast.dismiss(id);
+                    navigate({ to: "/chat-motoristas" });
+                  }}
+                  className="flex items-start gap-3 w-[340px] max-w-[88vw] rounded-lg border border-border bg-card text-card-foreground shadow-lg p-3 text-left hover:bg-muted/40 transition"
+                >
+                  <div
+                    className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0 bg-cover bg-center"
+                    style={mot?.foto ? { backgroundImage: `url('${mot.foto}')` } : undefined}
+                  >
+                    {!mot?.foto && inicial}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-semibold truncate">💬 {nome}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5 whitespace-pre-wrap break-words">
+                      {preview}
+                    </div>
+                  </div>
+                </button>
+              ),
+              { duration: 6000 },
+            );
           }
         },
       )

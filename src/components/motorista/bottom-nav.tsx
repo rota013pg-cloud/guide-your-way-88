@@ -386,9 +386,28 @@ function FaturamentoTab({ corridas, cobranca }: { corridas: Corrida[]; cobranca:
 }
 
 // ─── PAGAMENTOS ─────────────────────────────────────────
-function PagamentosTab({ cobranca, onAbrirCobranca }: { cobranca: Cobranca; onAbrirCobranca: () => void }) {
+function PagamentosTab({
+  codigo, token, cobranca, onAbrirCobranca,
+}: {
+  codigo: string;
+  token: string;
+  cobranca: Cobranca;
+  onAbrirCobranca: () => void;
+}) {
   const status = cobranca?.status ?? "Pendente";
   const cor = status === "Bloqueado" ? "#dc2626" : status === "Pago" ? "#16a34a" : status === "Aguardando" ? "#d97706" : "#555";
+
+  const listarFn = useServerFn(motoristaListarCobrancasExtras);
+  const { data } = useQuery({
+    queryKey: ["motorista-cobrancas-extras", codigo],
+    queryFn: () => listarFn({ data: { codigo, token } }),
+    refetchInterval: 30000,
+  });
+
+  const itens = data?.itens ?? [];
+  const abertas = itens.filter((i) => i.status === "aberta");
+  const totalDevido = abertas.reduce((s, i) => s + i.saldo, 0);
+
   return (
     <div className="moto-pag">
       <div className="moto-pag-status" style={{ color: cor }}>{status}</div>
@@ -403,6 +422,60 @@ function PagamentosTab({ cobranca, onAbrirCobranca }: { cobranca: Cobranca; onAb
       <p className="moto-pag-help">
         Após pagar, envie o comprovante no WhatsApp da central para liberação imediata.
       </p>
+
+      {/* ─── Cobranças extras (camiseta, manutenção, itens) ─── */}
+      <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid #2a2a2a" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <h4 style={{ color: "#f7c600", fontSize: 14, fontWeight: 800 }}>📦 Outras cobranças</h4>
+          {totalDevido > 0 && (
+            <span style={{ background: "#dc2626", color: "#fff", padding: "3px 8px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+              Devendo {brl(totalDevido)}
+            </span>
+          )}
+        </div>
+        {itens.length === 0 && (
+          <div className="moto-empty" style={{ padding: "12px 0" }}>Nenhuma cobrança extra.</div>
+        )}
+        {itens.map((i) => (
+          <div key={i.id} style={{
+            background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: 10,
+            padding: 10, marginBottom: 8,
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>{i.descricao}</div>
+                <div style={{ color: "#888", fontSize: 11 }}>
+                  {i.valor_parcela_dia > 0 ? `${brl(i.valor_parcela_dia)}/dia` : "Avulsa"}
+                </div>
+              </div>
+              <span style={{
+                background: i.status === "quitada" ? "#16a34a" : "#d97706",
+                color: "#fff", padding: "2px 6px", borderRadius: 6, fontSize: 10, fontWeight: 700,
+              }}>
+                {i.status === "quitada" ? "QUITADO" : "ABERTO"}
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6, marginTop: 8, fontSize: 11 }}>
+              <div><div style={{ color: "#888" }}>Total</div><b style={{ color: "#fff" }}>{brl(i.valor_total)}</b></div>
+              <div><div style={{ color: "#888" }}>Pago</div><b style={{ color: "#16a34a" }}>{brl(i.valor_pago)}</b></div>
+              <div><div style={{ color: "#888" }}>Saldo</div><b style={{ color: i.saldo > 0 ? "#f7c600" : "#16a34a" }}>{brl(i.saldo)}</b></div>
+            </div>
+            {i.lancamentos.length > 0 && (
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ color: "#888", fontSize: 11, cursor: "pointer" }}>Ver extrato ({i.lancamentos.length})</summary>
+                <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px dashed #2a2a2a" }}>
+                  {i.lancamentos.map((l, idx) => (
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#aaa", padding: "2px 0" }}>
+                      <span>{new Date(l.data).toLocaleDateString("pt-BR")}</span>
+                      <b style={{ color: "#fff" }}>{brl(l.valor)}</b>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -18,6 +18,7 @@ import {
   motoristaMinhaCobranca,
   motoristaSolicitarLiberacao,
 } from "@/lib/cobranca.functions";
+import { expirarOferta } from "@/lib/corridas.functions";
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { playChatBeep } from "@/lib/notification-sound";

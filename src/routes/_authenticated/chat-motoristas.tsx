@@ -5,12 +5,14 @@ import {
   operadorListarConversas,
   operadorListarChat,
   operadorEnviarMensagem,
+  adminApagarMensagem,
 } from "@/lib/chat-motorista.functions";
+import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Send, MessageSquare, RefreshCw } from "lucide-react";
+import { Send, MessageSquare, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chat-motoristas")({
@@ -22,12 +24,14 @@ type Conversa = Awaited<ReturnType<typeof operadorListarConversas>>["conversas"]
 type Mensagem = Awaited<ReturnType<typeof operadorListarChat>>["mensagens"][number];
 
 function ChatMotoristasPage() {
+  const { isAdmin } = useRole();
   const [conversas, setConversas] = useState<Conversa[]>([]);
   const [selecionado, setSelecionado] = useState<string | null>(null);
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [busca, setBusca] = useState("");
+  const [apagando, setApagando] = useState<number | null>(null);
   const fimRef = useRef<HTMLDivElement>(null);
 
   const carregarConversas = async () => {
@@ -82,6 +86,19 @@ function ChatMotoristasPage() {
     !busca || c.motorista_nome.toLowerCase().includes(busca.toLowerCase()) ||
     c.motorista_codigo.toLowerCase().includes(busca.toLowerCase()),
   );
+
+  const apagar = async (id: number) => {
+    if (!confirm("Tem certeza que deseja apagar esta mensagem?")) return;
+    setApagando(id);
+    try {
+      await adminApagarMensagem({ data: { id } });
+      if (selecionado) await carregarMensagens(selecionado);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao apagar");
+    } finally {
+      setApagando(null);
+    }
+  };
 
   const conversaAtual = conversas.find((c) => c.motorista_codigo === selecionado);
 
@@ -161,8 +178,20 @@ function ChatMotoristasPage() {
                           meu ? "bg-primary text-primary-foreground" : "bg-card border border-border"
                         }`}
                       >
-                        <div className="text-[10px] opacity-70 mb-0.5">
-                          {m.autor_nome ?? (meu ? "Central" : "Motorista")}
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-[10px] opacity-70 flex-1">
+                            {m.autor_nome ?? (meu ? "Central" : "Motorista")}
+                          </span>
+                          {isAdmin && (
+                            <button
+                              onClick={() => apagar(m.id)}
+                              disabled={apagando === m.id}
+                              className="opacity-50 hover:opacity-100 transition disabled:opacity-30"
+                              title="Apagar mensagem"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          )}
                         </div>
                         <div className="whitespace-pre-wrap break-words">{m.texto}</div>
                         <div className="text-[10px] opacity-60 mt-1 text-right">

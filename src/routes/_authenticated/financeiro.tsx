@@ -112,6 +112,7 @@ function FinanceiroPage() {
   const [credOpen, setCredOpen] = useState<{ codigo: string; nome: string } | null>(null);
   const [credDias, setCredDias] = useState(5);
   const [marcarOpen, setMarcarOpen] = useState<{ codigo: string; nome: string } | null>(null);
+  const [busca, setBusca] = useState("");
 
   const [de, setDe] = useState(hojeISO());
   const [ate, setAte] = useState(hojeISO());

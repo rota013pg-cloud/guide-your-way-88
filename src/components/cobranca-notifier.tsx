@@ -70,7 +70,7 @@ export function CobrancaNotifier() {
       for (const chave of atuais) {
         if (!conhecidos.current.has(chave)) {
           const [cod, st] = chave.split(":");
-          const nome = nomes[cod] ?? cod;
+          const nome = mapaNomes[cod] ?? cod;
           playChatBeep();
           toast.custom(
             (id) => (

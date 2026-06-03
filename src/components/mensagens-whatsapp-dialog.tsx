@@ -105,18 +105,24 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
   // Mensagem para o MOTORISTA — sem telefone do cliente (intermediado pela central)
   const msgParticular = useMemo(() => {
     if (!corrida) return "";
+    const waze = (end: string) =>
+      `🗺️ Waze: https://waze.com/ul?q=${encodeURIComponent(end)}`;
     const linhas = [
       `🚗 *Corrida #${corrida.id}* — direcionada para você`,
       `👤 Cliente: ${corrida.cliente ?? "—"}`,
+      ``,
       `📍 Origem: ${corrida.origem}`,
+      waze(corrida.origem),
     ];
     if (Array.isArray(corrida.paradas) && corrida.paradas.length > 0) {
-      corrida.paradas.forEach((p: any, i: number) =>
-        linhas.push(`🔸 Parada ${i + 1}: ${p.endereco}`),
-      );
+      corrida.paradas.forEach((p: any, i: number) => {
+        linhas.push(``, `🔸 Parada ${i + 1}: ${p.endereco}`, waze(p.endereco));
+      });
     }
-    if (corrida.destino) linhas.push(`🏁 Destino: ${corrida.destino}`);
-    linhas.push(`💰 Valor: ${brl(corrida.valor_final)}`);
+    if (corrida.destino) {
+      linhas.push(``, `🏁 Destino: ${corrida.destino}`, waze(corrida.destino));
+    }
+    linhas.push(``, `💰 Valor: ${brl(corrida.valor_final)}`);
     if (corrida.pagamento) linhas.push(`💳 Pagamento: ${corrida.pagamento}`);
     if (corrida.observacoes) linhas.push(`📝 Obs: ${corrida.observacoes}`);
     linhas.push("", linhaCentral, "Confirme se aceita 👍");

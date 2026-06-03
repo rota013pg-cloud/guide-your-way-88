@@ -41,6 +41,16 @@ const fmtDia = (iso: string) => {
   return `${d}/${m}/${a}`;
 };
 
+/** Remove caracteres fora do WinAnsi (pdf-lib StandardFonts) — evita erro ao gerar PDF. */
+function sanitize(s: string | null | undefined): string {
+  if (s == null) return "";
+  return String(s)
+    .replace(/→/g, "->")
+    .replace(/←/g, "<-")
+    // Mantém chars Latin-1 + extras CP1252 (€ … – — • " " ' ' etc.)
+    .replace(/[^\x00-\xFF\u20AC\u201A\u0192\u201E\u2026\u2020\u2021\u02C6\u2030\u0160\u2039\u0152\u017D\u2018\u2019\u201C\u201D\u2022\u2013\u2014\u02DC\u2122\u0161\u203A\u0153\u017E\u0178]/g, "");
+}
+
 export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Helvetica);
@@ -70,7 +80,7 @@ export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8
     s: string, x: number, yy: number,
     o: { size?: number; bold?: boolean; color?: ReturnType<typeof rgb> } = {},
   ) => {
-    page.drawText(s, {
+    page.drawText(sanitize(s), {
       x, y: yy,
       size: o.size ?? 9,
       font: o.bold ? fontBold : font,
@@ -79,16 +89,17 @@ export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8
   };
 
   const fit = (s: string, maxW: number, size = 9) => {
+    s = sanitize(s);
     if (!s) return "";
     if (font.widthOfTextAtSize(s, size) <= maxW) return s;
     let lo = 0, hi = s.length;
     while (lo < hi) {
       const mid = ((lo + hi) >> 1) + 1;
-      const cand = s.slice(0, mid) + "…";
+      const cand = s.slice(0, mid) + "...";
       if (font.widthOfTextAtSize(cand, size) <= maxW) lo = mid;
       else hi = mid - 1;
     }
-    return s.slice(0, lo) + "…";
+    return s.slice(0, lo) + "...";
   };
 
   // Cabeçalho

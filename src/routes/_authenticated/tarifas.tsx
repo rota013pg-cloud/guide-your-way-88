@@ -213,8 +213,13 @@ function TarifasPage() {
         </TabsContent>
 
         {/* ─── SIMULADOR ──────────────────────────────────── */}
-        <TabsContent value="simulador">
+        <TabsContent value="simulador" className="space-y-4">
           <Simulador
+            tarifas={form}
+            empresa={cfgData?.config?.empresa ?? "Rota 013"}
+            whatsapp={cfgData?.config?.whatsappCentral ?? ""}
+          />
+          <SimuladorHibrida
             tarifas={form}
             empresa={cfgData?.config?.empresa ?? "Rota 013"}
             whatsapp={cfgData?.config?.whatsappCentral ?? ""}
@@ -483,6 +488,130 @@ function TabelaDistancias({ tarifas }: { tarifas: TarifasConfig }) {
           </TableBody>
         </Table>
       </div>
+    </Card>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+function SimuladorHibrida({
+  tarifas,
+  empresa,
+  whatsapp,
+}: {
+  tarifas: TarifasConfig;
+  empresa: string;
+  whatsapp: string;
+}) {
+  const hib = tarifas.tabelaHibrida;
+  const [origem, setOrigem] = useState("");
+  const [destino, setDestino] = useState("");
+  const [km, setKm] = useState<string>("");
+
+  const kmNum = Number(String(km).replace(",", ".")) || 0;
+  const valor = kmNum > 0 ? Math.max(kmNum * hib.valorKm, hib.tarifaMinima) : 0;
+
+  const textoWhats = useMemo(() => {
+    if (kmNum <= 0) return "";
+    const linhas = [
+      `🛵 *${empresa}* — Cotação (rota híbrida)`,
+      ``,
+      origem ? `📍 Origem: *${origem}*` : null,
+      destino ? `🎯 Destino: *${destino}*` : null,
+      `📏 Distância: ${kmNum.toFixed(1)} km`,
+      `💰 Valor: *${fmtBRL(valor)}*`,
+      ``,
+      `_Tabela: ${hib.titulo}_`,
+    ].filter(Boolean) as string[];
+    return linhas.join("\n");
+  }, [empresa, origem, destino, kmNum, valor, hib.titulo]);
+
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(textoWhats);
+      toast.success("Copiado para a área de transferência");
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
+
+  const abrirWhats = () => {
+    const tel = (whatsapp || "").replace(/\D/g, "");
+    const url = `https://wa.me/${tel}?text=${encodeURIComponent(textoWhats)}`;
+    window.open(url, "_blank");
+  };
+
+  return (
+    <Card className="p-4 space-y-4 max-w-3xl border-dashed">
+      <div className="flex items-center gap-2">
+        <Calculator className="h-4 w-4 text-primary" />
+        <strong>Simulador de corrida — {hib.titulo}</strong>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Informe a distância em km (medida no mapa/Waze). Mínimo {fmtBRL(hib.tarifaMinima)} ·{" "}
+        {fmtBRL(hib.valorKm)}/km.
+      </p>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <div>
+          <Label>Origem (opcional)</Label>
+          <Input
+            value={origem}
+            onChange={(e) => setOrigem(e.target.value)}
+            placeholder="Ex.: Praia Grande - Boqueirão"
+          />
+        </div>
+        <div>
+          <Label>Destino (opcional)</Label>
+          <Input
+            value={destino}
+            onChange={(e) => setDestino(e.target.value)}
+            placeholder="Ex.: Bertioga - Centro"
+          />
+        </div>
+        <div>
+          <Label>Distância (km)</Label>
+          <Input
+            type="number"
+            inputMode="decimal"
+            step="0.1"
+            value={km}
+            onChange={(e) => setKm(e.target.value)}
+            placeholder="Ex.: 18.5"
+          />
+        </div>
+      </div>
+
+      {kmNum > 0 && (
+        <div className="rounded-lg border bg-muted/40 p-4 space-y-2">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Distância</span>
+            <span className="font-medium">{kmNum.toFixed(1)} km</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Mínimo</span>
+            <span className="font-medium">{fmtBRL(hib.tarifaMinima)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Valor/km</span>
+            <span className="font-medium">{fmtBRL(hib.valorKm)}/km</span>
+          </div>
+          <div className="flex justify-between text-lg pt-2 border-t">
+            <span className="font-semibold">Valor da corrida</span>
+            <span className="font-bold text-primary">{fmtBRL(valor)}</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button variant="outline" onClick={copiar}>
+              <Copy className="h-4 w-4" /> Copiar texto
+            </Button>
+            {whatsapp && <Button onClick={abrirWhats}>Enviar via WhatsApp</Button>}
+          </div>
+
+          <pre className="text-xs whitespace-pre-wrap bg-background border rounded p-2 mt-2 font-sans">
+            {textoWhats}
+          </pre>
+        </div>
+      )}
     </Card>
   );
 }

@@ -213,8 +213,13 @@ function TarifasPage() {
         </TabsContent>
 
         {/* ─── SIMULADOR ──────────────────────────────────── */}
-        <TabsContent value="simulador">
+        <TabsContent value="simulador" className="space-y-4">
           <Simulador
+            tarifas={form}
+            empresa={cfgData?.config?.empresa ?? "Rota 013"}
+            whatsapp={cfgData?.config?.whatsappCentral ?? ""}
+          />
+          <SimuladorHibrida
             tarifas={form}
             empresa={cfgData?.config?.empresa ?? "Rota 013"}
             whatsapp={cfgData?.config?.whatsappCentral ?? ""}

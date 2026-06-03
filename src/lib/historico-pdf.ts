@@ -41,6 +41,19 @@ const fmtDia = (iso: string) => {
   return `${d}/${m}/${a}`;
 };
 
+/** Remove caracteres fora do WinAnsi (pdf-lib StandardFonts) — evita erro ao gerar PDF. */
+function sanitize(s: string | null | undefined): string {
+  if (s == null) return "";
+  return String(s)
+    .replace(/→/g, "->")
+    .replace(/←/g, "<-")
+    .replace(/…/g, "...")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    // Remove emojis e qualquer outro char fora do Latin-1
+    .replace(/[^\x00-\xFF]/g, "");
+}
+
 export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Helvetica);

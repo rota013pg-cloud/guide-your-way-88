@@ -83,7 +83,7 @@ export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8
     s: string, x: number, yy: number,
     o: { size?: number; bold?: boolean; color?: ReturnType<typeof rgb> } = {},
   ) => {
-    page.drawText(s, {
+    page.drawText(sanitize(s), {
       x, y: yy,
       size: o.size ?? 9,
       font: o.bold ? fontBold : font,
@@ -92,16 +92,17 @@ export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8
   };
 
   const fit = (s: string, maxW: number, size = 9) => {
+    s = sanitize(s);
     if (!s) return "";
     if (font.widthOfTextAtSize(s, size) <= maxW) return s;
     let lo = 0, hi = s.length;
     while (lo < hi) {
       const mid = ((lo + hi) >> 1) + 1;
-      const cand = s.slice(0, mid) + "…";
+      const cand = s.slice(0, mid) + "...";
       if (font.widthOfTextAtSize(cand, size) <= maxW) lo = mid;
       else hi = mid - 1;
     }
-    return s.slice(0, lo) + "…";
+    return s.slice(0, lo) + "...";
   };
 
   // Cabeçalho

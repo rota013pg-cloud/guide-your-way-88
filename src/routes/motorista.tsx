@@ -495,9 +495,12 @@ function MotoristaApp() {
       await toggleFn({
         data: { codigo: sessao.motorista.codigo, token: sessao.token, online: novo },
       });
+      // Marca a intenção do motorista — usado para restaurar Online quando
+      // ele voltar do background depois de um auto-offline.
+      intencaoOnlineRef.current = novo;
+      forcadoOfflineBgRef.current = false;
       setOnline(novo);
-      if (novo) iniciarGps();
-      else pararGps();
+      // GPS é controlado pelo useEffect [sessao, online].
     } catch (e: unknown) {
       mostrarToast(e instanceof Error ? e.message : "Erro");
     }

@@ -130,8 +130,13 @@ function MotoristaApp() {
   const solicitarLibFn = useServerFn(motoristaSolicitarLiberacao);
 
   const gpsWatchRef = useRef<number | null>(null);
+  const gpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const ofertaTimerRef = useRef<NodeJS.Timeout | null>(null);
   const ultimoStatusCobrancaRef = useRef<string | null>(null);
+  // Intenção do motorista: ficou online por escolha própria? Usado para
+  // restaurar status ao voltar do background (visibilitychange/pagehide).
+  const intencaoOnlineRef = useRef<boolean>(false);
+  const forcadoOfflineBgRef = useRef<boolean>(false);
 
   // Notifica (toast) quando entra em Pendente — sem abrir modal bloqueante
   useEffect(() => {

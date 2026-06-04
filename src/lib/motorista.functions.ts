@@ -449,6 +449,7 @@ export const motoristaConcluirParada = createServerFn({ method: "POST" })
       token: z.string(),
       corridaId: z.number(),
       ordem: z.number().int().min(1),
+      desfazer: z.boolean().optional(),
     }).parse(d),
   )
   .handler(async ({ data }) => {
@@ -464,11 +465,14 @@ export const motoristaConcluirParada = createServerFn({ method: "POST" })
     if (!corrida) throw new Error("Corrida não encontrada");
 
     const paradas = Array.isArray(corrida.paradas) ? (corrida.paradas as Array<Record<string, unknown>>) : [];
-    const novas = paradas.map((p) =>
-      Number(p.ordem) === data.ordem && !p.concluida_em
-        ? { ...p, concluida_em: new Date().toISOString() }
-        : p,
-    );
+    const novas = paradas.map((p) => {
+      if (Number(p.ordem) !== data.ordem) return p;
+      if (data.desfazer) {
+        const { concluida_em: _omit, ...resto } = p;
+        return resto;
+      }
+      return p.concluida_em ? p : { ...p, concluida_em: new Date().toISOString() };
+    });
 
     const { error: e2 } = await supabaseAdmin
       .from("corridas")
@@ -479,3 +483,4 @@ export const motoristaConcluirParada = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+

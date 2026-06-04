@@ -468,7 +468,7 @@ function MotoristaApp() {
     }
   };
 
-  const concluirParada = async (ordem: number) => {
+  const concluirParada = async (ordem: number, desfazer = false) => {
     if (!sessao || !corridaAtual) return;
     setCarregando(true);
     try {
@@ -478,19 +478,21 @@ function MotoristaApp() {
           token: sessao.token,
           corridaId: corridaAtual.id,
           ordem,
+          desfazer,
         },
       });
       const { corrida } = await carregarCorridaFn({
         data: { codigo: sessao.motorista.codigo, token: sessao.token, corridaId: corridaAtual.id },
       });
       if (corrida) setCorridaAtual(corrida as Corrida);
-      mostrarToast(`Parada ${ordem} concluída ✓`);
+      mostrarToast(desfazer ? `Parada ${ordem} desfeita` : `Parada ${ordem} concluída ✓`);
     } catch (e: unknown) {
       mostrarToast(e instanceof Error ? e.message : "Erro");
     } finally {
       setCarregando(false);
     }
   };
+
 
   const irWaze = (lugar: string) =>
     window.open(`https://waze.com/ul?q=${encodeURIComponent(lugar)}`, "_blank");
@@ -762,15 +764,26 @@ function CorridaTela({
   corrida: Corrida;
   onVoltar: () => void;
   onMudarStatus: (s: "A caminho" | "Chegou" | "Em viagem" | "Finalizada") => void;
-  onConcluirParada: (ordem: number) => void;
+  onConcluirParada: (ordem: number, desfazer?: boolean) => void;
   onWaze: (lugar: string) => void;
 }) {
   const paradas = Array.isArray(corrida.paradas) ? [...corrida.paradas].sort((a, b) => a.ordem - b.ordem) : [];
   const proximaParada = paradas.find((p) => !p.concluida_em);
+  const ultimaConcluida = [...paradas].reverse().find((p) => p.concluida_em);
   const [verTodos, setVerTodos] = useState(false);
   const [confirmarFim, setConfirmarFim] = useState(false);
 
-  // Determina a ETAPA ATIVA — apenas um endereço por vez
+  // Próximo endereço após esta etapa (usado no texto do botão)
+  const proximoApos = (apos: "origem" | "parada", ordem?: number): string => {
+    if (apos === "origem") {
+      return paradas[0]?.endereco || corrida.destino || "destino";
+    }
+    // parada com ordem N → próxima parada não concluída após N, ou destino
+    const prox = paradas.find((p) => p.ordem > (ordem || 0));
+    return prox?.endereco || corrida.destino || "destino";
+  };
+
+  // Determina ETAPA ATIVA + AÇÃO ÚNICA (Waze + avanço de status)
   type Etapa = {
     tipo: "origem" | "parada" | "destino";
     label: string;
@@ -779,56 +792,80 @@ function CorridaTela({
     progresso?: string;
   };
   let etapa: Etapa | null = null;
-  if (corrida.status === "Aceita" || corrida.status === "A caminho" || corrida.status === "Chegou") {
+  let acao: { txt: string; classe: string; onClick: () => void } | null = null;
+  let voltar: { txt: string; onClick: () => void } | null = null;
+
+  // Normaliza "Chegou" como equivalente a "A caminho" (status legado)
+  const st = corrida.status === "Chegou" ? "A caminho" : corrida.status;
+
+  if (st === "Aceita" || st === "A caminho") {
     etapa = { tipo: "origem", label: "Buscar passageiro", endereco: corrida.origem, icone: "📍" };
-  } else if (corrida.status === "Em viagem") {
-    if (proximaParada) {
-      etapa = {
-        tipo: "parada",
-        label: `Parada ${proximaParada.ordem} de ${paradas.length}`,
-        endereco: proximaParada.endereco,
-        icone: "🟡",
-        progresso: `Parada ${proximaParada.ordem}/${paradas.length}`,
+    if (st === "Aceita") {
+      acao = {
+        txt: "🧭 Ir até o cliente",
+        classe: "caminho",
+        onClick: () => {
+          onMudarStatus("A caminho");
+          onWaze(corrida.origem);
+        },
       };
-    } else if (corrida.destino) {
-      etapa = {
-        tipo: "destino",
-        label: paradas.length > 0 ? "Destino final" : "Destino",
-        endereco: corrida.destino,
-        icone: "🏁",
+    } else {
+      // A caminho → motorista chegou na origem, embarcou, agora vai para próximo
+      const destinoLabel = paradas.length > 0 ? `Parada 1` : "destino";
+      acao = {
+        txt: `▶️ Iniciar viagem — ${destinoLabel}`,
+        classe: "chegou",
+        onClick: () => {
+          onMudarStatus("Em viagem");
+          onWaze(proximoApos("origem"));
+        },
       };
     }
-  }
-
-  // Botão principal de avanço (Cheguei / Iniciar / Finalizar)
-  let avancar: { txt: string; classe: string; onClick: () => void } | null = null;
-  if (etapa?.tipo === "origem") {
-    if (corrida.status === "Aceita" || corrida.status === "A caminho") {
-      avancar = { txt: "✅ Cheguei na origem", classe: "chegou", onClick: () => onMudarStatus("Chegou") };
-    } else if (corrida.status === "Chegou") {
-      avancar = { txt: "▶️ Iniciar viagem", classe: "caminho", onClick: () => onMudarStatus("Em viagem") };
-    }
-  } else if (etapa?.tipo === "parada" && proximaParada) {
-    avancar = {
-      txt: "✅ Cheguei na parada",
-      classe: "chegou",
-      onClick: () => onConcluirParada(proximaParada.ordem),
+  } else if (st === "Em viagem" && proximaParada) {
+    etapa = {
+      tipo: "parada",
+      label: `Parada ${proximaParada.ordem} de ${paradas.length}`,
+      endereco: proximaParada.endereco,
+      icone: "🟡",
+      progresso: `Parada ${proximaParada.ordem}/${paradas.length}`,
     };
-  } else if (etapa?.tipo === "destino") {
-    avancar = { txt: "🏁 Finalizar corrida", classe: "finalizar", onClick: () => setConfirmarFim(true) };
+    const proxLabel =
+      paradas.find((p) => p.ordem > proximaParada.ordem) ? `Parada ${proximaParada.ordem + 1}` : "destino";
+    acao = {
+      txt: `✅ Cheguei — Ir para ${proxLabel}`,
+      classe: "chegou",
+      onClick: () => {
+        onConcluirParada(proximaParada.ordem);
+        onWaze(proximoApos("parada", proximaParada.ordem));
+      },
+    };
+    // Voltar etapa
+    if (proximaParada.ordem === 1) {
+      voltar = { txt: "← Voltar para origem", onClick: () => onMudarStatus("A caminho") };
+    } else {
+      const anterior = paradas.find((p) => p.ordem === proximaParada.ordem - 1);
+      if (anterior) voltar = { txt: `← Voltar para parada ${anterior.ordem}`, onClick: () => onConcluirParada(anterior.ordem, true) };
+    }
+  } else if (st === "Em viagem" && corrida.destino) {
+    etapa = {
+      tipo: "destino",
+      label: paradas.length > 0 ? "Destino final" : "Destino",
+      endereco: corrida.destino,
+      icone: "🏁",
+    };
+    acao = { txt: "🏁 Finalizar corrida", classe: "finalizar", onClick: () => setConfirmarFim(true) };
+    if (ultimaConcluida) {
+      voltar = {
+        txt: `← Voltar para parada ${ultimaConcluida.ordem}`,
+        onClick: () => onConcluirParada(ultimaConcluida.ordem, true),
+      };
+    } else {
+      voltar = { txt: "← Voltar para origem", onClick: () => onMudarStatus("A caminho") };
+    }
   }
 
-  const statusLabel = etapa?.progresso || corrida.status;
+  const statusLabel = etapa?.progresso || st;
   const totalEnderecos = 1 + paradas.length + (corrida.destino ? 1 : 0);
-
-  const irWaze = async () => {
-    if (!etapa) return;
-    // Ao tocar em "Ir" pela primeira vez na origem, marca como "A caminho"
-    if (etapa.tipo === "origem" && corrida.status === "Aceita") {
-      await onMudarStatus("A caminho");
-    }
-    onWaze(etapa.endereco);
-  };
 
   return (
     <div className="tela">
@@ -856,7 +893,7 @@ function CorridaTela({
           </button>
         </div>
 
-        {/* Etapa ativa — único endereço visível */}
+        {/* Etapa ativa — único endereço, único botão */}
         {etapa && (
           <div className="etapa-ativa">
             <div className="etapa-label">{etapa.label.toUpperCase()}</div>
@@ -865,18 +902,21 @@ function CorridaTela({
               <span>{etapa.endereco}</span>
             </div>
 
-            <button className="btn-ir-waze" onClick={irWaze}>
-              🧭 Ir no Waze
-            </button>
+            {acao && (
+              <button className={`btn-acao ${acao.classe}`} onClick={acao.onClick}>
+                {acao.txt}
+              </button>
+            )}
 
-            {avancar && (
-              <button className={`btn-acao ${avancar.classe}`} onClick={avancar.onClick}>
-                {avancar.txt}
+            {voltar && (
+              <button className="btn-voltar-etapa" onClick={voltar.onClick}>
+                {voltar.txt}
               </button>
             )}
           </div>
         )}
       </div>
+
 
       {/* Modal: trajeto completo, só leitura */}
       {verTodos && (
@@ -1337,6 +1377,13 @@ const cssMotorista = `
   background:#1a237e; color:#fff; border:none; border-radius:16px;
   padding:18px; font-size:17px; font-weight:800; cursor:pointer;
 }
+.moto-app .btn-voltar-etapa {
+  background:transparent; color:var(--muted); border:1px solid var(--line);
+  border-radius:12px; padding:10px; font-size:13px; font-weight:600;
+  cursor:pointer; margin-top:4px;
+}
+.moto-app .btn-voltar-etapa:active { opacity:.7; }
+
 
 .moto-app .modal-box {
   background:var(--card); border-radius:20px; padding:24px;

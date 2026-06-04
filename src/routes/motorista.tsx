@@ -1377,6 +1377,13 @@ const cssMotorista = `
   background:#1a237e; color:#fff; border:none; border-radius:16px;
   padding:18px; font-size:17px; font-weight:800; cursor:pointer;
 }
+.moto-app .btn-voltar-etapa {
+  background:transparent; color:var(--muted); border:1px solid var(--line);
+  border-radius:12px; padding:10px; font-size:13px; font-weight:600;
+  cursor:pointer; margin-top:4px;
+}
+.moto-app .btn-voltar-etapa:active { opacity:.7; }
+
 
 .moto-app .modal-box {
   background:var(--card); border-radius:20px; padding:24px;

@@ -799,8 +799,8 @@ function CorridaTela({
   const st = corrida.status === "Chegou" ? "A caminho" : corrida.status;
 
   if (st === "Aceita" || st === "A caminho") {
-    etapa = { tipo: "origem", label: "Buscar passageiro", endereco: corrida.origem, icone: "📍" };
     if (st === "Aceita") {
+      etapa = { tipo: "origem", label: "Buscar passageiro", endereco: corrida.origem, icone: "📍" };
       acao = {
         txt: "🧭 Ir até o cliente",
         classe: "caminho",
@@ -810,8 +810,25 @@ function CorridaTela({
         },
       };
     } else {
-      // A caminho → motorista chegou na origem, embarcou, agora vai para próximo
-      const destinoLabel = paradas.length > 0 ? `Parada 1` : "destino";
+      // A caminho → já está com o passageiro; exibe o próximo endereço (parada 1 ou destino)
+      const primeira = paradas[0];
+      if (primeira) {
+        etapa = {
+          tipo: "parada",
+          label: `Parada 1 de ${paradas.length}`,
+          endereco: primeira.endereco,
+          icone: "🟡",
+          progresso: `Parada 1/${paradas.length}`,
+        };
+      } else {
+        etapa = {
+          tipo: "destino",
+          label: "Destino",
+          endereco: corrida.destino,
+          icone: "🏁",
+        };
+      }
+      const destinoLabel = primeira ? `Parada 1` : "destino";
       acao = {
         txt: `▶️ Iniciar viagem — ${destinoLabel}`,
         classe: "chegou",
@@ -820,6 +837,7 @@ function CorridaTela({
           onWaze(proximoApos("origem"));
         },
       };
+      voltar = { txt: "← Voltar (ainda não embarcou)", onClick: () => onMudarStatus("A caminho") };
     }
   } else if (st === "Em viagem" && proximaParada) {
     etapa = {

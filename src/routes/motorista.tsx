@@ -840,24 +840,35 @@ function CorridaTela({
       voltar = { txt: "← Voltar (ainda não embarcou)", onClick: () => onMudarStatus("A caminho") };
     }
   } else if (st === "Em viagem" && proximaParada) {
-    etapa = {
-      tipo: "parada",
-      label: `Parada ${proximaParada.ordem} de ${paradas.length}`,
-      endereco: proximaParada.endereco,
-      icone: "🟡",
-      progresso: `Parada ${proximaParada.ordem}/${paradas.length}`,
-    };
-    const proxLabel =
-      paradas.find((p) => p.ordem > proximaParada.ordem) ? `Parada ${proximaParada.ordem + 1}` : "destino";
+    // Regra: a tela mostra SEMPRE o endereço que o Waze vai abrir (o próximo após esta parada).
+    const proxEndereco = proximoApos("parada", proximaParada.ordem);
+    const proxParadaObj = paradas.find((p) => p.ordem > proximaParada.ordem);
+    if (proxParadaObj) {
+      etapa = {
+        tipo: "parada",
+        label: `Próximo: Parada ${proxParadaObj.ordem} de ${paradas.length}`,
+        endereco: proxEndereco,
+        icone: "🟡",
+        progresso: `Parada ${proximaParada.ordem}/${paradas.length}`,
+      };
+    } else {
+      etapa = {
+        tipo: "destino",
+        label: "Próximo: Destino final",
+        endereco: proxEndereco,
+        icone: "🏁",
+        progresso: `Parada ${proximaParada.ordem}/${paradas.length}`,
+      };
+    }
+    const proxLabel = proxParadaObj ? `Parada ${proxParadaObj.ordem}` : "destino";
     acao = {
-      txt: `✅ Cheguei — Ir para ${proxLabel}`,
+      txt: `✅ Cheguei na parada ${proximaParada.ordem} — Ir para ${proxLabel}`,
       classe: "chegou",
       onClick: () => {
         onConcluirParada(proximaParada.ordem);
-        onWaze(proximoApos("parada", proximaParada.ordem));
+        onWaze(proxEndereco);
       },
     };
-    // Voltar etapa
     if (proximaParada.ordem === 1) {
       voltar = { txt: "← Voltar para origem", onClick: () => onMudarStatus("A caminho") };
     } else {

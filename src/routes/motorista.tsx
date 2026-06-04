@@ -767,40 +767,68 @@ function CorridaTela({
 }) {
   const paradas = Array.isArray(corrida.paradas) ? [...corrida.paradas].sort((a, b) => a.ordem - b.ordem) : [];
   const proximaParada = paradas.find((p) => !p.concluida_em);
-  const todasParadasFeitas = paradas.length > 0 && !proximaParada;
+  const [verTodos, setVerTodos] = useState(false);
+  const [confirmarFim, setConfirmarFim] = useState(false);
 
-  // Próxima ação principal — depende do status e das paradas
-  let acao: { txt: string; classe: string; onClick: () => void } | null = null;
-  if (corrida.status === "Aceita") {
-    acao = { txt: "🏍️ A caminho", classe: "caminho", onClick: () => onMudarStatus("A caminho") };
-  } else if (corrida.status === "A caminho") {
-    acao = { txt: "📍 Cheguei ao local", classe: "chegou", onClick: () => onMudarStatus("Chegou") };
-  } else if (corrida.status === "Chegou") {
-    acao = { txt: "🚀 Iniciar viagem", classe: "caminho", onClick: () => onMudarStatus("Em viagem") };
+  // Determina a ETAPA ATIVA — apenas um endereço por vez
+  type Etapa = {
+    tipo: "origem" | "parada" | "destino";
+    label: string;
+    endereco: string;
+    icone: string;
+    progresso?: string;
+  };
+  let etapa: Etapa | null = null;
+  if (corrida.status === "Aceita" || corrida.status === "A caminho" || corrida.status === "Chegou") {
+    etapa = { tipo: "origem", label: "Buscar passageiro", endereco: corrida.origem, icone: "📍" };
   } else if (corrida.status === "Em viagem") {
     if (proximaParada) {
-      const ord = proximaParada.ordem;
-      const sufixo = ord === 1 ? "1ª" : ord === 2 ? "2ª" : ord === 3 ? "3ª" : `${ord}ª`;
-      acao = {
-        txt: `📍 Cheguei na ${sufixo} parada`,
-        classe: "chegou",
-        onClick: () => onConcluirParada(ord),
+      etapa = {
+        tipo: "parada",
+        label: `Parada ${proximaParada.ordem} de ${paradas.length}`,
+        endereco: proximaParada.endereco,
+        icone: "🟡",
+        progresso: `Parada ${proximaParada.ordem}/${paradas.length}`,
       };
-    } else {
-      acao = { txt: "✅ Finalizar corrida", classe: "finalizar", onClick: () => onMudarStatus("Finalizada") };
+    } else if (corrida.destino) {
+      etapa = {
+        tipo: "destino",
+        label: paradas.length > 0 ? "Destino final" : "Destino",
+        endereco: corrida.destino,
+        icone: "🏁",
+      };
     }
   }
 
-  // Status visual mais claro quando há paradas pendentes
-  const statusLabel = (() => {
-    if (corrida.status === "Em viagem" && proximaParada) {
-      const ord = proximaParada.ordem;
-      const sufixo = ord === 1 ? "1ª" : ord === 2 ? "2ª" : ord === 3 ? "3ª" : `${ord}ª`;
-      return `Indo p/ ${sufixo} parada`;
+  // Botão principal de avanço (Cheguei / Iniciar / Finalizar)
+  let avancar: { txt: string; classe: string; onClick: () => void } | null = null;
+  if (etapa?.tipo === "origem") {
+    if (corrida.status === "Aceita" || corrida.status === "A caminho") {
+      avancar = { txt: "✅ Cheguei na origem", classe: "chegou", onClick: () => onMudarStatus("Chegou") };
+    } else if (corrida.status === "Chegou") {
+      avancar = { txt: "▶️ Iniciar viagem", classe: "caminho", onClick: () => onMudarStatus("Em viagem") };
     }
-    if (corrida.status === "Em viagem" && todasParadasFeitas) return "Indo p/ destino final";
-    return corrida.status;
-  })();
+  } else if (etapa?.tipo === "parada" && proximaParada) {
+    avancar = {
+      txt: "✅ Cheguei na parada",
+      classe: "chegou",
+      onClick: () => onConcluirParada(proximaParada.ordem),
+    };
+  } else if (etapa?.tipo === "destino") {
+    avancar = { txt: "🏁 Finalizar corrida", classe: "finalizar", onClick: () => setConfirmarFim(true) };
+  }
+
+  const statusLabel = etapa?.progresso || corrida.status;
+  const totalEnderecos = 1 + paradas.length + (corrida.destino ? 1 : 0);
+
+  const irWaze = async () => {
+    if (!etapa) return;
+    // Ao tocar em "Ir" pela primeira vez na origem, marca como "A caminho"
+    if (etapa.tipo === "origem" && corrida.status === "Aceita") {
+      await onMudarStatus("A caminho");
+    }
+    onWaze(etapa.endereco);
+  };
 
   return (
     <div className="tela">
@@ -813,96 +841,110 @@ function CorridaTela({
       </header>
 
       <div className="corrente-scroll">
-        <div className="mapa-placeholder">🗺️ Navegação via Waze nos botões abaixo</div>
-
-        <div className="corrida-card">
-          <div className="corrida-row">
-            <span className="ci">👤</span>
-            <div>
-              <span className="cl">CLIENTE</span>
-              <span className="cv">{corrida.cliente || "-"}</span>
+        {/* Resumo recolhido */}
+        <div className="corrida-resumo">
+          <div>
+            <div className="resumo-l1">
+              #{corrida.id} • {corrida.cliente || "Cliente"}
+            </div>
+            <div className="resumo-l2">
+              {totalEnderecos} endereço(s) • <span className="gold">{brl(corrida.valor_final)}</span>
             </div>
           </div>
-          <div className="corrida-row">
-            <span className="ci">📍</span>
-            <div style={{ flex: 1 }}>
-              <span className="cl">BUSCAR EM</span>
-              <span className="cv">{corrida.origem}</span>
+          <button className="btn-ver-todos" onClick={() => setVerTodos(true)}>
+            Ver trajeto
+          </button>
+        </div>
+
+        {/* Etapa ativa — único endereço visível */}
+        {etapa && (
+          <div className="etapa-ativa">
+            <div className="etapa-label">{etapa.label.toUpperCase()}</div>
+            <div className="etapa-endereco">
+              <span className="etapa-icone">{etapa.icone}</span>
+              <span>{etapa.endereco}</span>
             </div>
-            <button
-              className="btn-waze"
-              onClick={async () => {
-                if (corrida.status === "Aceita") await onMudarStatus("A caminho");
-                onWaze(corrida.origem);
-              }}
-            >
-              🧭 Ir
+
+            <button className="btn-ir-waze" onClick={irWaze}>
+              🧭 Ir no Waze
             </button>
-          </div>
 
-          {paradas.map((p) => {
-            const feita = !!p.concluida_em;
-            const ehProxima = proximaParada?.ordem === p.ordem;
-            return (
-              <div key={p.ordem} className="corrida-row" style={{ opacity: feita ? 0.55 : 1 }}>
-                <span className="ci">{feita ? "✅" : "🟡"}</span>
-                <div style={{ flex: 1 }}>
-                  <span className="cl">
-                    PARADA {p.ordem}
-                    {feita ? " (concluída)" : ehProxima ? " (próxima)" : ""}
-                  </span>
-                  <span className="cv" style={feita ? { textDecoration: "line-through" } : {}}>
-                    {p.endereco}
-                  </span>
-                </div>
-                {!feita && (
-                  <button className="btn-waze" onClick={() => onWaze(p.endereco)}>
-                    🧭 Ir
-                  </button>
-                )}
-              </div>
-            );
-          })}
-
-          <div className="corrida-row">
-            <span className="ci">🏁</span>
-            <div style={{ flex: 1 }}>
-              <span className="cl">
-                DESTINO {paradas.length > 0 ? "FINAL" : ""}
-              </span>
-              <span className="cv">{corrida.destino || "-"}</span>
-            </div>
-            {corrida.destino && (
-              <button
-                className="btn-waze"
-                onClick={async () => {
-                  if (corrida.status === "Chegou" || corrida.status === "A caminho") {
-                    await onMudarStatus("Em viagem");
-                  }
-                  onWaze(corrida.destino!);
-                }}
-              >
-                🧭 Ir
+            {avancar && (
+              <button className={`btn-acao ${avancar.classe}`} onClick={avancar.onClick}>
+                {avancar.txt}
               </button>
             )}
           </div>
-          <div className="corrida-row">
-            <span className="ci">💰</span>
-            <div>
-              <span className="cl">VALOR</span>
-              <span className="cv gold">{brl(corrida.valor_final)}</span>
+        )}
+      </div>
+
+      {/* Modal: trajeto completo, só leitura */}
+      {verTodos && (
+        <div className="modal-overlay" onClick={() => setVerTodos(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-titulo">Trajeto completo</div>
+            <div className="trajeto-lista">
+              <div className="trajeto-item">
+                <span className="ci">📍</span>
+                <div>
+                  <span className="cl">ORIGEM</span>
+                  <span className="cv">{corrida.origem}</span>
+                </div>
+              </div>
+              {paradas.map((p) => (
+                <div key={p.ordem} className="trajeto-item" style={{ opacity: p.concluida_em ? 0.55 : 1 }}>
+                  <span className="ci">{p.concluida_em ? "✅" : "🟡"}</span>
+                  <div>
+                    <span className="cl">PARADA {p.ordem}</span>
+                    <span className="cv" style={p.concluida_em ? { textDecoration: "line-through" } : {}}>
+                      {p.endereco}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {corrida.destino && (
+                <div className="trajeto-item">
+                  <span className="ci">🏁</span>
+                  <div>
+                    <span className="cl">DESTINO{paradas.length > 0 ? " FINAL" : ""}</span>
+                    <span className="cv">{corrida.destino}</span>
+                  </div>
+                </div>
+              )}
             </div>
+            <div className="modal-aviso">
+              ℹ️ Apenas para consulta. Siga os endereços conforme aparecem na tela.
+            </div>
+            <button className="btn-acao caminho" onClick={() => setVerTodos(false)}>
+              Fechar
+            </button>
           </div>
         </div>
+      )}
 
-        <div className="acoes-corrida">
-          {acao && (
-            <button className={`btn-acao ${acao.classe}`} onClick={acao.onClick}>
-              {acao.txt}
+      {/* Confirmação de finalização */}
+      {confirmarFim && (
+        <div className="modal-overlay" onClick={() => setConfirmarFim(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-titulo">Finalizar corrida?</div>
+            <div className="modal-aviso">
+              Confirme apenas se já entregou no destino final. Esta ação não pode ser desfeita.
+            </div>
+            <button
+              className="btn-acao finalizar"
+              onClick={() => {
+                setConfirmarFim(false);
+                onMudarStatus("Finalizada");
+              }}
+            >
+              🏁 Sim, finalizar
             </button>
-          )}
+            <button className="btn-acao caminho" onClick={() => setConfirmarFim(false)}>
+              Cancelar
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

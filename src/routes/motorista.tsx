@@ -1303,4 +1303,59 @@ const cssMotorista = `
   font-size:14px; font-weight:600; z-index:1200;
   box-shadow:0 8px 24px rgba(0,0,0,.3);
 }
+
+.moto-app .corrida-resumo {
+  margin:12px 14px; padding:12px 16px; background:var(--card);
+  border:1px solid var(--line); border-radius:14px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.moto-app .resumo-l1 { font-size:13px; font-weight:700; color:var(--text); }
+.moto-app .resumo-l2 { font-size:12px; color:var(--muted); margin-top:2px; }
+.moto-app .resumo-l2 .gold { color:var(--gold); font-weight:800; }
+.moto-app .btn-ver-todos {
+  background:var(--card2); color:var(--text); border:1px solid var(--line);
+  border-radius:10px; padding:8px 12px; font-size:12px; font-weight:700; cursor:pointer;
+  flex-shrink:0;
+}
+
+.moto-app .etapa-ativa {
+  margin:14px; background:var(--card); border:2px solid var(--orange);
+  border-radius:20px; padding:20px; display:flex; flex-direction:column; gap:14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.moto-app .etapa-label {
+  font-size:11px; color:var(--orange); font-weight:800;
+  letter-spacing:1.5px; text-align:center;
+}
+.moto-app .etapa-endereco {
+  display:flex; align-items:flex-start; gap:12px;
+  font-size:18px; font-weight:700; line-height:1.4; color:var(--text);
+  padding:8px 0;
+}
+.moto-app .etapa-icone { font-size:24px; flex-shrink:0; }
+.moto-app .btn-ir-waze {
+  background:#1a237e; color:#fff; border:none; border-radius:16px;
+  padding:18px; font-size:17px; font-weight:800; cursor:pointer;
+}
+
+.moto-app .modal-box {
+  background:var(--card); border-radius:20px; padding:24px;
+  max-width:420px; width:calc(100% - 28px); max-height:80vh; overflow-y:auto;
+  display:flex; flex-direction:column; gap:14px;
+}
+.moto-app .modal-titulo {
+  font-size:18px; font-weight:800; color:var(--gold); text-align:center;
+}
+.moto-app .modal-aviso {
+  font-size:13px; color:var(--muted); text-align:center;
+  background:var(--card2); padding:10px 12px; border-radius:10px;
+}
+.moto-app .trajeto-lista {
+  display:flex; flex-direction:column;
+  background:var(--card2); border-radius:14px; overflow:hidden;
+}
+.moto-app .trajeto-item {
+  display:flex; align-items:flex-start; gap:12px; padding:12px 14px;
+}
+.moto-app .trajeto-item + .trajeto-item { border-top:1px solid var(--line); }
 `;

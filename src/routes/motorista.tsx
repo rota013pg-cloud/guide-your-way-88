@@ -315,9 +315,35 @@ function MotoristaApp() {
   }, [oferta, expirarOfertaFn]);
 
   // ─── GPS ────────────────────────────────────────────
+  // Envia uma posição imediatamente (usado no início e como reforço periódico
+  // caso o watchPosition pare de disparar callbacks com o app em foreground).
+  const enviarPosicaoAgora = useCallback(() => {
+    if (!sessao || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        gpsFn({
+          data: {
+            codigo: sessao.motorista.codigo,
+            token: sessao.token,
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            velocidade: pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : 0,
+          },
+        }).catch(() => {});
+      },
+      (err) => console.warn("GPS (one-shot):", err.message),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 },
+    );
+  }, [sessao, gpsFn]);
+
   const iniciarGps = useCallback(() => {
     if (!sessao || !navigator.geolocation) return;
     if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
+    if (gpsIntervalRef.current) clearInterval(gpsIntervalRef.current);
+
+    // Posição imediata ao iniciar (não espera o primeiro fix do watch).
+    enviarPosicaoAgora();
+
     gpsWatchRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         gpsFn({
@@ -331,18 +357,89 @@ function MotoristaApp() {
         }).catch(() => {});
       },
       (err) => console.warn("GPS:", err.message),
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
+      // maximumAge:0 força fix novo a cada notificação — evita pin "preso"
+      // no endereço onde o motorista ficou online.
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
     );
-  }, [sessao, gpsFn]);
+
+    // Backup: a cada 10s força um getCurrentPosition mesmo se o watch não
+    // disparar (alguns navegadores param o watch parado, sem movimento).
+    gpsIntervalRef.current = setInterval(() => {
+      enviarPosicaoAgora();
+    }, 10000);
+  }, [sessao, gpsFn, enviarPosicaoAgora]);
 
   const pararGps = useCallback(() => {
     if (gpsWatchRef.current !== null) {
       navigator.geolocation.clearWatch(gpsWatchRef.current);
       gpsWatchRef.current = null;
     }
+    if (gpsIntervalRef.current) {
+      clearInterval(gpsIntervalRef.current);
+      gpsIntervalRef.current = null;
+    }
   }, []);
 
   useEffect(() => () => pararGps(), [pararGps]);
+
+  // Auto-start do GPS sempre que o motorista está logado e online — inclusive
+  // ao restaurar a sessão (antes só iniciava no clique de "Ficar Online").
+  useEffect(() => {
+    if (sessao && online) {
+      iniciarGps();
+    } else {
+      pararGps();
+    }
+  }, [sessao, online, iniciarGps, pararGps]);
+
+  // ─── App em background/fechado: força Offline para não receber corridas ─
+  // Sem isso o painel acha que o motorista está online mas ele não responde
+  // a notificações nem recebe ofertas. Ao voltar para foreground, restaura
+  // o status Online automaticamente se essa era a intenção do motorista.
+  useEffect(() => {
+    if (!sessao) return;
+
+    const irOffline = (motivo: string) => {
+      if (!intencaoOnlineRef.current) return;
+      forcadoOfflineBgRef.current = true;
+      pararGps();
+      // fire-and-forget — o app pode estar sendo encerrado
+      toggleFn({
+        data: { codigo: sessao.motorista.codigo, token: sessao.token, online: false },
+      }).then(() => {
+        setOnline(false);
+        console.info("[bg] offline:", motivo);
+      }).catch(() => {});
+    };
+
+    const voltarOnline = async () => {
+      if (!intencaoOnlineRef.current || !forcadoOfflineBgRef.current) return;
+      try {
+        await toggleFn({
+          data: { codigo: sessao.motorista.codigo, token: sessao.token, online: true },
+        });
+        setOnline(true);
+        forcadoOfflineBgRef.current = false;
+        enviarPosicaoAgora();
+        recarregarContexto();
+      } catch (e) {
+        console.warn("[fg] falha ao restaurar online:", e);
+      }
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") irOffline("visibilitychange");
+      else if (document.visibilityState === "visible") voltarOnline();
+    };
+    const onPageHide = () => irOffline("pagehide");
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onPageHide);
+    };
+  }, [sessao, toggleFn, pararGps, enviarPosicaoAgora, recarregarContexto]);
 
   // ─── Ações ──────────────────────────────────────────
   const fazerLogin = async () => {

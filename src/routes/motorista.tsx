@@ -181,7 +181,9 @@ function MotoristaApp() {
       setCorridaAtual(ctx.corridaAtual as Corrida | null);
       setCorridasHoje((ctx.corridasHoje as Corrida[]) ?? []);
       setConfig(ctx.config);
-      setOnline(ctx.motorista?.status === "Online" || ctx.motorista?.status === "Em corrida");
+      const estaOnline = ctx.motorista?.status === "Online" || ctx.motorista?.status === "Em corrida";
+      setOnline(estaOnline);
+      if (estaOnline) intencaoOnlineRef.current = true;
       if (ctx.oferta && !oferta) setOferta(ctx.oferta);
       if (ctx.corridaAtual && tela !== "corrida") setTela("corrida");
     } catch (e) {

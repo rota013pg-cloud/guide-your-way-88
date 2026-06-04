@@ -824,7 +824,7 @@ function CorridaTela({
         etapa = {
           tipo: "destino",
           label: "Destino",
-          endereco: corrida.destino,
+          endereco: corrida.destino || "",
           icone: "🏁",
         };
       }

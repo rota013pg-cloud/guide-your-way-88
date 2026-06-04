@@ -291,3 +291,68 @@ export const retomarMotorista = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ─── AUTO-OFFLINE POR INATIVIDADE ────────────────────────
+// Marca como Offline motoristas cujo app travou/fechou em background:
+//   - status='Online' e
+//   - sem ping de GPS nos últimos 90s e
+//   - sessão ativa com mais de 90s (ou nenhuma sessão ativa)
+//
+// Chamada pelo painel a cada poll. Não toca em "Em corrida".
+export const marcarStaleOffline = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const JANELA_MS = 90_000;
+    const cutoffIso = new Date(Date.now() - JANELA_MS).toISOString();
+
+    const { data: onlineMot } = await supabaseAdmin
+      .from("motoristas")
+      .select("codigo")
+      .eq("status", "Online");
+    const codigos = (onlineMot ?? []).map((m) => m.codigo as string);
+    if (codigos.length === 0) return { atualizados: 0 };
+
+    const { data: pings } = await supabaseAdmin
+      .from("motorista_gps")
+      .select("motorista_codigo")
+      .in("motorista_codigo", codigos)
+      .gte("criado_em", cutoffIso);
+    const recentes = new Set((pings ?? []).map((p) => p.motorista_codigo as string));
+
+    const { data: sess } = await supabaseAdmin
+      .from("motorista_sessoes")
+      .select("motorista_codigo, criado_em")
+      .in("motorista_codigo", codigos)
+      .eq("status", "ativa");
+    const sessIdadeMs = new Map<string, number>();
+    for (const s of sess ?? []) {
+      const idade = Date.now() - new Date(s.criado_em as string).getTime();
+      const atual = sessIdadeMs.get(s.motorista_codigo as string) ?? -1;
+      if (idade > atual) sessIdadeMs.set(s.motorista_codigo as string, idade);
+    }
+
+    const paraOffline = codigos.filter((c) => {
+      if (recentes.has(c)) return false;
+      const idade = sessIdadeMs.get(c);
+      if (idade === undefined) return true; // sem sessão ativa
+      return idade > JANELA_MS; // sessão antiga e sem ping
+    });
+
+    if (paraOffline.length === 0) return { atualizados: 0 };
+
+    const { error } = await supabaseAdmin
+      .from("motoristas")
+      .update({ status: "Offline" })
+      .in("codigo", paraOffline)
+      .eq("status", "Online");
+    if (error) throw new Error(error.message);
+
+    // encerra sessões dos motoristas marcados como offline
+    await supabaseAdmin
+      .from("motorista_sessoes")
+      .update({ status: "encerrada" })
+      .in("motorista_codigo", paraOffline)
+      .eq("status", "ativa");
+
+    return { atualizados: paraOffline.length, codigos: paraOffline };
+  });

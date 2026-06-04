@@ -34,7 +34,14 @@ function DashboardPage() {
   const [gps, setGps] = useState<Gps[]>([]);
   const [travadosPagto, setTravadosPagto] = useState<{ status: string }[]>([]);
 
+  const staleFn = useServerFn(marcarStaleOffline);
+
   const carregar = async () => {
+    // Antes de ler, força auto-offline de motoristas sem ping de GPS recente.
+    // Cobre o caso de app fechado / celular bloqueado, em que o cliente não
+    // consegue avisar o servidor antes de ser suspenso pelo SO.
+    try { await staleFn(); } catch { /* silencioso */ }
+
     const hojeOp = new Date();
     if (hojeOp.getHours() < 6) hojeOp.setDate(hojeOp.getDate() - 1);
     const dia = hojeOp.toISOString().slice(0, 10);

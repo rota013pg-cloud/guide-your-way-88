@@ -441,6 +441,35 @@ export const motoristaCarregarCorrida = createServerFn({ method: "POST" })
     return { corrida };
   });
 
+// ─── LISTAR CORRIDAS DO MOTORISTA (HISTÓRICO / EXTRATO) ─
+export const motoristaListarCorridas = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      codigo: z.string(),
+      token: z.string(),
+      de: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      ate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await validarToken(data.codigo, data.token);
+
+    const inicio = `${data.de}T00:00:00-03:00`;
+    const fim = `${data.ate}T23:59:59-03:00`;
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("corridas")
+      .select("id,cliente,origem,destino,status,valor_final,criado_em")
+      .eq("motorista_codigo", data.codigo)
+      .gte("criado_em", inicio)
+      .lte("criado_em", fim)
+      .order("id", { ascending: false })
+      .limit(500);
+
+    if (error) throw new Error(error.message);
+    return { corridas: rows ?? [] };
+  });
+
 // ─── CONCLUIR PARADA ────────────────────────────────────
 export const motoristaConcluirParada = createServerFn({ method: "POST" })
   .inputValidator((d) =>

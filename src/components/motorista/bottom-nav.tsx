@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { motoristaAlterarSenha } from "@/lib/motorista.functions";
+import { motoristaAlterarSenha, motoristaListarCorridas } from "@/lib/motorista.functions";
 import { motoristaListarChat, motoristaEnviarMensagem } from "@/lib/chat-motorista.functions";
 import { motoristaListarCobrancasExtras } from "@/lib/cobrancas-extras.functions";
 import { useQuery } from "@tanstack/react-query";
@@ -156,8 +156,8 @@ export function MotoristaBottomNav({
           {tab === "perfil" && <PerfilTab motorista={motorista} onAlterarSenha={() => setTab("senha")} />}
           {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
           {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
-          {tab === "historico" && <HistoricoTab corridas={corridasHoje} />}
-          {tab === "faturamento" && <FaturamentoTab corridas={corridasHoje} cobranca={cobranca} />}
+          {tab === "historico" && <HistoricoTab codigo={motorista.codigo} token={token} />}
+          {tab === "faturamento" && <FaturamentoTab codigo={motorista.codigo} token={token} cobranca={cobranca} />}
           {tab === "pagamentos" && (
             <PagamentosTab
               codigo={motorista.codigo}
@@ -183,6 +183,48 @@ function tituloTab(t: Exclude<Tab, null>): string {
     faturamento: "Meus ganhos",
     pagamentos: "Pagamento de taxas",
   } as Record<string, string>)[t];
+}
+
+// ─── Helpers de data para filtros estilo extrato ────────
+function hojeISO() {
+  const d = new Date();
+  d.setHours(d.getHours() - 3);
+  return d.toISOString().slice(0, 10);
+}
+function inicioMesISO() {
+  const d = new Date();
+  d.setHours(d.getHours() - 3);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+}
+function inicio7DiasISO() {
+  const d = new Date();
+  d.setDate(d.getDate() - 7);
+  d.setHours(d.getHours() - 3);
+  return d.toISOString().slice(0, 10);
+}
+function fmtDataBr(iso: string) {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+type PeriodoFiltro = "hoje" | "7dias" | "mes" | "personalizado";
+
+interface FiltroPeriodo {
+  de: string;
+  ate: string;
+}
+
+function periodoParaDatas(p: PeriodoFiltro, customDe?: string, customAte?: string): FiltroPeriodo {
+  switch (p) {
+    case "hoje":
+      return { de: hojeISO(), ate: hojeISO() };
+    case "7dias":
+      return { de: inicio7DiasISO(), ate: hojeISO() };
+    case "mes":
+      return { de: inicioMesISO(), ate: hojeISO() };
+    default:
+      return { de: customDe || hojeISO(), ate: customAte || hojeISO() };
+  }
 }
 
 function SheetWrap({ titulo, onClose, children }: { titulo: string; onClose: () => void; children: React.ReactNode }) {
@@ -336,51 +378,208 @@ function ChatTab({ codigo, token }: { codigo: string; token: string }) {
 }
 
 // ─── HISTÓRICO ──────────────────────────────────────────
-function HistoricoTab({ corridas }: { corridas: Corrida[] }) {
-  if (corridas.length === 0) return <div className="moto-empty">Nenhuma corrida hoje.</div>;
+function HistoricoTab({ codigo, token }: { codigo: string; token: string }) {
+  const listarFn = useServerFn(motoristaListarCorridas);
+  const [periodo, setPeriodo] = useState<PeriodoFiltro>("hoje");
+  const [de, setDe] = useState(hojeISO());
+  const [ate, setAte] = useState(hojeISO());
+  const [carregando, setCarregando] = useState(false);
+  const [corridas, setCorridas] = useState<Corrida[]>([]);
+  const [ultimaBusca, setUltimaBusca] = useState<PeriodoFiltro | null>(null);
+
+  const buscar = async (p: PeriodoFiltro) => {
+    const datas = periodoParaDatas(p, de, ate);
+    setCarregando(true);
+    try {
+      const r = await listarFn({ data: { codigo, token, de: datas.de, ate: datas.ate } });
+      setCorridas(r.corridas as Corrida[]);
+      setUltimaBusca(p);
+    } catch {
+      setCorridas([]);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  useEffect(() => {
+    buscar(periodo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo]);
+
+  const datasAtuais = periodoParaDatas(periodo, de, ate);
+  const periodoLabel =
+    periodo === "hoje"
+      ? "Hoje"
+      : periodo === "7dias"
+      ? "Últimos 7 dias"
+      : periodo === "mes"
+      ? "Este mês"
+      : `${fmtDataBr(datasAtuais.de)} a ${fmtDataBr(datasAtuais.ate)}`;
+
   return (
-    <div className="moto-historico">
-      {corridas.map((c) => (
-        <div key={c.id} className="moto-hist-item">
-          <div className="moto-hist-head">
-            <span>#{c.id} — {c.cliente ?? "Cliente"}</span>
-            <b>{brl(Number(c.valor_final ?? 0))}</b>
-          </div>
-          <div className="moto-hist-end">📍 {c.origem}<br />🏁 {c.destino ?? "-"}</div>
-          <span className="moto-hist-badge">{c.status}</span>
+    <div>
+      {/* Filtros rápidos */}
+      <div className="moto-filtros">
+        {(["hoje", "7dias", "mes", "personalizado"] as PeriodoFiltro[]).map((p) => (
+          <button
+            key={p}
+            className={periodo === p ? "active" : ""}
+            onClick={() => setPeriodo(p)}
+          >
+            {p === "hoje" ? "Hoje" : p === "7dias" ? "7 dias" : p === "mes" ? "Mês" : "Período"}
+          </button>
+        ))}
+      </div>
+
+      {/* Personalizado */}
+      {periodo === "personalizado" && (
+        <div className="moto-filtro-datas">
+          <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
+          <span>até</span>
+          <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
+          <button className="moto-btn-buscar" onClick={() => buscar("personalizado")}>
+            Buscar
+          </button>
         </div>
-      ))}
+      )}
+
+      <div className="moto-periodo-label">{periodoLabel}</div>
+
+      {carregando && <div className="moto-empty">Carregando…</div>}
+      {!carregando && corridas.length === 0 && <div className="moto-empty">Nenhuma corrida no período.</div>}
+
+      {!carregando && corridas.length > 0 && (
+        <div className="moto-historico">
+          {corridas.map((c) => (
+            <div key={c.id} className="moto-hist-item">
+              <div className="moto-hist-head">
+                <span>#{c.id} — {c.cliente ?? "Cliente"}</span>
+                <b>{brl(Number(c.valor_final ?? 0))}</b>
+              </div>
+              <div className="moto-hist-end">📍 {c.origem}<br />🏁 {c.destino ?? "-"}</div>
+              <span className="moto-hist-badge">{c.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── FATURAMENTO ────────────────────────────────────────
-function FaturamentoTab({ corridas, cobranca }: { corridas: Corrida[]; cobranca: Cobranca }) {
+function FaturamentoTab({ codigo, token, cobranca }: { codigo: string; token: string; cobranca: Cobranca }) {
+  const listarFn = useServerFn(motoristaListarCorridas);
+  const [periodo, setPeriodo] = useState<PeriodoFiltro>("hoje");
+  const [de, setDe] = useState(hojeISO());
+  const [ate, setAte] = useState(hojeISO());
+  const [carregando, setCarregando] = useState(false);
+  const [corridas, setCorridas] = useState<Corrida[]>([]);
+
+  const buscar = async (p: PeriodoFiltro) => {
+    const datas = periodoParaDatas(p, de, ate);
+    setCarregando(true);
+    try {
+      const r = await listarFn({ data: { codigo, token, de: datas.de, ate: datas.ate } });
+      setCorridas(r.corridas as Corrida[]);
+    } catch {
+      setCorridas([]);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  useEffect(() => {
+    buscar(periodo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo]);
+
+  const datasAtuais = periodoParaDatas(periodo, de, ate);
+  const periodoLabel =
+    periodo === "hoje"
+      ? "Hoje"
+      : periodo === "7dias"
+      ? "Últimos 7 dias"
+      : periodo === "mes"
+      ? "Este mês"
+      : `${fmtDataBr(datasAtuais.de)} a ${fmtDataBr(datasAtuais.ate)}`;
+
   const finalizadas = corridas.filter((c) => c.status === "Finalizada");
   const total = finalizadas.reduce((s, c) => s + Number(c.valor_final ?? 0), 0);
   const diaria = Number(cobranca?.valor_diaria ?? 0);
   const liquido = total - diaria;
+
   return (
-    <div className="moto-fat">
-      <div className="moto-fat-card big">
-        <span>Ganho bruto hoje</span>
-        <b>{brl(total)}</b>
+    <div>
+      {/* Filtros rápidos */}
+      <div className="moto-filtros">
+        {(["hoje", "7dias", "mes", "personalizado"] as PeriodoFiltro[]).map((p) => (
+          <button
+            key={p}
+            className={periodo === p ? "active" : ""}
+            onClick={() => setPeriodo(p)}
+          >
+            {p === "hoje" ? "Hoje" : p === "7dias" ? "7 dias" : p === "mes" ? "Mês" : "Período"}
+          </button>
+        ))}
       </div>
-      <div className="moto-fat-grid">
-        <div className="moto-fat-card">
-          <span>Corridas</span><b>{finalizadas.length}</b>
+
+      {periodo === "personalizado" && (
+        <div className="moto-filtro-datas">
+          <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
+          <span>até</span>
+          <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
+          <button className="moto-btn-buscar" onClick={() => buscar("personalizado")}>
+            Buscar
+          </button>
         </div>
-        <div className="moto-fat-card">
-          <span>Diária</span><b>{brl(diaria)}</b>
+      )}
+
+      <div className="moto-periodo-label">{periodoLabel}</div>
+
+      {carregando && <div className="moto-empty">Carregando…</div>}
+
+      {!carregando && (
+        <div className="moto-fat">
+          <div className="moto-fat-card big">
+            <span>Ganho bruto — {periodoLabel}</span>
+            <b>{brl(total)}</b>
+          </div>
+          <div className="moto-fat-grid">
+            <div className="moto-fat-card">
+              <span>Corridas finalizadas</span><b>{finalizadas.length}</b>
+            </div>
+            <div className="moto-fat-card">
+              <span>Diária de hoje</span><b>{brl(diaria)}</b>
+            </div>
+          </div>
+          <div className={`moto-fat-card big ${liquido >= 0 ? "ok" : "warn"}`}>
+            <span>Líquido (após diária)</span>
+            <b>{brl(liquido)}</b>
+          </div>
+          <div className="moto-fat-status">
+            Status do pagamento: <b>{cobranca?.status ?? "—"}</b>
+          </div>
+
+          {finalizadas.length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <div className="section-title" style={{ padding: "12px 0 6px", fontSize: 12 }}>
+                Corridas do período
+              </div>
+              <div className="moto-historico">
+                {finalizadas.map((c) => (
+                  <div key={c.id} className="moto-hist-item">
+                    <div className="moto-hist-head">
+                      <span>#{c.id} — {c.cliente ?? "Cliente"}</span>
+                      <b>{brl(Number(c.valor_final ?? 0))}</b>
+                    </div>
+                    <div className="moto-hist-end">📍 {c.origem}<br />🏁 {c.destino ?? "-"}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-      <div className={`moto-fat-card big ${liquido >= 0 ? "ok" : "warn"}`}>
-        <span>Líquido (após diária)</span>
-        <b>{brl(liquido)}</b>
-      </div>
-      <div className="moto-fat-status">
-        Status do pagamento: <b>{cobranca?.status ?? "—"}</b>
-      </div>
+      )}
     </div>
   );
 }
@@ -619,4 +818,30 @@ const cssNav = `
 .moto-app .moto-pag-row b { color:#f1f1f1; }
 .moto-app .moto-pag-info { color:#86efac; font-size:13px; padding:8px 0; }
 .moto-app .moto-pag-help { color:#888; font-size:12px; text-align:center; margin-top:8px; }
+
+.moto-app .moto-filtros {
+  display:flex; gap:6px; margin-bottom:10px;
+}
+.moto-app .moto-filtros button {
+  flex:1; background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:10px;
+  padding:8px 4px; color:#888; font-size:12px; font-weight:700; cursor:pointer;
+}
+.moto-app .moto-filtros button.active {
+  background:#f7c600; color:#111; border-color:#f7c600;
+}
+.moto-app .moto-filtro-datas {
+  display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap;
+}
+.moto-app .moto-filtro-datas input[type="date"] {
+  background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:10px;
+  padding:8px 10px; color:#f1f1f1; font-size:14px; outline:none;
+}
+.moto-app .moto-filtro-datas span { color:#888; font-size:12px; }
+.moto-app .moto-btn-buscar {
+  background:#f7c600; color:#111; border:0; border-radius:10px;
+  padding:8px 14px; font-size:13px; font-weight:800; cursor:pointer;
+}
+.moto-app .moto-periodo-label {
+  font-size:12px; color:#888; margin-bottom:10px; text-align:center;
+}
 `;

@@ -818,4 +818,30 @@ const cssNav = `
 .moto-app .moto-pag-row b { color:#f1f1f1; }
 .moto-app .moto-pag-info { color:#86efac; font-size:13px; padding:8px 0; }
 .moto-app .moto-pag-help { color:#888; font-size:12px; text-align:center; margin-top:8px; }
+
+.moto-app .moto-filtros {
+  display:flex; gap:6px; margin-bottom:10px;
+}
+.moto-app .moto-filtros button {
+  flex:1; background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:10px;
+  padding:8px 4px; color:#888; font-size:12px; font-weight:700; cursor:pointer;
+}
+.moto-app .moto-filtros button.active {
+  background:#f7c600; color:#111; border-color:#f7c600;
+}
+.moto-app .moto-filtro-datas {
+  display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap;
+}
+.moto-app .moto-filtro-datas input[type="date"] {
+  background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:10px;
+  padding:8px 10px; color:#f1f1f1; font-size:14px; outline:none;
+}
+.moto-app .moto-filtro-datas span { color:#888; font-size:12px; }
+.moto-app .moto-btn-buscar {
+  background:#f7c600; color:#111; border:0; border-radius:10px;
+  padding:8px 14px; font-size:13px; font-weight:800; cursor:pointer;
+}
+.moto-app .moto-periodo-label {
+  font-size:12px; color:#888; margin-bottom:10px; text-align:center;
+}
 `;

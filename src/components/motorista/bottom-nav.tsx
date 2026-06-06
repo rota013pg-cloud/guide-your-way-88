@@ -378,51 +378,208 @@ function ChatTab({ codigo, token }: { codigo: string; token: string }) {
 }
 
 // ─── HISTÓRICO ──────────────────────────────────────────
-function HistoricoTab({ corridas }: { corridas: Corrida[] }) {
-  if (corridas.length === 0) return <div className="moto-empty">Nenhuma corrida hoje.</div>;
+function HistoricoTab({ codigo, token }: { codigo: string; token: string }) {
+  const listarFn = useServerFn(motoristaListarCorridas);
+  const [periodo, setPeriodo] = useState<PeriodoFiltro>("hoje");
+  const [de, setDe] = useState(hojeISO());
+  const [ate, setAte] = useState(hojeISO());
+  const [carregando, setCarregando] = useState(false);
+  const [corridas, setCorridas] = useState<Corrida[]>([]);
+  const [ultimaBusca, setUltimaBusca] = useState<PeriodoFiltro | null>(null);
+
+  const buscar = async (p: PeriodoFiltro) => {
+    const datas = periodoParaDatas(p, de, ate);
+    setCarregando(true);
+    try {
+      const r = await listarFn({ data: { codigo, token, de: datas.de, ate: datas.ate } });
+      setCorridas(r.corridas as Corrida[]);
+      setUltimaBusca(p);
+    } catch {
+      setCorridas([]);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  useEffect(() => {
+    buscar(periodo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo]);
+
+  const datasAtuais = periodoParaDatas(periodo, de, ate);
+  const periodoLabel =
+    periodo === "hoje"
+      ? "Hoje"
+      : periodo === "7dias"
+      ? "Últimos 7 dias"
+      : periodo === "mes"
+      ? "Este mês"
+      : `${fmtDataBr(datasAtuais.de)} a ${fmtDataBr(datasAtuais.ate)}`;
+
   return (
-    <div className="moto-historico">
-      {corridas.map((c) => (
-        <div key={c.id} className="moto-hist-item">
-          <div className="moto-hist-head">
-            <span>#{c.id} — {c.cliente ?? "Cliente"}</span>
-            <b>{brl(Number(c.valor_final ?? 0))}</b>
-          </div>
-          <div className="moto-hist-end">📍 {c.origem}<br />🏁 {c.destino ?? "-"}</div>
-          <span className="moto-hist-badge">{c.status}</span>
+    <div>
+      {/* Filtros rápidos */}
+      <div className="moto-filtros">
+        {(["hoje", "7dias", "mes", "personalizado"] as PeriodoFiltro[]).map((p) => (
+          <button
+            key={p}
+            className={periodo === p ? "active" : ""}
+            onClick={() => setPeriodo(p)}
+          >
+            {p === "hoje" ? "Hoje" : p === "7dias" ? "7 dias" : p === "mes" ? "Mês" : "Período"}
+          </button>
+        ))}
+      </div>
+
+      {/* Personalizado */}
+      {periodo === "personalizado" && (
+        <div className="moto-filtro-datas">
+          <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
+          <span>até</span>
+          <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
+          <button className="moto-btn-buscar" onClick={() => buscar("personalizado")}>
+            Buscar
+          </button>
         </div>
-      ))}
+      )}
+
+      <div className="moto-periodo-label">{periodoLabel}</div>
+
+      {carregando && <div className="moto-empty">Carregando…</div>}
+      {!carregando && corridas.length === 0 && <div className="moto-empty">Nenhuma corrida no período.</div>}
+
+      {!carregando && corridas.length > 0 && (
+        <div className="moto-historico">
+          {corridas.map((c) => (
+            <div key={c.id} className="moto-hist-item">
+              <div className="moto-hist-head">
+                <span>#{c.id} — {c.cliente ?? "Cliente"}</span>
+                <b>{brl(Number(c.valor_final ?? 0))}</b>
+              </div>
+              <div className="moto-hist-end">📍 {c.origem}<br />🏁 {c.destino ?? "-"}</div>
+              <span className="moto-hist-badge">{c.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── FATURAMENTO ────────────────────────────────────────
-function FaturamentoTab({ corridas, cobranca }: { corridas: Corrida[]; cobranca: Cobranca }) {
+function FaturamentoTab({ codigo, token, cobranca }: { codigo: string; token: string; cobranca: Cobranca }) {
+  const listarFn = useServerFn(motoristaListarCorridas);
+  const [periodo, setPeriodo] = useState<PeriodoFiltro>("hoje");
+  const [de, setDe] = useState(hojeISO());
+  const [ate, setAte] = useState(hojeISO());
+  const [carregando, setCarregando] = useState(false);
+  const [corridas, setCorridas] = useState<Corrida[]>([]);
+
+  const buscar = async (p: PeriodoFiltro) => {
+    const datas = periodoParaDatas(p, de, ate);
+    setCarregando(true);
+    try {
+      const r = await listarFn({ data: { codigo, token, de: datas.de, ate: datas.ate } });
+      setCorridas(r.corridas as Corrida[]);
+    } catch {
+      setCorridas([]);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  useEffect(() => {
+    buscar(periodo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo]);
+
+  const datasAtuais = periodoParaDatas(periodo, de, ate);
+  const periodoLabel =
+    periodo === "hoje"
+      ? "Hoje"
+      : periodo === "7dias"
+      ? "Últimos 7 dias"
+      : periodo === "mes"
+      ? "Este mês"
+      : `${fmtDataBr(datasAtuais.de)} a ${fmtDataBr(datasAtuais.ate)}`;
+
   const finalizadas = corridas.filter((c) => c.status === "Finalizada");
   const total = finalizadas.reduce((s, c) => s + Number(c.valor_final ?? 0), 0);
   const diaria = Number(cobranca?.valor_diaria ?? 0);
   const liquido = total - diaria;
+
   return (
-    <div className="moto-fat">
-      <div className="moto-fat-card big">
-        <span>Ganho bruto hoje</span>
-        <b>{brl(total)}</b>
+    <div>
+      {/* Filtros rápidos */}
+      <div className="moto-filtros">
+        {(["hoje", "7dias", "mes", "personalizado"] as PeriodoFiltro[]).map((p) => (
+          <button
+            key={p}
+            className={periodo === p ? "active" : ""}
+            onClick={() => setPeriodo(p)}
+          >
+            {p === "hoje" ? "Hoje" : p === "7dias" ? "7 dias" : p === "mes" ? "Mês" : "Período"}
+          </button>
+        ))}
       </div>
-      <div className="moto-fat-grid">
-        <div className="moto-fat-card">
-          <span>Corridas</span><b>{finalizadas.length}</b>
+
+      {periodo === "personalizado" && (
+        <div className="moto-filtro-datas">
+          <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
+          <span>até</span>
+          <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
+          <button className="moto-btn-buscar" onClick={() => buscar("personalizado")}>
+            Buscar
+          </button>
         </div>
-        <div className="moto-fat-card">
-          <span>Diária</span><b>{brl(diaria)}</b>
+      )}
+
+      <div className="moto-periodo-label">{periodoLabel}</div>
+
+      {carregando && <div className="moto-empty">Carregando…</div>}
+
+      {!carregando && (
+        <div className="moto-fat">
+          <div className="moto-fat-card big">
+            <span>Ganho bruto — {periodoLabel}</span>
+            <b>{brl(total)}</b>
+          </div>
+          <div className="moto-fat-grid">
+            <div className="moto-fat-card">
+              <span>Corridas finalizadas</span><b>{finalizadas.length}</b>
+            </div>
+            <div className="moto-fat-card">
+              <span>Diária de hoje</span><b>{brl(diaria)}</b>
+            </div>
+          </div>
+          <div className={`moto-fat-card big ${liquido >= 0 ? "ok" : "warn"}`}>
+            <span>Líquido (após diária)</span>
+            <b>{brl(liquido)}</b>
+          </div>
+          <div className="moto-fat-status">
+            Status do pagamento: <b>{cobranca?.status ?? "—"}</b>
+          </div>
+
+          {finalizadas.length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <div className="section-title" style={{ padding: "12px 0 6px", fontSize: 12 }}>
+                Corridas do período
+              </div>
+              <div className="moto-historico">
+                {finalizadas.map((c) => (
+                  <div key={c.id} className="moto-hist-item">
+                    <div className="moto-hist-head">
+                      <span>#{c.id} — {c.cliente ?? "Cliente"}</span>
+                      <b>{brl(Number(c.valor_final ?? 0))}</b>
+                    </div>
+                    <div className="moto-hist-end">📍 {c.origem}<br />🏁 {c.destino ?? "-"}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-      <div className={`moto-fat-card big ${liquido >= 0 ? "ok" : "warn"}`}>
-        <span>Líquido (após diária)</span>
-        <b>{brl(liquido)}</b>
-      </div>
-      <div className="moto-fat-status">
-        Status do pagamento: <b>{cobranca?.status ?? "—"}</b>
-      </div>
+      )}
     </div>
   );
 }

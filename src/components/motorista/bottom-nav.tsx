@@ -185,6 +185,48 @@ function tituloTab(t: Exclude<Tab, null>): string {
   } as Record<string, string>)[t];
 }
 
+// ─── Helpers de data para filtros estilo extrato ────────
+function hojeISO() {
+  const d = new Date();
+  d.setHours(d.getHours() - 3);
+  return d.toISOString().slice(0, 10);
+}
+function inicioMesISO() {
+  const d = new Date();
+  d.setHours(d.getHours() - 3);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+}
+function inicio7DiasISO() {
+  const d = new Date();
+  d.setDate(d.getDate() - 7);
+  d.setHours(d.getHours() - 3);
+  return d.toISOString().slice(0, 10);
+}
+function fmtDataBr(iso: string) {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+type PeriodoFiltro = "hoje" | "7dias" | "mes" | "personalizado";
+
+interface FiltroPeriodo {
+  de: string;
+  ate: string;
+}
+
+function periodoParaDatas(p: PeriodoFiltro, customDe?: string, customAte?: string): FiltroPeriodo {
+  switch (p) {
+    case "hoje":
+      return { de: hojeISO(), ate: hojeISO() };
+    case "7dias":
+      return { de: inicio7DiasISO(), ate: hojeISO() };
+    case "mes":
+      return { de: inicioMesISO(), ate: hojeISO() };
+    default:
+      return { de: customDe || hojeISO(), ate: customAte || hojeISO() };
+  }
+}
+
 function SheetWrap({ titulo, onClose, children }: { titulo: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="moto-sheet-overlay" onClick={onClose}>

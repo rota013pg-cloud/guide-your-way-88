@@ -156,8 +156,8 @@ export function MotoristaBottomNav({
           {tab === "perfil" && <PerfilTab motorista={motorista} onAlterarSenha={() => setTab("senha")} />}
           {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
           {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
-          {tab === "historico" && <HistoricoTab corridas={corridasHoje} />}
-          {tab === "faturamento" && <FaturamentoTab corridas={corridasHoje} cobranca={cobranca} />}
+          {tab === "historico" && <HistoricoTab codigo={motorista.codigo} token={token} />}
+          {tab === "faturamento" && <FaturamentoTab codigo={motorista.codigo} token={token} cobranca={cobranca} />}
           {tab === "pagamentos" && (
             <PagamentosTab
               codigo={motorista.codigo}

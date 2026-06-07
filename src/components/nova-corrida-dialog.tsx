@@ -91,7 +91,7 @@ export function NovaCorridaDialog({
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
 
   const [tarifas, setTarifas] = useState<TarifaOpt[]>([]);
-  const [motoristas, setMotoristas] = useState<MotoristaMini[]>([]);
+  const [motociclistas, setMotoristas] = useState<MotoristaMini[]>([]);
 
   // Cliente
   const [codigoBusca, setCodigoBusca] = useState("");
@@ -114,7 +114,7 @@ export function NovaCorridaDialog({
   const [agendadaPara, setAgendadaPara] = useState("");
   const [despacho, setDespacho] = useState<Despacho>("Automatico");
   const [motoristasManuais, setMotoristasManuais] = useState<string[]>([]);
-  const [agendadaMotorista, setAgendadaMotorista] = useState<string>(""); // codigo do motorista pré-vinculado
+  const [agendadaMotorista, setAgendadaMotorista] = useState<string>(""); // codigo do motociclista pré-vinculado
   const [pagamento, setPagamento] = useState<Pagamento>("Dinheiro");
   const [desconto, setDesconto] = useState<string>("");
   const [extra, setExtra] = useState<string>("");
@@ -302,7 +302,7 @@ export function NovaCorridaDialog({
       return;
     }
     if (despacho === "Manual" && motoristasManuais.length === 0) {
-      toast.error("Selecione pelo menos um motorista.");
+      toast.error("Selecione pelo menos um motociclista.");
       return;
     }
     setSalvando(true);
@@ -375,9 +375,9 @@ export function NovaCorridaDialog({
         if (r.modo === "whatsapp") {
           setWhatsappOpen({ texto: gerarTextoWhatsApp(inserted.id), tel: whatsappCentral });
         } else if (r.ofertados === 0) {
-          toast.warning("Corrida criada, mas " + (r.motivo ?? "nenhum motorista disponível"));
+          toast.warning("Corrida criada, mas " + (r.motivo ?? "nenhum motociclista disponível"));
         } else {
-          toast.success(`Oferta enviada para ${r.ofertados} motorista(s)`);
+          toast.success(`Oferta enviada para ${r.ofertados} motociclista(s)`);
         }
       } catch (e: any) {
         toast.error("Erro ao ofertar: " + e.message);
@@ -568,7 +568,7 @@ export function NovaCorridaDialog({
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Automatico">Automático (top 5 + expande)</SelectItem>
-                <SelectItem value="Manual">Manual (escolher motoristas)</SelectItem>
+                <SelectItem value="Manual">Manual (escolher motociclistas)</SelectItem>
                 <SelectItem value="WhatsApp">WhatsApp (gerar mensagem)</SelectItem>
               </SelectContent>
             </Select>
@@ -583,7 +583,7 @@ export function NovaCorridaDialog({
               value={agendadaPara}
               onChange={(e) => setAgendadaPara(e.target.value)}
             />
-            <Label className="mt-2">Vincular motorista (opcional)</Label>
+            <Label className="mt-2">Vincular motociclista (opcional)</Label>
             <Select value={agendadaMotorista || "__none"} onValueChange={(v) => setAgendadaMotorista(v === "__none" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="Nenhum (lançar para todos no horário)" /></SelectTrigger>
               <SelectContent>
@@ -606,7 +606,7 @@ export function NovaCorridaDialog({
             <Label>Motoristas selecionados ({motoristasManuais.length})</Label>
             <div className="max-h-44 overflow-y-auto grid gap-1.5">
               {motoristas.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nenhum motorista cadastrado.</p>
+                <p className="text-sm text-muted-foreground">Nenhum motociclista cadastrado.</p>
               )}
               {motoristas.map((m) => (
                 <label key={m.codigo} className="flex items-center gap-2 text-sm cursor-pointer">
@@ -678,7 +678,7 @@ export function NovaCorridaDialog({
           <DialogHeader>
             <DialogTitle>Mensagem para WhatsApp</DialogTitle>
             <DialogDescription>
-              Copie o texto e cole no grupo dos motoristas ou no particular.
+              Copie o texto e cole no grupo dos motociclistas ou no particular.
             </DialogDescription>
           </DialogHeader>
           <Textarea value={whatsappOpen?.texto ?? ""} readOnly rows={10} className="font-mono text-xs" />

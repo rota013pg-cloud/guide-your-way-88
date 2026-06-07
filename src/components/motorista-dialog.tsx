@@ -106,8 +106,8 @@ export function MotoristaDialog({
     onSuccess: (res: any) => {
       toast.success(
         motorista
-          ? "Motorista atualizado"
-          : `Motorista ${res?.codigo} cadastrado. Senha: ${res?.senha}`,
+          ? "Motociclista atualizado"
+          : `Motociclista ${res?.codigo} cadastrado. Senha: ${res?.senha}`,
       );
       qc.invalidateQueries({ queryKey: ["motoristas"] });
       qc.invalidateQueries({ queryKey: ["preview-motorista"] });
@@ -121,7 +121,7 @@ export function MotoristaDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {motorista ? `Editar motorista ${motorista.codigo}` : `Novo motorista (${codigoUso})`}
+            {motorista ? `Editar motociclista ${motociclista.codigo}` : `Novo motociclista (${codigoUso})`}
           </DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="dados">
@@ -217,7 +217,7 @@ export function MotoristaDialog({
 
           <TabsContent value="docs" className="space-y-3 pt-3">
             <FileUploadField
-              label="Foto do motorista"
+              label="Foto do motociclista"
               value={form.foto ?? ""}
               onChange={set("foto")}
               pasta={codigoUso}

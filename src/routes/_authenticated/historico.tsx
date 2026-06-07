@@ -59,7 +59,7 @@ function HistoricoPage() {
   });
   const [ate, setAte] = useState(hojeISO());
   const [status, setStatus] = useState<string>("Todos");
-  const [motorista, setMotorista] = useState<string>("__all");
+  const [motociclista, setMotorista] = useState<string>("__all");
   const [cliente, setCliente] = useState<string>("");
   const [clienteAplicado, setClienteAplicado] = useState<string>("");
   const [exportando, setExportando] = useState(false);
@@ -81,7 +81,7 @@ function HistoricoPage() {
   const motoristaLabel = motorista === "__all"
     ? ""
     : (data?.motoristas.find((m) => m.codigo === motorista)
-        ? `${motorista} — ${data!.motoristas.find((m) => m.codigo === motorista)!.nome}`
+        ? `${motociclista} — ${data!.motociclistas.find((m) => m.codigo === motociclista)!.nome}`
         : motorista);
 
   const exportarPdf = async () => {
@@ -150,7 +150,7 @@ function HistoricoPage() {
             </Select>
           </div>
           <div>
-            <Label className="text-xs">Motorista</Label>
+            <Label className="text-xs">Motociclista</Label>
             <Select value={motorista} onValueChange={setMotorista}>
               <SelectTrigger className="w-52"><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>
@@ -213,7 +213,7 @@ function HistoricoPage() {
                 <TableHead className="w-[80px]">#</TableHead>
                 <TableHead>Criada</TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Motorista</TableHead>
+                <TableHead>Motociclista</TableHead>
                 <TableHead>Trajeto</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Valor</TableHead>

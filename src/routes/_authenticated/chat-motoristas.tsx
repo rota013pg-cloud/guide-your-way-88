@@ -25,7 +25,7 @@ import { Send, MessageSquare, RefreshCw, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chat-motoristas")({
-  head: () => ({ meta: [{ title: "Chat motoristas — Rota013" }] }),
+  head: () => ({ meta: [{ title: "Chat motociclistas — Rota013" }] }),
   component: ChatMotoristasPage,
 });
 
@@ -43,7 +43,7 @@ function ChatMotoristasPage() {
   const [apagando, setApagando] = useState<number | null>(null);
   const [apagandoConversa, setApagandoConversa] = useState(false);
   const [novaAberto, setNovaAberto] = useState(false);
-  const [motoristas, setMotoristas] = useState<Array<{ codigo: string; nome: string; status: string | null }>>([]);
+  const [motociclistas, setMotoristas] = useState<Array<{ codigo: string; nome: string; status: string | null }>>([]);
   const [buscaNova, setBuscaNova] = useState("");
   const fimRef = useRef<HTMLDivElement>(null);
 
@@ -124,7 +124,7 @@ function ChatMotoristasPage() {
 
   const apagarConversa = async () => {
     if (!selecionado) return;
-    if (!confirm("Tem certeza que deseja apagar TODA a conversa com este motorista? Esta ação não pode ser desfeita.")) return;
+    if (!confirm("Tem certeza que deseja apagar TODA a conversa com este motociclista? Esta ação não pode ser desfeita.")) return;
     setApagandoConversa(true);
     try {
       await adminApagarConversa({ data: { motoristaCodigo: selecionado } });
@@ -145,7 +145,7 @@ function ChatMotoristasPage() {
     <div className="p-4 lg:p-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageSquare className="h-6 w-6" /> Chat com motoristas
+          <MessageSquare className="h-6 w-6" /> Chat com motociclistas
         </h1>
         <div className="flex items-center gap-2">
           <Dialog open={novaAberto} onOpenChange={(o) => {
@@ -153,7 +153,7 @@ function ChatMotoristasPage() {
             if (o && motoristas.length === 0) {
               listarMotoristas()
                 .then((mots) => setMotoristas(mots.map((m: any) => ({ codigo: m.codigo, nome: m.nome, status: m.status }))))
-                .catch((e) => { if (!isAuthError(e)) toast.error("Erro ao carregar motoristas"); });
+                .catch((e) => { if (!isAuthError(e)) toast.error("Erro ao carregar motociclistas"); });
             }
           }}>
             <DialogTrigger asChild>
@@ -163,10 +163,10 @@ function ChatMotoristasPage() {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Iniciar conversa com motorista</DialogTitle>
+                <DialogTitle>Iniciar conversa com motociclista</DialogTitle>
               </DialogHeader>
               <Input
-                placeholder="Buscar motorista..."
+                placeholder="Buscar motociclista..."
                 value={buscaNova}
                 onChange={(e) => setBuscaNova(e.target.value)}
               />
@@ -207,7 +207,7 @@ function ChatMotoristasPage() {
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 h-[calc(100vh-160px)]">
         <Card className="p-3 flex flex-col overflow-hidden">
           <Input
-            placeholder="Buscar motorista..."
+            placeholder="Buscar motociclista..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             className="mb-3"
@@ -286,7 +286,7 @@ function ChatMotoristasPage() {
                       >
                         <div className="flex items-center gap-2 mb-0.5">
                           <span className="text-[10px] opacity-70 flex-1">
-                            {m.autor_nome ?? (meu ? "Central" : "Motorista")}
+                            {m.autor_nome ?? (meu ? "Central" : "Motociclista")}
                           </span>
                           {isAdmin && (
                             <button

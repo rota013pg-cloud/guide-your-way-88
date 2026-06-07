@@ -42,9 +42,9 @@ type Item = { title: string; url: string; icon: typeof LayoutDashboard; adminOnl
 const operacional: Item[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Corridas", url: "/corridas", icon: ListChecks },
-  { title: "Motoristas", url: "/motoristas", icon: Users },
+  { title: "Motociclistas", url: "/motoristas", icon: Users },
   { title: "Clientes", url: "/clientes", icon: UserSquare },
-  { title: "Chat motoristas", url: "/chat-motoristas", icon: MessageSquare },
+  { title: "Chat motociclistas", url: "/chat-motoristas", icon: MessageSquare },
   { title: "Mural", url: "/mural", icon: StickyNote },
 ];
 

@@ -120,7 +120,7 @@ export function ClienteDialog({
             <Input
               value={indicacao}
               onChange={(e) => setIndicacao(e.target.value)}
-              placeholder="Código do motorista ou onde nos conheceu"
+              placeholder="Código do motociclista ou onde nos conheceu"
               maxLength={120}
             />
           </div>

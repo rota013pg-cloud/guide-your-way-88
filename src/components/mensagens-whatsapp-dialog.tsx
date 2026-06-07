@@ -135,11 +135,11 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
     const linhas = [
       `Olá ${corrida.cliente ?? ""}! ✅ Sua corrida foi confirmada.`,
       ``,
-      `👤 Motorista: *${motorista.nome}* (${motorista.codigo})`,
+      `👤 Motociclista: *${motociclista.nome}* (${motociclista.codigo})`,
     ];
     const veic = [motorista.moto, motorista.cor].filter(Boolean).join(" ");
     if (veic) linhas.push(`🚗 Veículo: ${veic}`);
-    if (motorista.placa) linhas.push(`🔢 Placa: ${motorista.placa}`);
+    if (motorista.placa) linhas.push(`🔢 Placa: ${motociclista.placa}`);
     linhas.push(``, `📍 Origem: ${corrida.origem}`);
     if (corrida.destino) linhas.push(`🏁 Destino: ${corrida.destino}`);
     linhas.push(`💰 Valor: ${brl(corrida.valor_final)}`);
@@ -170,14 +170,14 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
         <DialogHeader>
           <DialogTitle>Mensagens WhatsApp — Corrida #{corrida.id}</DialogTitle>
           <DialogDescription>
-            Todo contato é intermediado pela central — motorista e cliente não trocam telefones.
+            Todo contato é intermediado pela central — motociclista e cliente não trocam telefones.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="grupo">
           <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="grupo">Grupo</TabsTrigger>
-            <TabsTrigger value="motorista">Motorista</TabsTrigger>
+            <TabsTrigger value="motorista">Motociclista</TabsTrigger>
             <TabsTrigger value="cliente">Cliente</TabsTrigger>
           </TabsList>
 
@@ -195,7 +195,7 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
 
           <TabsContent value="motorista" className="space-y-2">
             <div className="grid gap-1.5">
-              <Label className="text-xs">ID do motorista</Label>
+              <Label className="text-xs">ID do motociclista</Label>
               <Input
                 value={codigoMot}
                 onChange={(e) => setCodigoMot(e.target.value.toUpperCase())}
@@ -203,7 +203,7 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
               />
               {buscando && <p className="text-xs text-muted-foreground">Buscando…</p>}
               {!buscando && codigoMot && !motorista && (
-                <p className="text-xs text-destructive">Motorista não encontrado.</p>
+                <p className="text-xs text-destructive">Motociclista não encontrado.</p>
               )}
               {motorista && (
                 <p className="text-xs text-muted-foreground">{motorista.nome}</p>
@@ -222,7 +222,7 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
 
           <TabsContent value="cliente" className="space-y-2">
             <div className="grid gap-1.5">
-              <Label className="text-xs">ID do motorista (para preencher os dados)</Label>
+              <Label className="text-xs">ID do motociclista (para preencher os dados)</Label>
               <Input
                 value={codigoMot}
                 onChange={(e) => setCodigoMot(e.target.value.toUpperCase())}
@@ -230,12 +230,12 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
               />
               {motorista && (
                 <p className="text-xs text-muted-foreground">
-                  {motorista.nome} · {motorista.moto || ""} {motorista.placa ? `· ${motorista.placa}` : ""}
+                  {motorista.nome} · {motorista.moto || ""} {motorista.placa ? `· ${motociclista.placa}` : ""}
                 </p>
               )}
             </div>
             <Textarea
-              value={motorista ? msgCliente : "Informe o ID do motorista acima para gerar a mensagem."}
+              value={motorista ? msgCliente : "Informe o ID do motociclista acima para gerar a mensagem."}
               readOnly
               rows={11}
               className="font-mono text-xs"

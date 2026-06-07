@@ -201,7 +201,7 @@ function FinanceiroPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[80px]">Código</TableHead>
-                <TableHead>Motorista</TableHead>
+                <TableHead>Motociclista</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Diária</TableHead>
                 <TableHead>Créditos</TableHead>
@@ -219,7 +219,7 @@ function FinanceiroPage() {
               {!isLoading && linhasFiltradas.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    {busca.trim() ? "Nenhum motorista encontrado." : "Nenhum motorista cadastrado."}
+                    {busca.trim() ? "Nenhum motociclista encontrado." : "Nenhum motociclista cadastrado."}
                   </TableCell>
                 </TableRow>
               )}
@@ -495,7 +495,7 @@ function CobrancasAutomaticasPanel() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cobrancas"] });
       qc.invalidateQueries({ queryKey: ["financeiro"] });
-      toast.success("Motorista liberado ✓");
+      toast.success("Motociclista liberado ✓");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -504,7 +504,7 @@ function CobrancasAutomaticasPanel() {
     mutationFn: (codigo: string) => bloquearFn({ data: { motoristaCodigo: codigo } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cobrancas"] });
-      toast.success("Motorista bloqueado");
+      toast.success("Motociclista bloqueado");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -521,7 +521,7 @@ function CobrancasAutomaticasPanel() {
         <div>
           <h2 className="font-semibold">Cobranças automáticas de hoje</h2>
           <p className="text-xs text-muted-foreground">
-            App do motorista exibe aviso ao atingir o valor da diária e bloqueia ao passar do limite configurado.
+            App do motociclista exibe aviso ao atingir o valor da diária e bloqueia ao passar do limite configurado.
           </p>
         </div>
         <Badge variant="outline">{ativos.length} ativa(s)</Badge>
@@ -530,7 +530,7 @@ function CobrancasAutomaticasPanel() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Motorista</TableHead>
+              <TableHead className="w-[100px]">Motociclista</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Faturado hoje</TableHead>
               <TableHead>Diária</TableHead>

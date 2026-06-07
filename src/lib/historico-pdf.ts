@@ -117,7 +117,7 @@ export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8
   // Filtros aplicados
   const partes = [
     `Status: ${input.filtros.status || "Todos"}`,
-    `Motociclista: ${input.filtros.motociclista || "Todos"}`,
+    `Motociclista: ${input.filtros.motorista || "Todos"}`,
     `Cliente: ${input.filtros.cliente || "Todos"}`,
   ];
   t("Filtros — " + partes.join(" · "), margin, y, { size: 9, color: muted });
@@ -173,7 +173,7 @@ export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8
     t(fit(fmtData(r.criado_em), COL.data.w), COL.data.x, y);
     t(fit(r.cliente ?? "—", COL.cli.w), COL.cli.x, y);
     const mot = r.motorista
-      ? `${r.motociclista}${r.motorista_codigo ? ` (${r.motorista_codigo})` : ""}`
+      ? `${r.motorista}${r.motorista_codigo ? ` (${r.motorista_codigo})` : ""}`
       : "—";
     t(fit(mot, COL.mot.w), COL.mot.x, y);
     const rota = `${r.origem}${r.destino ? ` → ${r.destino}` : ""}`;

@@ -81,7 +81,7 @@ function HistoricoPage() {
   const motoristaLabel = motorista === "__all"
     ? ""
     : (data?.motoristas.find((m) => m.codigo === motorista)
-        ? `${motociclista} — ${data!.motociclistas.find((m) => m.codigo === motociclista)!.nome}`
+        ? `${motorista} — ${data!.motoristas.find((m) => m.codigo === motorista)!.nome}`
         : motorista);
 
   const exportarPdf = async () => {

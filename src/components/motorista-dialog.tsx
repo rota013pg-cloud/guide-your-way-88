@@ -121,7 +121,7 @@ export function MotoristaDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {motorista ? `Editar motociclista ${motociclista.codigo}` : `Novo motociclista (${codigoUso})`}
+            {motorista ? `Editar motociclista ${motorista.codigo}` : `Novo motociclista (${codigoUso})`}
           </DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="dados">

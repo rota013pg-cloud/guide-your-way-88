@@ -541,7 +541,7 @@ export function MarcarDiariaComExtrasDialog({
         <DialogHeader>
           <DialogTitle>Marcar diária paga</DialogTitle>
           <DialogDescription>
-            {motorista ? `${motociclista.codigo} — ${motociclista.nome}` : ""}
+            {motorista ? `${motorista.codigo} — ${motorista.nome}` : ""}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">

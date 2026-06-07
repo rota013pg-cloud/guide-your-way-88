@@ -135,11 +135,11 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
     const linhas = [
       `Olá ${corrida.cliente ?? ""}! ✅ Sua corrida foi confirmada.`,
       ``,
-      `👤 Motociclista: *${motociclista.nome}* (${motociclista.codigo})`,
+      `👤 Motociclista: *${motorista.nome}* (${motorista.codigo})`,
     ];
     const veic = [motorista.moto, motorista.cor].filter(Boolean).join(" ");
     if (veic) linhas.push(`🚗 Veículo: ${veic}`);
-    if (motorista.placa) linhas.push(`🔢 Placa: ${motociclista.placa}`);
+    if (motorista.placa) linhas.push(`🔢 Placa: ${motorista.placa}`);
     linhas.push(``, `📍 Origem: ${corrida.origem}`);
     if (corrida.destino) linhas.push(`🏁 Destino: ${corrida.destino}`);
     linhas.push(`💰 Valor: ${brl(corrida.valor_final)}`);
@@ -230,7 +230,7 @@ export function MensagensWhatsAppDialog({ open, onOpenChange, corrida }: Props) 
               />
               {motorista && (
                 <p className="text-xs text-muted-foreground">
-                  {motorista.nome} · {motorista.moto || ""} {motorista.placa ? `· ${motociclista.placa}` : ""}
+                  {motorista.nome} · {motorista.moto || ""} {motorista.placa ? `· ${motorista.placa}` : ""}
                 </p>
               )}
             </div>

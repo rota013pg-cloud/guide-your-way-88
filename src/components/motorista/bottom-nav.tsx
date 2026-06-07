@@ -357,7 +357,7 @@ function ChatTab({ codigo, token }: { codigo: string; token: string }) {
       <div className="moto-chat-lista">
         {msgs.length === 0 && <div className="moto-empty">Nenhuma mensagem ainda. Envie a primeira!</div>}
         {msgs.map((m) => (
-          <div key={m.id} className={`moto-msg ${m.autor === "motorista" ? "self" : "op"}`}>
+          <div key={m.id} className={`moto-msg ${m.autor === "motociclista" ? "self" : "op"}`}>
             <div className="moto-msg-autor">{m.autor === "motorista" ? "Você" : (m.autor_nome ?? "Central")}</div>
             <div className="moto-msg-texto">{m.texto}</div>
           </div>

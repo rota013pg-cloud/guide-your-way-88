@@ -28,7 +28,7 @@ export const Route = createFileRoute("/motorista")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Rota 013 — Motorista" },
+      { title: "Rota 013 — Motociclista" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" },
       { name: "theme-color", content: "#f7c600" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -133,7 +133,7 @@ function MotoristaApp() {
   const gpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const ofertaTimerRef = useRef<NodeJS.Timeout | null>(null);
   const ultimoStatusCobrancaRef = useRef<string | null>(null);
-  // Intenção do motorista: ficou online por escolha própria? Usado para
+  // Intenção do motociclista: ficou online por escolha própria? Usado para
   // restaurar status ao voltar do background (visibilitychange/pagehide).
   const intencaoOnlineRef = useRef<boolean>(false);
   const forcadoOfflineBgRef = useRef<boolean>(false);
@@ -729,7 +729,7 @@ function LoginTela({
         <div className="login-logo">
           <LogoRota013 className="text-[3.4rem]" />
         </div>
-        <p className="login-sub">App do Motorista</p>
+        <p className="login-sub">App do Motociclista</p>
         <div className="form-group">
           <label>Código</label>
           <input

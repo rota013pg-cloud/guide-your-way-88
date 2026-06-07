@@ -102,7 +102,7 @@ export function CobrancasExtrasPanel({ motoristas }: { motoristas: Motorista[] }
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[90px]">Motorista</TableHead>
+                <TableHead className="w-[90px]">Motociclista</TableHead>
                 <TableHead>Descrição</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead className="text-right">Total</TableHead>
@@ -252,12 +252,12 @@ function NovaCobrancaDialog({
         <DialogHeader>
           <DialogTitle>Nova cobrança extra</DialogTitle>
           <DialogDescription>
-            Item a ser cobrado do motorista (camiseta, manutenção, item p/ cliente, etc).
+            Item a ser cobrado do motociclista (camiseta, manutenção, item p/ cliente, etc).
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <Label className="text-xs">Motorista</Label>
+            <Label className="text-xs">Motociclista</Label>
             <Select value={form.motoristaCodigo} onValueChange={(v) => setForm((f) => ({ ...f, motoristaCodigo: v }))}>
               <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
               <SelectContent>

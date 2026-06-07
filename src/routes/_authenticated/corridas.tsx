@@ -50,7 +50,7 @@ function CorridasPage() {
     try {
       await lancarFn({ data: { corridaId: id } });
       await ofertasFn({ data: { corridaId: id } }).catch(() => {});
-      toast.success("Corrida lançada para os motoristas.");
+      toast.success("Corrida lançada para os motociclistas.");
       qc.invalidateQueries({ queryKey: ["corridas-recentes"] });
       setAberta(null);
     } catch (e: any) {
@@ -59,7 +59,7 @@ function CorridasPage() {
   };
 
   const handleReofertar = async (id: number) => {
-    const resp = window.prompt("Oferecer novamente para quantos motoristas mais próximos?", "5");
+    const resp = window.prompt("Oferecer novamente para quantos motociclistas mais próximos?", "5");
     if (resp === null) return;
     const qtd = parseInt(resp, 10);
     if (!Number.isFinite(qtd) || qtd < 1 || qtd > 50) {
@@ -68,7 +68,7 @@ function CorridasPage() {
     }
     try {
       const r: any = await ofertasFn({ data: { corridaId: id, quantidade: qtd, reofertar: true } });
-      toast.success(`Reofertada para ${r?.ofertados ?? 0} motorista(s).`);
+      toast.success(`Reofertada para ${r?.ofertados ?? 0} motociclista(s).`);
       qc.invalidateQueries({ queryKey: ["corridas-recentes"] });
     } catch (e: any) {
       toast.error(e?.message ?? "Falha ao reofertar.");
@@ -195,7 +195,7 @@ function CorridasPage() {
                 </div>
                 {aberta.motorista && (
                   <div>
-                    <div className="text-xs text-muted-foreground">Motorista</div>
+                    <div className="text-xs text-muted-foreground">Motociclista</div>
                     <div>{aberta.motorista} <span className="font-mono text-xs">({aberta.motorista_codigo})</span></div>
                   </div>
                 )}
@@ -214,7 +214,7 @@ function CorridasPage() {
                       <Rocket className="h-4 w-4 mr-2" /> Oferecer novamente
                     </Button>
                     <p className="text-xs text-muted-foreground mt-1 text-center">
-                      Ainda não aceita — escolha quantos motoristas mais próximos receberão a oferta.
+                      Ainda não aceita — escolha quantos motociclistas mais próximos receberão a oferta.
                     </p>
                   </div>
                 )}

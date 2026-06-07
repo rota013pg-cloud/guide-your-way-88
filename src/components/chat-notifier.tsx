@@ -140,7 +140,7 @@ export function ChatNotifier() {
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between px-3 py-2 border-b border-border">
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <MessageSquare className="h-4 w-4" /> Mensagens dos motoristas
+            <MessageSquare className="h-4 w-4" /> Mensagens dos motociclistas
           </div>
           {total > 0 && (
             <span className="text-[10px] text-muted-foreground">{total} não lida{total > 1 ? "s" : ""}</span>

@@ -69,7 +69,7 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
         ? desbloquearFn({ data: { codigo: motorista.codigo } })
         : bloquearFn({ data: { codigo: motorista.codigo, motivo } }),
     onSuccess: () => {
-      toast.success(bloqueado ? "Acesso liberado" : "Motorista bloqueado");
+      toast.success(bloqueado ? "Acesso liberado" : "Motociclista bloqueado");
       qc.invalidateQueries({ queryKey: ["motoristas"] });
       setMotivo("");
     },
@@ -79,7 +79,7 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
   const resetDevMut = useMutation({
     mutationFn: () => resetarDispositivoFn({ data: { codigo: motorista.codigo } }),
     onSuccess: () => {
-      toast.success("Dispositivo liberado. O motorista pode entrar em outro aparelho.");
+      toast.success("Dispositivo liberado. O motociclista pode entrar em outro aparelho.");
       qc.invalidateQueries({ queryKey: ["motoristas"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -152,7 +152,7 @@ export function MotoristaAdminPanel({ open, onOpenChange, motorista }: Props) {
           <div className="space-y-2 border-t pt-3">
             <Label className="text-xs">Dispositivo vinculado</Label>
             <p className="text-xs text-muted-foreground">
-              Use quando o motorista trocou de aparelho e está vendo "logado em outro dispositivo".
+              Use quando o motociclista trocou de aparelho e está vendo "logado em outro dispositivo".
               Encerra a sessão atual e libera o login em um novo aparelho.
             </p>
             <Button

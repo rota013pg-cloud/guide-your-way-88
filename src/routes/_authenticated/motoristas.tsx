@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/motoristas")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Motoristas — Rota 013" }] }),
+  head: () => ({ meta: [{ title: "Motociclistas — Rota 013" }] }),
   component: MotoristasPage,
 });
 
@@ -40,7 +40,7 @@ function MotoristasPage() {
   const delMut = useMutation({
     mutationFn: (codigo: string) => excluir({ data: { codigo } }),
     onSuccess: () => {
-      toast.success("Motorista removido");
+      toast.success("Motociclista removido");
       qc.invalidateQueries({ queryKey: ["motoristas"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -50,7 +50,7 @@ function MotoristasPage() {
     mutationFn: ({ codigo, motivo }: { codigo: string; motivo: string }) =>
       pausarFn({ data: { codigo, motivo } }),
     onSuccess: () => {
-      toast.success("Motorista pausado — não receberá novas corridas");
+      toast.success("Motociclista pausado — não receberá novas corridas");
       qc.invalidateQueries({ queryKey: ["motoristas"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -59,7 +59,7 @@ function MotoristasPage() {
   const retomarMut = useMutation({
     mutationFn: (codigo: string) => retomarFn({ data: { codigo } }),
     onSuccess: () => {
-      toast.success("Motorista retomado — voltará a receber corridas");
+      toast.success("Motociclista retomado — voltará a receber corridas");
       qc.invalidateQueries({ queryKey: ["motoristas"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -74,11 +74,11 @@ function MotoristasPage() {
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold">Motoristas</h1>
+          <h1 className="text-2xl font-bold">Motociclistas</h1>
           <p className="text-sm text-muted-foreground">{motoristas.length} cadastrados</p>
         </div>
         <Button onClick={() => { setEditando(null); setOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Novo motorista
+          <Plus className="h-4 w-4 mr-2" /> Novo motociclista
         </Button>
       </div>
 

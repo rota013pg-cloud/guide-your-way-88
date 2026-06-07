@@ -80,7 +80,7 @@ function MensagensPage() {
   const add = () => {
     setLista((l) => [
       ...l,
-      { id: novoId(), titulo: "Novo template", texto: "Olá {cliente}, seu motorista é {motorista}." },
+      { id: novoId(), titulo: "Novo template", texto: "Olá {cliente}, seu motociclista é {motorista}." },
     ]);
     setDirty(true);
   };

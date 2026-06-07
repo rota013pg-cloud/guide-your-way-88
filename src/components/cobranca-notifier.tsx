@@ -155,7 +155,7 @@ export function CobrancaNotifier() {
         <div className="max-h-80 overflow-y-auto">
           {total === 0 ? (
             <div className="px-3 py-8 text-center text-xs text-muted-foreground">
-              Nenhum motorista aguardando confirmação.
+              Nenhum motociclista aguardando confirmação.
             </div>
           ) : (
             travados.map((c) => (

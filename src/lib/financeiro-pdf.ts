@@ -136,7 +136,7 @@ export async function gerarPdfFinanceiro(input: RelatorioInput): Promise<Uint8Ar
   y -= 70;
 
   // ─── Ranking ───
-  texto("Ranking por motorista", margin, y, { size: 12, bold: true });
+  texto("Ranking por motociclista", margin, y, { size: 12, bold: true });
   y -= 16;
   page.drawLine({
     start: { x: margin, y },

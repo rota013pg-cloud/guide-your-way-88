@@ -45,7 +45,7 @@ const SECOES: Secao[] = [
     id: "visao-geral",
     titulo: "Visão geral do sistema",
     icon: BookOpen,
-    resumo: "Como o painel se conecta com o app do motorista e o fluxo geral.",
+    resumo: "Como o painel se conecta com o app do motociclista e o fluxo geral.",
     itens: [
       {
         q: "O que é o Rota 013?",
@@ -53,10 +53,10 @@ const SECOES: Secao[] = [
           <>
             É a central de operações da plataforma. O <b>Painel do Operador</b> é
             onde corridas são criadas, despachadas e acompanhadas em tempo real.
-            O <b>App do Motorista</b> (rota <code>/motorista</code>) recebe as
+            O <b>App do Motociclista</b> (rota <code>/motorista</code>) recebe as
             ofertas, mostra o trajeto e atualiza o status de cada corrida.
             Tudo é sincronizado em tempo real via banco de dados — quando você
-            atualiza algo no painel, o motorista vê instantaneamente, e
+            atualiza algo no painel, o motociclista vê instantaneamente, e
             vice-versa.
           </>
         ),
@@ -66,11 +66,11 @@ const SECOES: Secao[] = [
         a: (
           <ol className="list-decimal pl-5 space-y-1">
             <li>Operador cria a corrida em <b>Dashboard → Nova Corrida</b>.</li>
-            <li>Sistema dispara ofertas para motoristas elegíveis (modo Automático ou Manual).</li>
-            <li>Motorista aceita no app → status muda para <b>Aceita</b>.</li>
-            <li>Motorista atualiza progresso: <b>A caminho → Chegou → Em viagem → Finalizada</b>.</li>
+            <li>Sistema dispara ofertas para motociclistas elegíveis (modo Automático ou Manual).</li>
+            <li>Motociclista aceita no app → status muda para <b>Aceita</b>.</li>
+            <li>Motociclista atualiza progresso: <b>A caminho → Chegou → Em viagem → Finalizada</b>.</li>
             <li>Operador vê tudo no Dashboard e em <b>Corridas</b>.</li>
-            <li>No fim do dia, o financeiro registra a diária do motorista.</li>
+            <li>No fim do dia, o financeiro registra a diária do motociclista.</li>
           </ol>
         ),
       },
@@ -79,7 +79,7 @@ const SECOES: Secao[] = [
         a: (
           <ul className="list-disc pl-5 space-y-1">
             <li><b>Administrador:</b> acesso total. Pode gerenciar usuários, tarifas, configurações e cobertura.</li>
-            <li><b>Operador:</b> opera o dia a dia — corridas, motoristas, clientes, financeiro, chat e histórico.</li>
+            <li><b>Operador:</b> opera o dia a dia — corridas, motociclistas, clientes, financeiro, chat e histórico.</li>
           </ul>
         ),
       },
@@ -95,10 +95,10 @@ const SECOES: Secao[] = [
         q: "O que aparece no Dashboard?",
         a: (
           <ul className="list-disc pl-5 space-y-1">
-            <li><b>Mapa ao vivo:</b> posição dos motoristas online e corridas ativas.</li>
-            <li><b>Cards de resumo:</b> corridas em andamento, motoristas disponíveis, pendências.</li>
+            <li><b>Mapa ao vivo:</b> posição dos motociclistas online e corridas ativas.</li>
+            <li><b>Cards de resumo:</b> corridas em andamento, motociclistas disponíveis, pendências.</li>
             <li><b>Botão Nova Corrida:</b> abre o modal de cadastro.</li>
-            <li><b>Alertas:</b> motoristas pedindo liberação de pagamento, corridas sem motorista, etc.</li>
+            <li><b>Alertas:</b> motociclistas pedindo liberação de pagamento, corridas sem motociclista, etc.</li>
           </ul>
         ),
       },
@@ -112,8 +112,8 @@ const SECOES: Secao[] = [
             <li>Selecione a <b>tarifa</b> (PG &gt; PG, PG &gt; SV, etc.) — o valor é calculado automaticamente.</li>
             <li>Ajuste <b>desconto</b> ou <b>cobrança adicional</b> se necessário.</li>
             <li>Escolha <b>forma de pagamento</b>.</li>
-            <li>Escolha o modo de despacho: <b>Automático</b> (sistema oferece) ou <b>Manual</b> (você escolhe o motorista).</li>
-            <li>Confirme — a corrida vai para "Aguardando motorista".</li>
+            <li>Escolha o modo de despacho: <b>Automático</b> (sistema oferece) ou <b>Manual</b> (você escolhe o motociclista).</li>
+            <li>Confirme — a corrida vai para "Aguardando motociclista".</li>
           </ol>
         ),
       },
@@ -121,12 +121,12 @@ const SECOES: Secao[] = [
         q: "Diferença entre modo Automático e Manual",
         a: (
           <>
-            <b>Automático:</b> o sistema oferta para todos os motoristas elegíveis
+            <b>Automático:</b> o sistema oferta para todos os motociclistas elegíveis
             (online, sem corrida em aberto e não pausados). O primeiro a aceitar
             fica com a corrida.
             <br />
-            <b>Manual:</b> você escolhe um motorista específico — só ele recebe a
-            oferta. Útil para clientes que pedem um motorista de preferência.
+            <b>Manual:</b> você escolhe um motociclista específico — só ele recebe a
+            oferta. Útil para clientes que pedem um motociclista de preferência.
           </>
         ),
       },
@@ -142,24 +142,24 @@ const SECOES: Secao[] = [
         q: "Status possíveis de uma corrida",
         a: (
           <ul className="list-disc pl-5 space-y-1">
-            <li><Badge variant="secondary">Aguardando</Badge> — criada, sem motorista ainda.</li>
-            <li><Badge>Aceita</Badge> — motorista aceitou, indo buscar o cliente.</li>
-            <li><Badge>A caminho</Badge> — motorista a caminho da origem.</li>
-            <li><Badge>Chegou</Badge> — motorista no local da coleta.</li>
+            <li><Badge variant="secondary">Aguardando</Badge> — criada, sem motociclista ainda.</li>
+            <li><Badge>Aceita</Badge> — motociclista aceitou, indo buscar o cliente.</li>
+            <li><Badge>A caminho</Badge> — motociclista a caminho da origem.</li>
+            <li><Badge>Chegou</Badge> — motociclista no local da coleta.</li>
             <li><Badge>Em viagem</Badge> — cliente a bordo.</li>
             <li><Badge>Parada</Badge> — parada técnica solicitada pelo cliente.</li>
             <li><Badge variant="outline">Finalizada</Badge> — concluída com sucesso.</li>
-            <li><Badge variant="destructive">Cancelada</Badge> — cancelada por operador, motorista ou cliente.</li>
+            <li><Badge variant="destructive">Cancelada</Badge> — cancelada por operador, motociclista ou cliente.</li>
           </ul>
         ),
       },
       {
-        q: "Como abrir a navegação no Waze para o motorista?",
+        q: "Como abrir a navegação no Waze para o motociclista?",
         a: (
           <>
             Cada card de corrida tem um botão de Waze que abre o trajeto. Ao
             usá-lo, o status da corrida avança automaticamente, sinalizando que
-            o motorista está em movimento.
+            o motociclista está em movimento.
           </>
         ),
       },
@@ -168,16 +168,16 @@ const SECOES: Secao[] = [
         a: (
           <>
             Use o botão <b>Cancelar</b> no card. Informe o motivo (cliente
-            desistiu, motorista não localizado, endereço errado). Esse registro
+            desistiu, motociclista não localizado, endereço errado). Esse registro
             entra no histórico e ajuda a identificar padrões.
           </>
         ),
       },
       {
-        q: "Por que um motorista não recebe nova oferta?",
+        q: "Por que um motociclista não recebe nova oferta?",
         a: (
           <ul className="list-disc pl-5 space-y-1">
-            <li>Está <b>pausado</b> (veja seção Motoristas).</li>
+            <li>Está <b>pausado</b> (veja seção Motociclistas).</li>
             <li>Está <b>offline</b> (app fechado/sem conexão).</li>
             <li>Já tem corrida em andamento — só recebe nova oferta após finalizar a atual.</li>
             <li>No modo Manual, ele não foi o escolhido.</li>
@@ -188,23 +188,23 @@ const SECOES: Secao[] = [
   },
   {
     id: "motoristas",
-    titulo: "Motoristas",
+    titulo: "Motociclistas",
     icon: Users,
     resumo: "Cadastro, status, pausa/retomada e documentos.",
     itens: [
       {
-        q: "Cadastrar um novo motorista",
+        q: "Cadastrar um novo motociclista",
         a: (
           <ol className="list-decimal pl-5 space-y-1">
-            <li>Clique em <b>Novo Motorista</b>.</li>
+            <li>Clique em <b>Novo Motociclista</b>.</li>
             <li>Preencha nome, telefone (com DDD), moto, placa e foto.</li>
             <li>O sistema gera o código (ex.: M0104).</li>
-            <li>O motorista entra no app usando o telefone cadastrado e o PIN.</li>
+            <li>O motociclista entra no app usando o telefone cadastrado e o PIN.</li>
           </ol>
         ),
       },
       {
-        q: "Status do motorista",
+        q: "Status do motociclista",
         a: (
           <ul className="list-disc pl-5 space-y-1">
             <li><b>Online/Disponível:</b> recebendo ofertas.</li>
@@ -215,19 +215,19 @@ const SECOES: Secao[] = [
         ),
       },
       {
-        q: "Pausar / retomar um motorista",
+        q: "Pausar / retomar um motociclista",
         a: (
           <>
             Use os botões <b>Pausar</b> (âmbar) e <b>Retomar</b> (verde) no card.
             Ao pausar, opcionalmente registre um motivo (ex.: "almoço",
-            "advertência", "documento vencido"). O motorista <b>não vê</b> que
+            "advertência", "documento vencido"). O motociclista <b>não vê</b> que
             está pausado — ele simplesmente para de receber novas ofertas. Use
             isso em vez de mandar ele "ficar offline" quando quiser controle.
           </>
         ),
       },
       {
-        q: "Excluir / desativar motorista",
+        q: "Excluir / desativar motociclista",
         a: (
           <>
             Para um afastamento curto, prefira <b>Pausar</b>. Exclusão definitiva
@@ -276,10 +276,10 @@ const SECOES: Secao[] = [
         q: "Como funciona a diária?",
         a: (
           <>
-            Cada motorista paga uma <b>diária fixa</b> (valor configurado em
+            Cada motociclista paga uma <b>diária fixa</b> (valor configurado em
             Configurações). O dia operacional começa às <b>6h da manhã</b> e vai
             até as 6h do dia seguinte. Use o campo de busca por código/nome para
-            achar o motorista rápido. Clique em <b>Marcar Pago</b> para
+            achar o motociclista rápido. Clique em <b>Marcar Pago</b> para
             registrar.
           </>
         ),
@@ -289,13 +289,13 @@ const SECOES: Secao[] = [
         a: (
           <>
             No painel <b>Cobranças Extras</b> você cria uma cobrança vinculada
-            ao motorista. Exemplo: camiseta R$50 cobrada R$10 por dia.
+            ao motociclista. Exemplo: camiseta R$50 cobrada R$10 por dia.
             <ul className="list-disc pl-5 mt-2 space-y-1">
               <li><b>Categorias:</b> Uniforme/Camiseta, Itens cliente (toca, capa), Manutenção, Outro.</li>
               <li><b>Forma de cobrança:</b> por dia, fixa ou avulsa.</li>
               <li>Ao marcar a diária, um modal mostra extras pendentes e sugere o valor do dia. Você pode editar.</li>
               <li>Quando o saldo zera, a cobrança vira <b>quitada</b> automaticamente.</li>
-              <li>O motorista vê o saldo devedor e o extrato no app dele, na aba Pagamentos.</li>
+              <li>O motociclista vê o saldo devedor e o extrato no app dele, na aba Pagamentos.</li>
             </ul>
           </>
         ),
@@ -315,7 +315,7 @@ const SECOES: Secao[] = [
         a: (
           <>
             Use os atalhos (Hoje, 7 dias, 30 dias, Mês) ou intervalo
-            personalizado. Filtre por motorista e tipo. O botão <b>Exportar PDF</b>{" "}
+            personalizado. Filtre por motociclista e tipo. O botão <b>Exportar PDF</b>{" "}
             gera um relatório imprimível.
           </>
         ),
@@ -359,9 +359,9 @@ const SECOES: Secao[] = [
         q: "O que entra no histórico?",
         a: (
           <>
-            Todas as corridas finalizadas e canceladas, com cliente, motorista,
+            Todas as corridas finalizadas e canceladas, com cliente, motociclista,
             trajeto, valor, forma de pagamento e timeline de status. Use
-            filtros por data, motorista, cliente ou tipo. Exportável em PDF.
+            filtros por data, motociclista, cliente ou tipo. Exportável em PDF.
           </>
         ),
       },
@@ -371,15 +371,15 @@ const SECOES: Secao[] = [
     id: "chat-mural",
     titulo: "Chat e Mural",
     icon: MessageSquare,
-    resumo: "Comunicação com motoristas.",
+    resumo: "Comunicação com motociclistas.",
     itens: [
       {
-        q: "Chat motoristas",
+        q: "Chat motociclistas",
         a: (
           <>
-            Conversa em tempo real (1 a 1) com cada motorista. Útil para
+            Conversa em tempo real (1 a 1) com cada motociclista. Útil para
             esclarecer endereço, combinar parada, alertar sobre cliente
-            difícil. O motorista vê no app dele.
+            difícil. O motociclista vê no app dele.
           </>
         ),
       },
@@ -387,7 +387,7 @@ const SECOES: Secao[] = [
         q: "Mural",
         a: (
           <>
-            Avisos públicos para <b>todos os motoristas</b>. Use para mudanças
+            Avisos públicos para <b>todos os motociclistas</b>. Use para mudanças
             de tarifa, evento na cidade, manutenção do sistema, mensagens
             motivacionais. Aparece no topo do app deles.
           </>
@@ -398,7 +398,7 @@ const SECOES: Secao[] = [
         a: (
           <>
             Templates prontos para enviar ao cliente via WhatsApp (ex.: "seu
-            motorista está chegando"). Edite e salve em <b>Mensagens</b>.
+            motociclista está chegando"). Edite e salve em <b>Mensagens</b>.
           </>
         ),
       },
@@ -434,9 +434,9 @@ const SECOES: Secao[] = [
   },
   {
     id: "app-motorista",
-    titulo: "App do Motorista — dúvidas frequentes",
+    titulo: "App do Motociclista — dúvidas frequentes",
     icon: Smartphone,
-    resumo: "O que responder quando o motorista ligar com dúvida.",
+    resumo: "O que responder quando o motociclista ligar com dúvida.",
     itens: [
       {
         q: '"Não estou recebendo corridas"',
@@ -484,7 +484,7 @@ const SECOES: Secao[] = [
         q: '"Esqueci a senha / não consigo entrar"',
         a: (
           <>
-            Em <b>Motoristas</b>, gere um novo PIN para ele ou redefina pelo
+            Em <b>Motociclistas</b>, gere um novo PIN para ele ou redefina pelo
             cadastro. Confirme o telefone — é a chave de login.
           </>
         ),
@@ -494,7 +494,7 @@ const SECOES: Secao[] = [
         a: (
           <>
             No próprio app há a opção de mudar status para offline. Se preferir,
-            o operador pode <b>pausar</b> — o motorista nem precisa saber, e ele
+            o operador pode <b>pausar</b> — o motociclista nem precisa saber, e ele
             simplesmente para de receber ofertas.
           </>
         ),
@@ -522,18 +522,18 @@ const SECOES: Secao[] = [
         a: (
           <ul className="list-disc pl-5 space-y-1">
             <li>Confirme telefone e ponto de referência com o cliente.</li>
-            <li>Veja se há motorista próximo no mapa antes de prometer ETA.</li>
+            <li>Veja se há motociclista próximo no mapa antes de prometer ETA.</li>
             <li>Em horário de pico, prefira modo <b>Automático</b>.</li>
           </ul>
         ),
       },
       {
-        q: "Cliente reclamou do motorista",
+        q: "Cliente reclamou do motociclista",
         a: (
           <ul className="list-disc pl-5 space-y-1">
             <li>Registre tudo no <b>histórico</b> (campo de observação).</li>
-            <li>Use o chat para conversar com o motorista.</li>
-            <li>Casos graves: <b>pause</b> o motorista e converse off-line.</li>
+            <li>Use o chat para conversar com o motociclista.</li>
+            <li>Casos graves: <b>pause</b> o motociclista e converse off-line.</li>
           </ul>
         ),
       },
@@ -542,7 +542,7 @@ const SECOES: Secao[] = [
         a: (
           <ul className="list-disc pl-5 space-y-1">
             <li>Confira corridas em aberto — nenhuma deve ficar "Aguardando" sem motivo.</li>
-            <li>Confirme com o próximo operador motoristas pausados e o porquê.</li>
+            <li>Confirme com o próximo operador motociclistas pausados e o porquê.</li>
             <li>Faça um resumo no chat ou mural se houver algo crítico.</li>
           </ul>
         ),
@@ -576,7 +576,7 @@ function InstrucoesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Manual do Operador</h1>
           <p className="text-sm text-muted-foreground">
             Guia completo de operação do Rota 013 — fluxos do painel,
-            atendimento ao motorista e respostas para dúvidas comuns.
+            atendimento ao motociclista e respostas para dúvidas comuns.
           </p>
         </div>
       </div>

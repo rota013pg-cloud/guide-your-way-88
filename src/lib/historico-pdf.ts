@@ -117,7 +117,7 @@ export async function gerarPdfHistorico(input: HistoricoPdfInput): Promise<Uint8
   // Filtros aplicados
   const partes = [
     `Status: ${input.filtros.status || "Todos"}`,
-    `Motorista: ${input.filtros.motorista || "Todos"}`,
+    `Motociclista: ${input.filtros.motorista || "Todos"}`,
     `Cliente: ${input.filtros.cliente || "Todos"}`,
   ];
   t("Filtros — " + partes.join(" · "), margin, y, { size: 9, color: muted });

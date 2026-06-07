@@ -192,7 +192,7 @@ function ConfiguracoesPage() {
                   onChange={(e) => upd("percentualBloqueio", Math.max(0, Number(e.target.value) || 50))}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Quando o faturamento do motorista atingir <b>valor da diária × (1 + %)</b> sem pagar, o app trava com aviso de pagamento. Padrão: 50%.
+                  Quando o faturamento do motociclista atingir <b>valor da diária × (1 + %)</b> sem pagar, o app trava com aviso de pagamento. Padrão: 50%.
                 </p>
               </div>
             </div>

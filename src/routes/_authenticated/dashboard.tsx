@@ -68,7 +68,7 @@ function DashboardPage() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "corrida_status_log" }, (payload) => {
         const log = payload.new as { status: string; corrida_id: number; observacao: string | null };
         if (log.status === "Reofertando") {
-          toast.warning(`Corrida #${log.corrida_id}: ${log.observacao ?? "nenhum motorista aceitou — reofertando"}`);
+          toast.warning(`Corrida #${log.corrida_id}: ${log.observacao ?? "nenhum motociclista aceitou — reofertando"}`);
         }
       })
       .subscribe((status) => {
@@ -131,7 +131,7 @@ function DashboardPage() {
   const lancarFn = useServerFn(lancarCorridaAgendada);
 
   const reofertar = async (id: number) => {
-    const resp = window.prompt("Oferecer novamente para quantos motoristas mais próximos?", "5");
+    const resp = window.prompt("Oferecer novamente para quantos motociclistas mais próximos?", "5");
     if (resp === null) return;
     const qtd = parseInt(resp, 10);
     if (!Number.isFinite(qtd) || qtd < 1 || qtd > 50) {
@@ -140,8 +140,8 @@ function DashboardPage() {
     }
     try {
       const r: any = await ofertasFn({ data: { corridaId: id, quantidade: qtd, reofertar: true } });
-      if (r?.ofertados > 0) toast.success(`Reofertada para ${r.ofertados} motorista(s).`);
-      else toast.warning(r?.motivo ?? "Nenhum motorista disponível.");
+      if (r?.ofertados > 0) toast.success(`Reofertada para ${r.ofertados} motociclista(s).`);
+      else toast.warning(r?.motivo ?? "Nenhum motociclista disponível.");
     } catch (e: any) {
       toast.error(e?.message ?? "Falha ao reofertar.");
     }
@@ -172,7 +172,7 @@ function DashboardPage() {
           <div className="flex items-center gap-1.5"><Users className="h-4 w-4 text-success" /><span className="font-semibold">{online.length}</span><span className="text-muted-foreground">online</span></div>
           <div className="flex items-center gap-1.5"><ListChecks className="h-4 w-4 text-primary" /><span className="font-semibold">{ativas.length}</span><span className="text-muted-foreground">ativas</span></div>
           <div className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /><span className="font-semibold">{finalizadasHoje.length}</span><span className="text-muted-foreground">hoje</span></div>
-          <div className="flex items-center gap-1.5" title="Apps de motorista travados na tela de pagamento da diária">
+          <div className="flex items-center gap-1.5" title="Apps de motociclista travados na tela de pagamento da diária">
             <DollarSign className={`h-4 w-4 ${travadosPagto.length ? "text-warning" : "text-muted-foreground"}`} />
             <span className="font-semibold">{travadosPagto.length}</span>
             <span className="text-muted-foreground">app{travadosPagto.length === 1 ? "" : "s"} pagto.</span>
@@ -226,11 +226,11 @@ function DashboardPage() {
 
           <Card className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold">Motoristas online</h2>
+              <h2 className="font-semibold">Motociclistas online</h2>
               <Badge className="bg-success text-success-foreground">{online.length}</Badge>
             </div>
             <div className="space-y-2 max-h-[280px] overflow-y-auto">
-              {online.length === 0 && <p className="text-sm text-muted-foreground">Nenhum motorista online.</p>}
+              {online.length === 0 && <p className="text-sm text-muted-foreground">Nenhum motociclista online.</p>}
               {online.map((m) => (
                 <div key={m.codigo} className="flex items-center justify-between rounded-md border border-border p-3 hover:bg-accent/30 transition-colors">
                   <div className="min-w-0">
@@ -295,11 +295,11 @@ function CorridaAtivaCard({
         {!c.motorista_codigo ? (
           <Select onValueChange={onAtribuir}>
             <SelectTrigger className="h-8 text-xs flex-1 min-w-[140px]">
-              <div className="flex items-center gap-1.5"><UserPlus className="h-3 w-3" /><SelectValue placeholder="Atribuir motorista..." /></div>
+              <div className="flex items-center gap-1.5"><UserPlus className="h-3 w-3" /><SelectValue placeholder="Atribuir motociclista..." /></div>
             </SelectTrigger>
             <SelectContent>
               {motoristasOnline.filter((m) => m.status === "Online").length === 0 && (
-                <div className="px-3 py-2 text-xs text-muted-foreground">Nenhum motorista disponível</div>
+                <div className="px-3 py-2 text-xs text-muted-foreground">Nenhum motociclista disponível</div>
               )}
               {motoristasOnline.filter((m) => m.status === "Online").map((m) => (
                 <SelectItem key={m.codigo} value={m.codigo}>{m.nome} ({m.codigo})</SelectItem>

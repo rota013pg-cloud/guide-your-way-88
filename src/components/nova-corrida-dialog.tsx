@@ -671,6 +671,69 @@ export function NovaCorridaDialog({
         )}
 
         <div className="grid gap-1.5">
+          <div className="flex items-center justify-between">
+            <Label>Passageiros (opcional)</Label>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setPassageiros((arr) => [...arr, { id: newId(), nome: "", idade: "" }])}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
+            </Button>
+          </div>
+          {passageiros.length > 0 && (
+            <div className="space-y-2 rounded-md border p-2 bg-muted/30">
+              {passageiros.map((p, idx) => {
+                const idadeNum = parseInt(p.idade, 10);
+                const menor = !isNaN(idadeNum) && idadeNum < 16;
+                return (
+                  <div key={p.id} className="flex items-center gap-2">
+                    <Input
+                      className="flex-1"
+                      placeholder={`Passageiro ${idx + 1} — nome`}
+                      value={p.nome}
+                      onChange={(e) =>
+                        setPassageiros((arr) => arr.map((x) => x.id === p.id ? { ...x, nome: e.target.value } : x))
+                      }
+                    />
+                    <Input
+                      className={`w-20 ${menor ? "border-destructive" : ""}`}
+                      placeholder="Idade"
+                      inputMode="numeric"
+                      value={p.idade}
+                      onChange={(e) =>
+                        setPassageiros((arr) => arr.map((x) => x.id === p.id ? { ...x, idade: e.target.value.replace(/\D/g, "").slice(0, 3) } : x))
+                      }
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setPassageiros((arr) => arr.filter((x) => x.id !== p.id))}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                );
+              })}
+              {passageiros.some((p) => { const n = parseInt(p.idade, 10); return !isNaN(n) && n < 16; }) && (
+                <label className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/40 rounded p-2">
+                  <Checkbox
+                    checked={acompanhanteResponsavel}
+                    onCheckedChange={(v) => setAcompanhanteResponsavel(!!v)}
+                  />
+                  <span>
+                    Há passageiro menor de 16 anos. Confirmo que ele(a) estará <b>acompanhado(a) de responsável</b>{" "}
+                    (sem isso a corrida não pode ser lançada).
+                  </span>
+                </label>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="grid gap-1.5">
           <Label>Observações</Label>
           <Textarea value={obs} onChange={(e) => setObs(e.target.value)} rows={2} placeholder="Ex.: aguardar na portaria" />
         </div>

@@ -239,6 +239,58 @@ export function MotoristaDialog({
             </div>
           </TabsContent>
 
+          <TabsContent value="avaliacao" className="space-y-4 pt-3">
+            <div className="rounded-md border p-3 space-y-2">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <Checkbox checked={!!form.ear} onCheckedChange={(v) => set("ear")(!!v)} />
+                <div>
+                  <div className="font-medium text-sm">EAR — Exerce Atividade Remunerada</div>
+                  <p className="text-xs text-muted-foreground">CNH com observação "EAR" (exigida para transporte remunerado de passageiros).</p>
+                </div>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Status da vistoria</Label>
+                <Select value={form.vistoria_status ?? "pendente"} onValueChange={(v) => set("vistoria_status")(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="aprovada">Aprovada</SelectItem>
+                    <SelectItem value="reprovada">Reprovada</SelectItem>
+                    <SelectItem value="vencida">Vencida</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Data da vistoria</Label>
+                <Input type="date" value={form.vistoria_em ?? ""} onChange={(e) => set("vistoria_em")(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Critérios de prioridade na distribuição</Label>
+              <p className="text-xs text-muted-foreground">Marque os critérios atendidos. Influenciam na ordem de oferta automática.</p>
+              <div className="grid grid-cols-2 gap-2 rounded-md border p-3">
+                {([
+                  { k: "experiencia", t: "Experiência (>6 meses na frota)" },
+                  { k: "avaliacao", t: "Boa avaliação (sem ocorrências graves)" },
+                  { k: "equipamentos", t: "Equipamentos completos (baú, capacete homologado, capa)" },
+                  { k: "pontualidade", t: "Pontualidade (cumpre horários)" },
+                ] as const).map((c) => (
+                  <label key={c.k} className="flex items-start gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={!!form.prioridade_criterios?.[c.k]}
+                      onCheckedChange={(v) => setCriterio(c.k)(!!v)}
+                    />
+                    <span>{c.t}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
           <TabsContent value="docs" className="space-y-3 pt-3">
             <FileUploadField
               label="Foto do motociclista"

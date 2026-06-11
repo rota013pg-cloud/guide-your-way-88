@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, Bike } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Bike, History } from "lucide-react";
 import { listarClientes, excluirCliente } from "@/lib/clientes.functions";
 import { ClienteDialog } from "@/components/cliente-dialog";
 import { NovaCorridaDialog, type ClientePrefill } from "@/components/nova-corrida-dialog";
+import { OcorrenciasDialog } from "@/components/ocorrencias-dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/clientes")({

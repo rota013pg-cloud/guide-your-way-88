@@ -76,6 +76,15 @@ const MotoristaSchema = z.object({
   doc_veiculo: z.string().trim().max(500).optional().default(""),
   foto_moto: z.string().trim().max(500).optional().default(""),
   doc_endereco: z.string().trim().max(500).optional().default(""),
+  ear: z.boolean().optional().default(false),
+  vistoria_status: z.enum(["pendente", "aprovada", "reprovada", "vencida"]).optional().default("pendente"),
+  vistoria_em: z.string().trim().max(20).optional().nullable(),
+  prioridade_criterios: z.object({
+    experiencia: z.boolean().optional(),
+    avaliacao: z.boolean().optional(),
+    equipamentos: z.boolean().optional(),
+    pontualidade: z.boolean().optional(),
+  }).partial().optional().default({}),
   senha_inicial: z.string().trim().min(4).max(50).optional(),
 });
 

@@ -698,6 +698,16 @@ function MotoristaApp() {
         />
       )}
 
+      {sessao && tela !== "login" && (
+        <PanicButton
+          codigo={sessao.motorista.codigo}
+          token={sessao.token}
+          corridaId={corridaAtual?.id ?? null}
+          onToast={mostrarToast}
+        />
+      )}
+
+
       {carregando && <AguardeOverlay />}
       {toast && <div className="moto-toast">{toast}</div>}
     </div>

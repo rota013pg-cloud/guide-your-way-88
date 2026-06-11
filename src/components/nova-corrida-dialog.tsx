@@ -723,6 +723,69 @@ export function NovaCorridaDialog({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog Simular corrida */}
+      <Dialog open={simularOpen} onOpenChange={setSimularOpen}>
+        <DialogContent className="max-w-lg max-h-[92vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Simulação de corrida</DialogTitle>
+            <DialogDescription>
+              Revise os dados, envie a mensagem ao cliente e aguarde a confirmação antes de lançar.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3 py-1">
+            <div className="rounded-lg border p-3 bg-muted/30 text-sm grid gap-1">
+              <div><b>Cliente:</b> {cliente || "—"} {telefone && <span className="text-muted-foreground">· {telefone}</span>}</div>
+              <div><b>Origem:</b> {origem.text || "—"}</div>
+              {paradas.map((p, i) => (
+                <div key={p.id}><b>Parada {i + 1}:</b> {p.endereco || "—"}</div>
+              ))}
+              {destino.text && <div><b>Destino:</b> {destino.text}</div>}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-muted-foreground">
+                {km > 0 && <span>📏 {km.toFixed(1).replace(".", ",")} km</span>}
+                <span>💳 {pagamento}</span>
+                <span>💰 R$ {total.toFixed(2).replace(".", ",")}</span>
+              </div>
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label>Mensagem para o cliente</Label>
+              <Textarea value={textoSimulacao} readOnly rows={9} className="font-mono text-xs" />
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button type="button" variant="secondary" size="sm" onClick={copiarSimulacao}>
+                <Copy className="h-4 w-4 mr-1" /> {copiadoSim ? "Copiado!" : "Copiar mensagem"}
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={abrirWhatsAppCliente}>
+                Abrir WhatsApp
+              </Button>
+            </div>
+
+            <label className="flex items-start gap-2 text-sm rounded-lg border p-3 bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800">
+              <Checkbox
+                checked={clienteConfirmou}
+                onCheckedChange={(v) => setClienteConfirmou(!!v)}
+                className="mt-0.5"
+              />
+              <span>
+                <b>Cliente confirmou</b> a corrida via WhatsApp. Só lance após a confirmação para evitar deslocamento perdido.
+              </span>
+            </label>
+          </div>
+
+          <DialogFooter className="gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => setSimularOpen(false)}>Voltar</Button>
+            <Button
+              disabled={!clienteConfirmou || salvando}
+              onClick={async () => { setSimularOpen(false); await lancar(); }}
+            >
+              {salvando ? "Lançando…" : "Lançar corrida agora"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

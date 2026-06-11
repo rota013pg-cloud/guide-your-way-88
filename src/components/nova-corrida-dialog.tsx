@@ -91,7 +91,7 @@ export function NovaCorridaDialog({
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
 
   const [tarifas, setTarifas] = useState<TarifaOpt[]>([]);
-  const [motociclistas, setMotoristas] = useState<MotoristaMini[]>([]);
+  const [motoristas, setMotoristas] = useState<MotoristaMini[]>([]);
 
   // Cliente
   const [codigoBusca, setCodigoBusca] = useState("");

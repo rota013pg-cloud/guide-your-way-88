@@ -285,6 +285,37 @@ export const motoristaAceitarOferta = createServerFn({ method: "POST" })
       console.error("[creditos-diaria] falhou auto-baixa:", e);
     }
 
+    // ── ETA de coleta via Google Routes API ──
+    // Best-effort: não bloqueia o aceite se falhar (rede, sem GPS, etc.).
+    try {
+      if (corrida?.origem_lat && corrida?.origem_lng) {
+        const { data: gps } = await supabaseAdmin
+          .from("motorista_gps")
+          .select("lat,lng,criado_em")
+          .eq("motorista_codigo", data.codigo)
+          .order("criado_em", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (gps?.lat && gps?.lng) {
+          const segundos = await calcularEtaSegundos(
+            { lat: gps.lat, lng: gps.lng },
+            { lat: corrida.origem_lat, lng: corrida.origem_lng },
+          );
+          if (segundos && segundos > 0) {
+            await supabaseAdmin
+              .from("corridas")
+              .update({
+                eta_coleta_segundos: segundos,
+                eta_coleta_atualizado_em: new Date().toISOString(),
+              })
+              .eq("id", corridaId);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("[eta-coleta] falhou:", e);
+    }
+
     return { corrida };
   });
 

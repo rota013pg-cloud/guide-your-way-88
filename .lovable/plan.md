@@ -22,9 +22,9 @@ Vou implementar as 19 atualizações em **5 fases sequenciais**, cada fase entre
 11. **Dialog "Histórico" no card de cliente e motociclista**: lista + form de nova ocorrência + contadores no card (badge vermelho se reclamação recente).
 12. **Passageiros**: novo campo `passageiros` (jsonb) na corrida — nome, idade (bloqueio <16), com seu próprio histórico.
 
-## Fase 4 — Cadastro + solicitações especiais
-13. **Campo `ear` (boolean)** e `vistoria_status` em motoristas. Critérios de prioridade como checkboxes no cadastro (experiência, avaliação, equipamentos).
-14. **Solicitações especiais na corrida**: chips selecionáveis (Animal, Bagagem, 3º passageiro, Capa de chuva) → exibidos para motociclista.
+## Fase 4 — Cadastro + solicitações especiais ✅
+13. **`ear` (boolean)** + `vistoria_status` + `vistoria_em` + `prioridade_criterios` (jsonb) em motoristas. Nova aba **Avaliação** no cadastro com checkbox EAR, select status vistoria, data e 4 critérios de prioridade (experiência, avaliação, equipamentos, pontualidade).
+14. **Solicitações especiais na corrida** (`solicitacoes_especiais text[]`): chips no nova-corrida-dialog (Animal, Bagagem, 3º passageiro, Capa de chuva, Capacete extra) → badges amarelos no card do motociclista após aceite.
 
 ## Fase 5 — Financeiro + Dashboard
 15. **Validação de comprovante PIX**: motociclista anexa imagem ao solicitar liberação; painel mostra fila com Aprovar/Rejeitar.

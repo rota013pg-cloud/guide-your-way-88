@@ -340,6 +340,14 @@ export function NovaCorridaDialog({
       toast.error("Selecione pelo menos um motociclista.");
       return;
     }
+    const passageirosValidos = passageiros
+      .map((p) => ({ nome: p.nome.trim(), idade: parseInt(p.idade, 10) }))
+      .filter((p) => p.nome || !isNaN(p.idade));
+    const temMenor16 = passageirosValidos.some((p) => !isNaN(p.idade) && p.idade < 16);
+    if (temMenor16 && !acompanhanteResponsavel) {
+      toast.error("Passageiro menor de 16 anos exige acompanhamento de responsável. Marque a confirmação.");
+      return;
+    }
     setSalvando(true);
 
     const paradasJson = paradas.map((p, i) => ({

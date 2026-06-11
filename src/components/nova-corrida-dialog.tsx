@@ -284,6 +284,8 @@ export function NovaCorridaDialog({
     setDesconto("");
     setExtra("");
     setObs("");
+    setPassageiros([]);
+    setAcompanhanteResponsavel(false);
     setClienteConfirmou(false);
     setSimularOpen(false);
   };

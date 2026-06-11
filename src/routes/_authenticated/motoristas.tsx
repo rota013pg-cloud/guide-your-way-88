@@ -213,6 +213,15 @@ function MotoristasPage() {
           motorista={adminAlvo}
         />
       )}
+      {historicoAlvo && (
+        <OcorrenciasDialog
+          open={!!historicoAlvo}
+          onOpenChange={(v) => { if (!v) setHistoricoAlvo(null); }}
+          tipoPessoa="motorista"
+          pessoaCodigo={historicoAlvo.codigo}
+          pessoaNome={historicoAlvo.nome}
+        />
+      )}
     </div>
   );
 }

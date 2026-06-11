@@ -683,6 +683,9 @@ export function NovaCorridaDialog({
       <DialogFooter className="gap-2 sm:gap-2 flex-wrap">
         <Button variant="ghost" onClick={limpar}>Limpar</Button>
         <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button variant="secondary" onClick={() => { setClienteConfirmou(false); setSimularOpen(true); }}>
+          Simular corrida
+        </Button>
         <Button onClick={lancar} disabled={salvando}>
           {salvando ? "Salvando..." : modelo === "Agendada" ? "Agendar" : "Lançar corrida"}
         </Button>

@@ -282,6 +282,8 @@ export function NovaCorridaDialog({
     setDesconto("");
     setExtra("");
     setObs("");
+    setClienteConfirmou(false);
+    setSimularOpen(false);
   };
 
   const gerarTextoWhatsApp = (corridaId: number) => {

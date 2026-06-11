@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Search, Shield, Lock, Pause, Play, Smartphone } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Shield, Lock, Pause, Play, Smartphone, History } from "lucide-react";
 import { listarMotoristas, excluirMotorista, pausarMotorista, retomarMotorista } from "@/lib/motoristas.functions";
 import { MotoristaDialog } from "@/components/motorista-dialog";
 import { MotoristaAdminPanel } from "@/components/motorista-admin-panel";
+import { OcorrenciasDialog } from "@/components/ocorrencias-dialog";
 import { useRole } from "@/hooks/use-role";
 import { toast } from "sonner";
 

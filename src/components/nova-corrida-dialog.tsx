@@ -286,16 +286,42 @@ export function NovaCorridaDialog({
 
   const gerarTextoWhatsApp = (corridaId: number) => {
     const linhas: string[] = [];
-    linhas.push(`🏍️ *Corrida #${corridaId}*`);
+    if (corridaId > 0) linhas.push(`🏍️ *Corrida #${corridaId}*`);
+    else linhas.push(`🏍️ *Simulação de corrida — Rota 013*`);
     if (cliente) linhas.push(`👤 ${cliente}${telefone ? ` · ${telefone}` : ""}`);
     linhas.push(`📍 Origem: ${origem.text}`);
     paradas.forEach((p, i) => linhas.push(`🟡 Parada ${i + 1}: ${p.endereco}`));
     if (destino.text) linhas.push(`🏁 Destino: ${destino.text}`);
     if (km > 0) linhas.push(`📏 ${km.toFixed(1).replace(".", ",")} km`);
-    linhas.push(`💰 *R$ ${total},00* (${pagamento})`);
+    linhas.push(`💰 *R$ ${total.toFixed(2).replace(".", ",")}* (${pagamento})`);
     if (obs) linhas.push(`📝 ${obs}`);
-    linhas.push(`\nResponda *ACEITO ${corridaId}* para confirmar.`);
+    if (corridaId > 0) {
+      linhas.push(`\nResponda *ACEITO ${corridaId}* para confirmar.`);
+    } else {
+      linhas.push(`\nResponda *CONFIRMO* para liberarmos o motociclista.`);
+    }
     return linhas.join("\n");
+  };
+
+  const textoSimulacao = simularOpen ? gerarTextoWhatsApp(0) : "";
+
+  const copiarSimulacao = async () => {
+    try {
+      await navigator.clipboard.writeText(textoSimulacao);
+      setCopiadoSim(true);
+      toast.success("Mensagem copiada!");
+      setTimeout(() => setCopiadoSim(false), 2500);
+    } catch {
+      toast.error("Não foi possível copiar.");
+    }
+  };
+
+  const abrirWhatsAppCliente = () => {
+    const tel = (telefone || "").replace(/\D/g, "");
+    const url = tel
+      ? `https://wa.me/55${tel}?text=${encodeURIComponent(textoSimulacao)}`
+      : `https://wa.me/?text=${encodeURIComponent(textoSimulacao)}`;
+    window.open(url, "_blank");
   };
 
   const lancar = async () => {

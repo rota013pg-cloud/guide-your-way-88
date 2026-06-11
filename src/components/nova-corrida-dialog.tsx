@@ -125,6 +125,9 @@ export function NovaCorridaDialog({
 
   const [salvando, setSalvando] = useState(false);
   const [whatsappOpen, setWhatsappOpen] = useState<{ texto: string; tel?: string } | null>(null);
+  const [simularOpen, setSimularOpen] = useState(false);
+  const [clienteConfirmou, setClienteConfirmou] = useState(false);
+  const [copiadoSim, setCopiadoSim] = useState(false);
 
   const calcRotaFn = useServerFn(calcularRota);
   const dispararFn = useServerFn(dispararOfertas);

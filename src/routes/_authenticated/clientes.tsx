@@ -31,6 +31,7 @@ function ClientesPage() {
 
   const [corridaOpen, setCorridaOpen] = useState(false);
   const [corridaPrefill, setCorridaPrefill] = useState<ClientePrefill | null>(null);
+  const [historicoAlvo, setHistoricoAlvo] = useState<{ codigo: string; nome: string } | null>(null);
 
   const { data: clientes = [], isLoading } = useQuery({
     queryKey: ["clientes"],

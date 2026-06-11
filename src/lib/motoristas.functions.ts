@@ -108,6 +108,10 @@ export const salvarMotorista = createServerFn({ method: "POST" })
       doc_veiculo: data.doc_veiculo,
       foto_moto: data.foto_moto,
       doc_endereco: data.doc_endereco,
+      ear: data.ear,
+      vistoria_status: data.vistoria_status,
+      vistoria_em: data.vistoria_em || null,
+      prioridade_criterios: data.prioridade_criterios as any,
     };
 
     if (data.codigo) {

@@ -148,6 +148,15 @@ function ClientesPage() {
         onOpenChange={setCorridaOpen}
         clientePrefill={corridaPrefill}
       />
+      {historicoAlvo && (
+        <OcorrenciasDialog
+          open={!!historicoAlvo}
+          onOpenChange={(v) => { if (!v) setHistoricoAlvo(null); }}
+          tipoPessoa="cliente"
+          pessoaCodigo={historicoAlvo.codigo}
+          pessoaNome={historicoAlvo.nome}
+        />
+      )}
     </div>
   );
 }

@@ -70,6 +70,7 @@ type Corrida = {
   valor_final: number | null;
   motorista_codigo?: string | null;
   paradas?: Parada[] | null;
+  pagamento?: string | null;
 };
 type Oferta = {
   ofertaId: number;

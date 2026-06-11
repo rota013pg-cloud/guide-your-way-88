@@ -119,6 +119,8 @@ export function NovaCorridaDialog({
   const [desconto, setDesconto] = useState<string>("");
   const [extra, setExtra] = useState<string>("");
   const [obs, setObs] = useState("");
+  const [passageiros, setPassageiros] = useState<Array<{ id: string; nome: string; idade: string }>>([]);
+  const [acompanhanteResponsavel, setAcompanhanteResponsavel] = useState(false);
   const [buscandoCli, setBuscandoCli] = useState(false);
   const [cliNaoEncontrado, setCliNaoEncontrado] = useState(false);
 

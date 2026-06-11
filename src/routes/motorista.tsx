@@ -891,6 +891,32 @@ function CorridaTela({
   const ultimaConcluida = [...paradas].reverse().find((p) => p.concluida_em);
   const [verTodos, setVerTodos] = useState(false);
   const [confirmarFim, setConfirmarFim] = useState(false);
+  const [chegouEm, setChegouEm] = useState<number | null>(null);
+  const [agoraTs, setAgoraTs] = useState(Date.now());
+  const [confirmarPagto, setConfirmarPagto] = useState<null | (() => void)>(null);
+  const [pagtoOk, setPagtoOk] = useState(false);
+
+  // ticker para a tolerância de 5 min
+  useEffect(() => {
+    if (chegouEm == null) return;
+    const t = setInterval(() => setAgoraTs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [chegouEm]);
+
+  // limpa ao mudar de status
+  useEffect(() => {
+    if (corrida.status !== "A caminho" && corrida.status !== "Chegou") setChegouEm(null);
+  }, [corrida.status]);
+
+  const exigePagto = (corrida.pagamento === "Dinheiro" || corrida.pagamento === "Pix");
+  const fmtTolerancia = (() => {
+    if (chegouEm == null) return "";
+    const seg = Math.max(0, Math.floor((agoraTs - chegouEm) / 1000));
+    const mm = String(Math.floor(seg / 60)).padStart(2, "0");
+    const ss = String(seg % 60).padStart(2, "0");
+    return `${mm}:${ss}`;
+  })();
+  const dentroTolerancia = chegouEm != null && (agoraTs - chegouEm) < 5 * 60 * 1000;
 
   // Próximo endereço após esta etapa (usado no texto do botão)
   const proximoApos = (apos: "origem" | "parada", ordem?: number): string => {

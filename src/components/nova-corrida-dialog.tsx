@@ -125,6 +125,9 @@ export function NovaCorridaDialog({
 
   const [salvando, setSalvando] = useState(false);
   const [whatsappOpen, setWhatsappOpen] = useState<{ texto: string; tel?: string } | null>(null);
+  const [simularOpen, setSimularOpen] = useState(false);
+  const [clienteConfirmou, setClienteConfirmou] = useState(false);
+  const [copiadoSim, setCopiadoSim] = useState(false);
 
   const calcRotaFn = useServerFn(calcularRota);
   const dispararFn = useServerFn(dispararOfertas);
@@ -279,20 +282,48 @@ export function NovaCorridaDialog({
     setDesconto("");
     setExtra("");
     setObs("");
+    setClienteConfirmou(false);
+    setSimularOpen(false);
   };
 
   const gerarTextoWhatsApp = (corridaId: number) => {
     const linhas: string[] = [];
-    linhas.push(`🏍️ *Corrida #${corridaId}*`);
+    if (corridaId > 0) linhas.push(`🏍️ *Corrida #${corridaId}*`);
+    else linhas.push(`🏍️ *Simulação de corrida — Rota 013*`);
     if (cliente) linhas.push(`👤 ${cliente}${telefone ? ` · ${telefone}` : ""}`);
     linhas.push(`📍 Origem: ${origem.text}`);
     paradas.forEach((p, i) => linhas.push(`🟡 Parada ${i + 1}: ${p.endereco}`));
     if (destino.text) linhas.push(`🏁 Destino: ${destino.text}`);
     if (km > 0) linhas.push(`📏 ${km.toFixed(1).replace(".", ",")} km`);
-    linhas.push(`💰 *R$ ${total},00* (${pagamento})`);
+    linhas.push(`💰 *R$ ${total.toFixed(2).replace(".", ",")}* (${pagamento})`);
     if (obs) linhas.push(`📝 ${obs}`);
-    linhas.push(`\nResponda *ACEITO ${corridaId}* para confirmar.`);
+    if (corridaId > 0) {
+      linhas.push(`\nResponda *ACEITO ${corridaId}* para confirmar.`);
+    } else {
+      linhas.push(`\nResponda *CONFIRMO* para liberarmos o motociclista.`);
+    }
     return linhas.join("\n");
+  };
+
+  const textoSimulacao = simularOpen ? gerarTextoWhatsApp(0) : "";
+
+  const copiarSimulacao = async () => {
+    try {
+      await navigator.clipboard.writeText(textoSimulacao);
+      setCopiadoSim(true);
+      toast.success("Mensagem copiada!");
+      setTimeout(() => setCopiadoSim(false), 2500);
+    } catch {
+      toast.error("Não foi possível copiar.");
+    }
+  };
+
+  const abrirWhatsAppCliente = () => {
+    const tel = (telefone || "").replace(/\D/g, "");
+    const url = tel
+      ? `https://wa.me/55${tel}?text=${encodeURIComponent(textoSimulacao)}`
+      : `https://wa.me/?text=${encodeURIComponent(textoSimulacao)}`;
+    window.open(url, "_blank");
   };
 
   const lancar = async () => {
@@ -652,6 +683,9 @@ export function NovaCorridaDialog({
       <DialogFooter className="gap-2 sm:gap-2 flex-wrap">
         <Button variant="ghost" onClick={limpar}>Limpar</Button>
         <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button variant="secondary" onClick={() => { setClienteConfirmou(false); setSimularOpen(true); }}>
+          Simular corrida
+        </Button>
         <Button onClick={lancar} disabled={salvando}>
           {salvando ? "Salvando..." : modelo === "Agendada" ? "Agendar" : "Lançar corrida"}
         </Button>
@@ -686,6 +720,69 @@ export function NovaCorridaDialog({
             <Button variant="outline" onClick={() => setWhatsappOpen(null)}>Fechar</Button>
             <Button variant="secondary" onClick={abrirWhatsApp}>Abrir WhatsApp</Button>
             <Button onClick={copiarWhatsapp}><Copy className="h-4 w-4 mr-1" /> Copiar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Simular corrida */}
+      <Dialog open={simularOpen} onOpenChange={setSimularOpen}>
+        <DialogContent className="max-w-lg max-h-[92vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Simulação de corrida</DialogTitle>
+            <DialogDescription>
+              Revise os dados, envie a mensagem ao cliente e aguarde a confirmação antes de lançar.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3 py-1">
+            <div className="rounded-lg border p-3 bg-muted/30 text-sm grid gap-1">
+              <div><b>Cliente:</b> {cliente || "—"} {telefone && <span className="text-muted-foreground">· {telefone}</span>}</div>
+              <div><b>Origem:</b> {origem.text || "—"}</div>
+              {paradas.map((p, i) => (
+                <div key={p.id}><b>Parada {i + 1}:</b> {p.endereco || "—"}</div>
+              ))}
+              {destino.text && <div><b>Destino:</b> {destino.text}</div>}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-muted-foreground">
+                {km > 0 && <span>📏 {km.toFixed(1).replace(".", ",")} km</span>}
+                <span>💳 {pagamento}</span>
+                <span>💰 R$ {total.toFixed(2).replace(".", ",")}</span>
+              </div>
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label>Mensagem para o cliente</Label>
+              <Textarea value={textoSimulacao} readOnly rows={9} className="font-mono text-xs" />
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button type="button" variant="secondary" size="sm" onClick={copiarSimulacao}>
+                <Copy className="h-4 w-4 mr-1" /> {copiadoSim ? "Copiado!" : "Copiar mensagem"}
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={abrirWhatsAppCliente}>
+                Abrir WhatsApp
+              </Button>
+            </div>
+
+            <label className="flex items-start gap-2 text-sm rounded-lg border p-3 bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800">
+              <Checkbox
+                checked={clienteConfirmou}
+                onCheckedChange={(v) => setClienteConfirmou(!!v)}
+                className="mt-0.5"
+              />
+              <span>
+                <b>Cliente confirmou</b> a corrida via WhatsApp. Só lance após a confirmação para evitar deslocamento perdido.
+              </span>
+            </label>
+          </div>
+
+          <DialogFooter className="gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => setSimularOpen(false)}>Voltar</Button>
+            <Button
+              disabled={!clienteConfirmou || salvando}
+              onClick={async () => { setSimularOpen(false); await lancar(); }}
+            >
+              {salvando ? "Lançando…" : "Lançar corrida agora"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

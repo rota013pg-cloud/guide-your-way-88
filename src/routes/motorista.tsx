@@ -70,6 +70,7 @@ type Corrida = {
   valor_final: number | null;
   motorista_codigo?: string | null;
   paradas?: Parada[] | null;
+  pagamento?: string | null;
 };
 type Oferta = {
   ofertaId: number;
@@ -890,6 +891,32 @@ function CorridaTela({
   const ultimaConcluida = [...paradas].reverse().find((p) => p.concluida_em);
   const [verTodos, setVerTodos] = useState(false);
   const [confirmarFim, setConfirmarFim] = useState(false);
+  const [chegouEm, setChegouEm] = useState<number | null>(null);
+  const [agoraTs, setAgoraTs] = useState(Date.now());
+  const [confirmarPagto, setConfirmarPagto] = useState<null | (() => void)>(null);
+  const [pagtoOk, setPagtoOk] = useState(false);
+
+  // ticker para a tolerância de 5 min
+  useEffect(() => {
+    if (chegouEm == null) return;
+    const t = setInterval(() => setAgoraTs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [chegouEm]);
+
+  // limpa ao mudar de status
+  useEffect(() => {
+    if (corrida.status !== "A caminho" && corrida.status !== "Chegou") setChegouEm(null);
+  }, [corrida.status]);
+
+  const exigePagto = (corrida.pagamento === "Dinheiro" || corrida.pagamento === "Pix");
+  const fmtTolerancia = (() => {
+    if (chegouEm == null) return "";
+    const seg = Math.max(0, Math.floor((agoraTs - chegouEm) / 1000));
+    const mm = String(Math.floor(seg / 60)).padStart(2, "0");
+    const ss = String(seg % 60).padStart(2, "0");
+    return `${mm}:${ss}`;
+  })();
+  const dentroTolerancia = chegouEm != null && (agoraTs - chegouEm) < 5 * 60 * 1000;
 
   // Próximo endereço após esta etapa (usado no texto do botão)
   const proximoApos = (apos: "origem" | "parada", ordem?: number): string => {
@@ -947,12 +974,19 @@ function CorridaTela({
         };
       }
       const destinoLabel = primeira ? `Parada 1` : "destino";
+      const iniciarViagem = () => {
+        onMudarStatus("Em viagem");
+        onWaze(proximoApos("origem"));
+      };
       acao = {
         txt: `▶️ Iniciar viagem — ${destinoLabel}`,
         classe: "chegou",
         onClick: () => {
-          onMudarStatus("Em viagem");
-          onWaze(proximoApos("origem"));
+          if (exigePagto && !pagtoOk) {
+            setConfirmarPagto(() => iniciarViagem);
+          } else {
+            iniciarViagem();
+          }
         },
       };
       voltar = { txt: "← Voltar (ainda não embarcou)", onClick: () => onMudarStatus("A caminho") };
@@ -1049,6 +1083,30 @@ function CorridaTela({
               <span>{etapa.endereco}</span>
             </div>
 
+            {/* Botão "Cheguei no cliente" + tolerância de 5 min — só em A caminho */}
+            {st === "A caminho" && chegouEm == null && (
+              <button
+                className="btn-acao caminho"
+                style={{ background: "#444", marginBottom: 10 }}
+                onClick={() => setChegouEm(Date.now())}
+              >
+                📍 Cheguei no local — iniciar tolerância
+              </button>
+            )}
+            {st === "A caminho" && chegouEm != null && (
+              <div
+                style={{
+                  background: dentroTolerancia ? "#1c3a2a" : "#3a1c1c",
+                  color: dentroTolerancia ? "#4ade80" : "#fca5a5",
+                  border: `1px solid ${dentroTolerancia ? "#2a5a3a" : "#5a2a2a"}`,
+                  borderRadius: 14, padding: "10px 14px", marginBottom: 10,
+                  fontSize: 13, fontWeight: 600, textAlign: "center",
+                }}
+              >
+                ⏱️ Aguardando cliente — {fmtTolerancia} {dentroTolerancia ? "(dentro da tolerância de 5 min)" : "(tolerância expirada — contate a central)"}
+              </div>
+            )}
+
             {acao && (
               <button className={`btn-acao ${acao.classe}`} onClick={acao.onClick}>
                 {acao.txt}
@@ -1063,6 +1121,42 @@ function CorridaTela({
           </div>
         )}
       </div>
+
+      {/* Confirmação de pagamento recebido */}
+      {confirmarPagto && (
+        <div className="modal-overlay" onClick={() => setConfirmarPagto(null)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-titulo">Pagamento recebido?</div>
+            <div className="modal-aviso">
+              Esta corrida é paga no ato ({corrida.pagamento}). Confirme o recebimento antes de iniciar a viagem.
+            </div>
+            <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 4px", fontSize: 14 }}>
+              <input
+                type="checkbox"
+                checked={pagtoOk}
+                onChange={(e) => setPagtoOk(e.target.checked)}
+                style={{ width: 20, height: 20 }}
+              />
+              <span>Recebi o valor de <b>{brl(corrida.valor_final)}</b> ({corrida.pagamento}).</span>
+            </label>
+            <button
+              className="btn-acao finalizar"
+              disabled={!pagtoOk}
+              style={!pagtoOk ? { opacity: 0.5 } : undefined}
+              onClick={() => {
+                const fn = confirmarPagto;
+                setConfirmarPagto(null);
+                fn?.();
+              }}
+            >
+              ✅ Confirmar e iniciar viagem
+            </button>
+            <button className="btn-acao caminho" onClick={() => setConfirmarPagto(null)}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
 
       {/* Modal: trajeto completo, só leitura */}

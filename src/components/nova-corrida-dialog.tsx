@@ -388,6 +388,10 @@ export function NovaCorridaDialog({
         motorista: modelo === "Agendada" && agendadaMotorista
           ? (motoristas.find((m) => m.codigo === agendadaMotorista)?.nome ?? null)
           : null,
+        passageiros: passageirosValidos.map((p) => ({
+          nome: p.nome || null,
+          idade: isNaN(p.idade) ? null : p.idade,
+        })) as any,
       })
       .select("id")
       .single();

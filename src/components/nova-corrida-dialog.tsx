@@ -393,6 +393,7 @@ export function NovaCorridaDialog({
           nome: p.nome || null,
           idade: isNaN(p.idade) ? null : p.idade,
         })) as any,
+        solicitacoes_especiais: solicitacoesEspeciais,
       })
       .select("id")
       .single();

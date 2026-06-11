@@ -148,9 +148,10 @@ export function MotoristaDialog({
           </DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="dados">
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="dados">Dados</TabsTrigger>
             <TabsTrigger value="veiculo">Veículo</TabsTrigger>
+            <TabsTrigger value="avaliacao">Avaliação</TabsTrigger>
             <TabsTrigger value="docs">Documentos</TabsTrigger>
           </TabsList>
 

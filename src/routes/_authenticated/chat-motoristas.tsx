@@ -43,7 +43,7 @@ function ChatMotoristasPage() {
   const [apagando, setApagando] = useState<number | null>(null);
   const [apagandoConversa, setApagandoConversa] = useState(false);
   const [novaAberto, setNovaAberto] = useState(false);
-  const [motociclistas, setMotoristas] = useState<Array<{ codigo: string; nome: string; status: string | null }>>([]);
+  const [motoristas, setMotoristas] = useState<Array<{ codigo: string; nome: string; status: string | null }>>([]);
   const [buscaNova, setBuscaNova] = useState("");
   const fimRef = useRef<HTMLDivElement>(null);
 

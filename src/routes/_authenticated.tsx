@@ -107,6 +107,8 @@ function AuthenticatedLayout() {
             <div className="flex-1" />
             <CobrancaNotifier />
             <ChatNotifier />
+            <AlertaNotifier />
+
             {email && !email.endsWith("@painel.local") && (
               <span className="text-xs text-muted-foreground truncate max-w-[40ch]">{email}</span>
             )}

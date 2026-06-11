@@ -5,12 +5,21 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { FileUploadField } from "@/components/file-upload-field";
 import { maskTelefone, maskCPF } from "@/lib/masks";
 import { previewProximoCodigoMotorista, salvarMotorista } from "@/lib/motoristas.functions";
 import { toast } from "sonner";
+
+type PrioridadeCriterios = {
+  experiencia?: boolean;
+  avaliacao?: boolean;
+  equipamentos?: boolean;
+  pontualidade?: boolean;
+};
 
 type Motorista = {
   codigo: string;
@@ -29,6 +38,10 @@ type Motorista = {
   doc_veiculo?: string | null;
   foto_moto?: string | null;
   doc_endereco?: string | null;
+  ear?: boolean | null;
+  vistoria_status?: "pendente" | "aprovada" | "reprovada" | "vencida" | null;
+  vistoria_em?: string | null;
+  prioridade_criterios?: PrioridadeCriterios | null;
 };
 
 export function MotoristaDialog({
@@ -71,6 +84,10 @@ export function MotoristaDialog({
         doc_veiculo: motorista?.doc_veiculo ?? "",
         foto_moto: motorista?.foto_moto ?? "",
         doc_endereco: motorista?.doc_endereco ?? "",
+        ear: motorista?.ear ?? false,
+        vistoria_status: motorista?.vistoria_status ?? "pendente",
+        vistoria_em: motorista?.vistoria_em ?? "",
+        prioridade_criterios: motorista?.prioridade_criterios ?? {},
         senha_inicial: "",
       });
     }
@@ -78,7 +95,9 @@ export function MotoristaDialog({
 
   const codigoUso = motorista?.codigo || proxCodigo || "novo";
 
-  const set = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: keyof typeof form) => (v: any) => setForm((f) => ({ ...f, [k]: v }));
+  const setCriterio = (k: keyof PrioridadeCriterios) => (v: boolean) =>
+    setForm((f) => ({ ...f, prioridade_criterios: { ...(f.prioridade_criterios ?? {}), [k]: v } }));
 
   const mut = useMutation({
     mutationFn: () =>
@@ -100,6 +119,10 @@ export function MotoristaDialog({
           doc_veiculo: form.doc_veiculo ?? "",
           foto_moto: form.foto_moto ?? "",
           doc_endereco: form.doc_endereco ?? "",
+          ear: !!form.ear,
+          vistoria_status: form.vistoria_status ?? "pendente",
+          vistoria_em: form.vistoria_em || null,
+          prioridade_criterios: form.prioridade_criterios ?? {},
           senha_inicial: form.senha_inicial || undefined,
         } as any,
       }),
@@ -125,9 +148,10 @@ export function MotoristaDialog({
           </DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="dados">
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="dados">Dados</TabsTrigger>
             <TabsTrigger value="veiculo">Veículo</TabsTrigger>
+            <TabsTrigger value="avaliacao">Avaliação</TabsTrigger>
             <TabsTrigger value="docs">Documentos</TabsTrigger>
           </TabsList>
 
@@ -211,6 +235,58 @@ export function MotoristaDialog({
               <div>
                 <Label>Cidade</Label>
                 <Input value={form.cidade ?? ""} onChange={(e) => set("cidade")(e.target.value)} />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="avaliacao" className="space-y-4 pt-3">
+            <div className="rounded-md border p-3 space-y-2">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <Checkbox checked={!!form.ear} onCheckedChange={(v) => set("ear")(!!v)} />
+                <div>
+                  <div className="font-medium text-sm">EAR — Exerce Atividade Remunerada</div>
+                  <p className="text-xs text-muted-foreground">CNH com observação "EAR" (exigida para transporte remunerado de passageiros).</p>
+                </div>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Status da vistoria</Label>
+                <Select value={form.vistoria_status ?? "pendente"} onValueChange={(v) => set("vistoria_status")(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="aprovada">Aprovada</SelectItem>
+                    <SelectItem value="reprovada">Reprovada</SelectItem>
+                    <SelectItem value="vencida">Vencida</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Data da vistoria</Label>
+                <Input type="date" value={form.vistoria_em ?? ""} onChange={(e) => set("vistoria_em")(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Critérios de prioridade na distribuição</Label>
+              <p className="text-xs text-muted-foreground">Marque os critérios atendidos. Influenciam na ordem de oferta automática.</p>
+              <div className="grid grid-cols-2 gap-2 rounded-md border p-3">
+                {([
+                  { k: "experiencia", t: "Experiência (>6 meses na frota)" },
+                  { k: "avaliacao", t: "Boa avaliação (sem ocorrências graves)" },
+                  { k: "equipamentos", t: "Equipamentos completos (baú, capacete homologado, capa)" },
+                  { k: "pontualidade", t: "Pontualidade (cumpre horários)" },
+                ] as const).map((c) => (
+                  <label key={c.k} className="flex items-start gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={!!form.prioridade_criterios?.[c.k]}
+                      onCheckedChange={(v) => setCriterio(c.k)(!!v)}
+                    />
+                    <span>{c.t}</span>
+                  </label>
+                ))}
               </div>
             </div>
           </TabsContent>

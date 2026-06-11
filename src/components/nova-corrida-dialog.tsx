@@ -121,6 +121,7 @@ export function NovaCorridaDialog({
   const [obs, setObs] = useState("");
   const [passageiros, setPassageiros] = useState<Array<{ id: string; nome: string; idade: string }>>([]);
   const [acompanhanteResponsavel, setAcompanhanteResponsavel] = useState(false);
+  const [solicitacoesEspeciais, setSolicitacoesEspeciais] = useState<string[]>([]);
   const [buscandoCli, setBuscandoCli] = useState(false);
   const [cliNaoEncontrado, setCliNaoEncontrado] = useState(false);
 
@@ -392,6 +393,7 @@ export function NovaCorridaDialog({
           nome: p.nome || null,
           idade: isNaN(p.idade) ? null : p.idade,
         })) as any,
+        solicitacoes_especiais: solicitacoesEspeciais,
       })
       .select("id")
       .single();
@@ -732,6 +734,41 @@ export function NovaCorridaDialog({
             </div>
           )}
         </div>
+
+        <div className="grid gap-1.5">
+          <Label>Solicitações especiais (opcional)</Label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { v: "animal", t: "🐾 Animal" },
+              { v: "bagagem", t: "🎒 Bagagem volumosa" },
+              { v: "3passageiro", t: "👥 3º passageiro" },
+              { v: "capa_chuva", t: "☔ Capa de chuva" },
+              { v: "capacete_extra", t: "🪖 Capacete extra" },
+            ].map((o) => {
+              const ativo = solicitacoesEspeciais.includes(o.v);
+              return (
+                <button
+                  key={o.v}
+                  type="button"
+                  onClick={() =>
+                    setSolicitacoesEspeciais((arr) =>
+                      ativo ? arr.filter((x) => x !== o.v) : [...arr, o.v],
+                    )
+                  }
+                  className={`px-3 py-1.5 rounded-full text-xs border transition ${
+                    ativo
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted/30 hover:bg-muted border-border"
+                  }`}
+                >
+                  {o.t}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[11px] text-muted-foreground">Exibidas para o motociclista na hora da oferta.</p>
+        </div>
+
 
         <div className="grid gap-1.5">
           <Label>Observações</Label>

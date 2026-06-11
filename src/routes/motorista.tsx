@@ -71,6 +71,7 @@ type Corrida = {
   motorista_codigo?: string | null;
   paradas?: Parada[] | null;
   pagamento?: string | null;
+  solicitacoes_especiais?: string[] | null;
 };
 type Oferta = {
   ofertaId: number;
@@ -1073,6 +1074,36 @@ function CorridaTela({
             Ver trajeto
           </button>
         </div>
+
+        {Array.isArray(corrida.solicitacoes_especiais) && corrida.solicitacoes_especiais.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "0 4px 6px" }}>
+            {corrida.solicitacoes_especiais.map((s) => {
+              const label = ({
+                animal: "🐾 Animal",
+                bagagem: "🎒 Bagagem",
+                "3passageiro": "👥 3º passageiro",
+                capa_chuva: "☔ Capa de chuva",
+                capacete_extra: "🪖 Capacete extra",
+              } as Record<string, string>)[s] ?? s;
+              return (
+                <span
+                  key={s}
+                  style={{
+                    background: "#3a2c0a",
+                    color: "#f7c600",
+                    border: "1px solid #5a4416",
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  {label}
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         {/* Etapa ativa — único endereço, único botão */}
         {etapa && (

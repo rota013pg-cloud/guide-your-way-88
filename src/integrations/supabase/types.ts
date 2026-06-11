@@ -205,6 +205,7 @@ export type Database = {
           paradas: Json
           passageiros: Json
           rodada_atual: number
+          solicitacoes_especiais: string[]
           status: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente: string | null
           tipo: string | null
@@ -240,6 +241,7 @@ export type Database = {
           paradas?: Json
           passageiros?: Json
           rodada_atual?: number
+          solicitacoes_especiais?: string[]
           status?: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente?: string | null
           tipo?: string | null
@@ -275,6 +277,7 @@ export type Database = {
           paradas?: Json
           passageiros?: Json
           rodada_atual?: number
+          solicitacoes_especiais?: string[]
           status?: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente?: string | null
           tipo?: string | null
@@ -663,6 +666,7 @@ export type Database = {
           doc_cnh: string | null
           doc_endereco: string | null
           doc_veiculo: string | null
+          ear: boolean
           endereco: string | null
           foto: string | null
           foto_moto: string | null
@@ -673,9 +677,12 @@ export type Database = {
           pausado_em: string | null
           pausado_motivo: string | null
           placa: string | null
+          prioridade_criterios: Json
           status: Database["public"]["Enums"]["status_motorista"]
           telefone: string | null
           telefone_familiar: string | null
+          vistoria_em: string | null
+          vistoria_status: string
         }
         Insert: {
           atualizado_em?: string
@@ -690,6 +697,7 @@ export type Database = {
           doc_cnh?: string | null
           doc_endereco?: string | null
           doc_veiculo?: string | null
+          ear?: boolean
           endereco?: string | null
           foto?: string | null
           foto_moto?: string | null
@@ -700,9 +708,12 @@ export type Database = {
           pausado_em?: string | null
           pausado_motivo?: string | null
           placa?: string | null
+          prioridade_criterios?: Json
           status?: Database["public"]["Enums"]["status_motorista"]
           telefone?: string | null
           telefone_familiar?: string | null
+          vistoria_em?: string | null
+          vistoria_status?: string
         }
         Update: {
           atualizado_em?: string
@@ -717,6 +728,7 @@ export type Database = {
           doc_cnh?: string | null
           doc_endereco?: string | null
           doc_veiculo?: string | null
+          ear?: boolean
           endereco?: string | null
           foto?: string | null
           foto_moto?: string | null
@@ -727,9 +739,12 @@ export type Database = {
           pausado_em?: string | null
           pausado_motivo?: string | null
           placa?: string | null
+          prioridade_criterios?: Json
           status?: Database["public"]["Enums"]["status_motorista"]
           telefone?: string | null
           telefone_familiar?: string | null
+          vistoria_em?: string | null
+          vistoria_status?: string
         }
         Relationships: []
       }

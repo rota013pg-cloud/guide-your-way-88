@@ -76,6 +76,15 @@ const MotoristaSchema = z.object({
   doc_veiculo: z.string().trim().max(500).optional().default(""),
   foto_moto: z.string().trim().max(500).optional().default(""),
   doc_endereco: z.string().trim().max(500).optional().default(""),
+  ear: z.boolean().optional().default(false),
+  vistoria_status: z.enum(["pendente", "aprovada", "reprovada", "vencida"]).optional().default("pendente"),
+  vistoria_em: z.string().trim().max(20).optional().nullable(),
+  prioridade_criterios: z.object({
+    experiencia: z.boolean().optional(),
+    avaliacao: z.boolean().optional(),
+    equipamentos: z.boolean().optional(),
+    pontualidade: z.boolean().optional(),
+  }).partial().optional().default({}),
   senha_inicial: z.string().trim().min(4).max(50).optional(),
 });
 
@@ -99,6 +108,10 @@ export const salvarMotorista = createServerFn({ method: "POST" })
       doc_veiculo: data.doc_veiculo,
       foto_moto: data.foto_moto,
       doc_endereco: data.doc_endereco,
+      ear: data.ear,
+      vistoria_status: data.vistoria_status,
+      vistoria_em: data.vistoria_em || null,
+      prioridade_criterios: data.prioridade_criterios as any,
     };
 
     if (data.codigo) {

@@ -84,6 +84,10 @@ export function MotoristaDialog({
         doc_veiculo: motorista?.doc_veiculo ?? "",
         foto_moto: motorista?.foto_moto ?? "",
         doc_endereco: motorista?.doc_endereco ?? "",
+        ear: motorista?.ear ?? false,
+        vistoria_status: motorista?.vistoria_status ?? "pendente",
+        vistoria_em: motorista?.vistoria_em ?? "",
+        prioridade_criterios: motorista?.prioridade_criterios ?? {},
         senha_inicial: "",
       });
     }
@@ -91,7 +95,9 @@ export function MotoristaDialog({
 
   const codigoUso = motorista?.codigo || proxCodigo || "novo";
 
-  const set = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: keyof typeof form) => (v: any) => setForm((f) => ({ ...f, [k]: v }));
+  const setCriterio = (k: keyof PrioridadeCriterios) => (v: boolean) =>
+    setForm((f) => ({ ...f, prioridade_criterios: { ...(f.prioridade_criterios ?? {}), [k]: v } }));
 
   const mut = useMutation({
     mutationFn: () =>
@@ -113,6 +119,10 @@ export function MotoristaDialog({
           doc_veiculo: form.doc_veiculo ?? "",
           foto_moto: form.foto_moto ?? "",
           doc_endereco: form.doc_endereco ?? "",
+          ear: !!form.ear,
+          vistoria_status: form.vistoria_status ?? "pendente",
+          vistoria_em: form.vistoria_em || null,
+          prioridade_criterios: form.prioridade_criterios ?? {},
           senha_inicial: form.senha_inicial || undefined,
         } as any,
       }),

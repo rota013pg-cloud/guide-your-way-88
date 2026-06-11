@@ -120,6 +120,9 @@ function ClientesPage() {
                   <Button size="icon" variant="ghost" title="Nova corrida" onClick={() => novaCorrida(c)}>
                     <Bike className="h-4 w-4 text-primary" />
                   </Button>
+                  <Button size="icon" variant="ghost" title="Histórico" onClick={() => setHistoricoAlvo({ codigo: c.codigo, nome: c.nome })}>
+                    <History className="h-4 w-4" />
+                  </Button>
                   <Button size="icon" variant="ghost" onClick={() => { setEditando(c); setOpen(true); }}>
                     <Pencil className="h-4 w-4" />
                   </Button>

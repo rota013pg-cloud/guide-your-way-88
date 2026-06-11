@@ -32,6 +32,7 @@ function MotoristasPage() {
   const [open, setOpen] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [adminAlvo, setAdminAlvo] = useState<any>(null);
+  const [historicoAlvo, setHistoricoAlvo] = useState<{ codigo: string; nome: string } | null>(null);
 
   const { data: motoristas = [], isLoading } = useQuery({
     queryKey: ["motoristas"],

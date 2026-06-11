@@ -974,12 +974,19 @@ function CorridaTela({
         };
       }
       const destinoLabel = primeira ? `Parada 1` : "destino";
+      const iniciarViagem = () => {
+        onMudarStatus("Em viagem");
+        onWaze(proximoApos("origem"));
+      };
       acao = {
         txt: `▶️ Iniciar viagem — ${destinoLabel}`,
         classe: "chegou",
         onClick: () => {
-          onMudarStatus("Em viagem");
-          onWaze(proximoApos("origem"));
+          if (exigePagto && !pagtoOk) {
+            setConfirmarPagto(() => iniciarViagem);
+          } else {
+            iniciarViagem();
+          }
         },
       };
       voltar = { txt: "← Voltar (ainda não embarcou)", onClick: () => onMudarStatus("A caminho") };

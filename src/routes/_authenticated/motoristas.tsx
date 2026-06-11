@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Search, Shield, Lock, Pause, Play, Smartphone } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Shield, Lock, Pause, Play, Smartphone, History } from "lucide-react";
 import { listarMotoristas, excluirMotorista, pausarMotorista, retomarMotorista } from "@/lib/motoristas.functions";
 import { MotoristaDialog } from "@/components/motorista-dialog";
 import { MotoristaAdminPanel } from "@/components/motorista-admin-panel";
+import { OcorrenciasDialog } from "@/components/ocorrencias-dialog";
 import { useRole } from "@/hooks/use-role";
 import { toast } from "sonner";
 
@@ -31,6 +32,7 @@ function MotoristasPage() {
   const [open, setOpen] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [adminAlvo, setAdminAlvo] = useState<any>(null);
+  const [historicoAlvo, setHistoricoAlvo] = useState<{ codigo: string; nome: string } | null>(null);
 
   const { data: motoristas = [], isLoading } = useQuery({
     queryKey: ["motoristas"],
@@ -187,6 +189,9 @@ function MotoristasPage() {
                   {isAdmin ? <Shield className="h-3 w-3 mr-1" /> : <Smartphone className="h-3 w-3 mr-1" />}
                   {isAdmin ? "Acesso" : "Resetar"}
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => setHistoricoAlvo({ codigo: m.codigo, nome: m.nome })}>
+                  <History className="h-3 w-3 mr-1" /> Histórico
+                </Button>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -206,6 +211,15 @@ function MotoristasPage() {
           open={!!adminAlvo}
           onOpenChange={(v) => !v && setAdminAlvo(null)}
           motorista={adminAlvo}
+        />
+      )}
+      {historicoAlvo && (
+        <OcorrenciasDialog
+          open={!!historicoAlvo}
+          onOpenChange={(v) => { if (!v) setHistoricoAlvo(null); }}
+          tipoPessoa="motorista"
+          pessoaCodigo={historicoAlvo.codigo}
+          pessoaNome={historicoAlvo.nome}
         />
       )}
     </div>

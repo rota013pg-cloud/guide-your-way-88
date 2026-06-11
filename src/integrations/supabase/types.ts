@@ -189,6 +189,8 @@ export type Database = {
           destino_lat: number | null
           destino_lng: number | null
           distancia_km: number | null
+          eta_coleta_atualizado_em: string | null
+          eta_coleta_segundos: number | null
           finalizada_em: string | null
           id: number
           modelo: Database["public"]["Enums"]["modelo_corrida"]
@@ -201,6 +203,7 @@ export type Database = {
           origem_lng: number | null
           pagamento: Database["public"]["Enums"]["tipo_pagamento"] | null
           paradas: Json
+          passageiros: Json
           rodada_atual: number
           status: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente: string | null
@@ -221,6 +224,8 @@ export type Database = {
           destino_lat?: number | null
           destino_lng?: number | null
           distancia_km?: number | null
+          eta_coleta_atualizado_em?: string | null
+          eta_coleta_segundos?: number | null
           finalizada_em?: string | null
           id?: number
           modelo?: Database["public"]["Enums"]["modelo_corrida"]
@@ -233,6 +238,7 @@ export type Database = {
           origem_lng?: number | null
           pagamento?: Database["public"]["Enums"]["tipo_pagamento"] | null
           paradas?: Json
+          passageiros?: Json
           rodada_atual?: number
           status?: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente?: string | null
@@ -253,6 +259,8 @@ export type Database = {
           destino_lat?: number | null
           destino_lng?: number | null
           distancia_km?: number | null
+          eta_coleta_atualizado_em?: string | null
+          eta_coleta_segundos?: number | null
           finalizada_em?: string | null
           id?: number
           modelo?: Database["public"]["Enums"]["modelo_corrida"]
@@ -265,6 +273,7 @@ export type Database = {
           origem_lng?: number | null
           pagamento?: Database["public"]["Enums"]["tipo_pagamento"] | null
           paradas?: Json
+          passageiros?: Json
           rodada_atual?: number
           status?: Database["public"]["Enums"]["status_corrida"]
           telefone_cliente?: string | null
@@ -753,6 +762,59 @@ export type Database = {
           texto?: string
         }
         Relationships: []
+      }
+      ocorrencias_pessoa: {
+        Row: {
+          atualizado_em: string
+          corrida_id: number | null
+          criado_em: string
+          descricao: string
+          evidencia_url: string | null
+          id: string
+          nivel: number
+          operador_id: string | null
+          operador_nome: string | null
+          pessoa_codigo: string
+          tipo: string
+          tipo_pessoa: string
+        }
+        Insert: {
+          atualizado_em?: string
+          corrida_id?: number | null
+          criado_em?: string
+          descricao: string
+          evidencia_url?: string | null
+          id?: string
+          nivel?: number
+          operador_id?: string | null
+          operador_nome?: string | null
+          pessoa_codigo: string
+          tipo: string
+          tipo_pessoa: string
+        }
+        Update: {
+          atualizado_em?: string
+          corrida_id?: number | null
+          criado_em?: string
+          descricao?: string
+          evidencia_url?: string | null
+          id?: string
+          nivel?: number
+          operador_id?: string | null
+          operador_nome?: string | null
+          pessoa_codigo?: string
+          tipo?: string
+          tipo_pessoa?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ocorrencias_pessoa_corrida_id_fkey"
+            columns: ["corrida_id"]
+            isOneToOne: false
+            referencedRelation: "corridas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {

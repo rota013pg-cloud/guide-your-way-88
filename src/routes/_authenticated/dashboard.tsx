@@ -24,7 +24,7 @@ type Motorista = { codigo: string; nome: string; moto: string | null; placa: str
 type Corrida = {
   id: number; cliente: string | null; origem: string; destino: string | null;
   status: string; valor_final: number; motorista: string | null; motorista_codigo: string | null;
-  criado_em: string;
+  criado_em: string; eta_coleta_segundos: number | null;
 };
 type Gps = { motorista_codigo: string; lat: number; lng: number; criado_em: string };
 
@@ -47,7 +47,7 @@ function DashboardPage() {
     const dia = hojeOp.toISOString().slice(0, 10);
     const [m, c, g, cob] = await Promise.all([
       supabase.from("motoristas").select("codigo,nome,moto,placa,status").order("nome"),
-      supabase.from("corridas").select("id,cliente,origem,destino,status,valor_final,motorista,motorista_codigo,criado_em").order("criado_em", { ascending: false }).limit(50),
+      supabase.from("corridas").select("id,cliente,origem,destino,status,valor_final,motorista,motorista_codigo,criado_em,eta_coleta_segundos").order("criado_em", { ascending: false }).limit(50),
       supabase.from("motorista_gps").select("motorista_codigo,lat,lng,criado_em").order("criado_em", { ascending: false }).limit(200),
       supabase.from("motorista_cobranca").select("status").eq("dia_op", dia).in("status", ["Pendente", "Aguardando", "Bloqueado"]),
     ]);
@@ -284,6 +284,11 @@ function CorridaAtivaCard({
           </div>
           <div className="text-xs text-muted-foreground truncate">📍 {c.origem}</div>
           {c.destino && <div className="text-xs text-muted-foreground truncate">🏁 {c.destino}</div>}
+          {c.eta_coleta_segundos != null && c.eta_coleta_segundos > 0 && (c.status === "Aceita" || c.status === "A caminho") && (
+            <div className="text-[11px] font-medium text-primary">
+              ⏱ Coleta em ~{Math.max(1, Math.round(c.eta_coleta_segundos / 60))} min
+            </div>
+          )}
         </div>
         <div className="text-right shrink-0">
           <Badge className={corStatus}>{c.status}</Badge>

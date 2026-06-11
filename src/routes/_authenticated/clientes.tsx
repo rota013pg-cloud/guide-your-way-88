@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, Bike } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Bike, History } from "lucide-react";
 import { listarClientes, excluirCliente } from "@/lib/clientes.functions";
 import { ClienteDialog } from "@/components/cliente-dialog";
 import { NovaCorridaDialog, type ClientePrefill } from "@/components/nova-corrida-dialog";
+import { OcorrenciasDialog } from "@/components/ocorrencias-dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
@@ -30,6 +31,7 @@ function ClientesPage() {
 
   const [corridaOpen, setCorridaOpen] = useState(false);
   const [corridaPrefill, setCorridaPrefill] = useState<ClientePrefill | null>(null);
+  const [historicoAlvo, setHistoricoAlvo] = useState<{ codigo: string; nome: string } | null>(null);
 
   const { data: clientes = [], isLoading } = useQuery({
     queryKey: ["clientes"],
@@ -118,6 +120,9 @@ function ClientesPage() {
                   <Button size="icon" variant="ghost" title="Nova corrida" onClick={() => novaCorrida(c)}>
                     <Bike className="h-4 w-4 text-primary" />
                   </Button>
+                  <Button size="icon" variant="ghost" title="Histórico" onClick={() => setHistoricoAlvo({ codigo: c.codigo, nome: c.nome })}>
+                    <History className="h-4 w-4" />
+                  </Button>
                   <Button size="icon" variant="ghost" onClick={() => { setEditando(c); setOpen(true); }}>
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -143,6 +148,15 @@ function ClientesPage() {
         onOpenChange={setCorridaOpen}
         clientePrefill={corridaPrefill}
       />
+      {historicoAlvo && (
+        <OcorrenciasDialog
+          open={!!historicoAlvo}
+          onOpenChange={(v) => { if (!v) setHistoricoAlvo(null); }}
+          tipoPessoa="cliente"
+          pessoaCodigo={historicoAlvo.codigo}
+          pessoaNome={historicoAlvo.nome}
+        />
+      )}
     </div>
   );
 }

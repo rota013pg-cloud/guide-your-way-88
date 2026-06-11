@@ -32,6 +32,42 @@ async function validarToken(codigo: string, token: string) {
   return data;
 }
 
+// Calcula ETA (em segundos) via Google Routes API através do gateway Lovable.
+// Retorna 0 se não houver chave ou rota — chamadores devem tratar como "sem ETA".
+async function calcularEtaSegundos(
+  origem: { lat: number; lng: number },
+  destino: { lat: number; lng: number },
+): Promise<number> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const connKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!lovableKey || !connKey) return 0;
+  const res = await fetch(
+    "https://connector-gateway.lovable.dev/google_maps/routes/directions/v2:computeRoutes",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableKey}`,
+        "X-Connection-Api-Key": connKey,
+        "Content-Type": "application/json",
+        "X-Goog-FieldMask": "routes.duration",
+      },
+      body: JSON.stringify({
+        origin: { location: { latLng: { latitude: origem.lat, longitude: origem.lng } } },
+        destination: { location: { latLng: { latitude: destino.lat, longitude: destino.lng } } },
+        travelMode: "TWO_WHEELER",
+        routingPreference: "TRAFFIC_AWARE",
+        languageCode: "pt-BR",
+        regionCode: "BR",
+      }),
+    },
+  );
+  if (!res.ok) return 0;
+  const json = (await res.json()) as { routes?: Array<{ duration?: string }> };
+  const dur = json.routes?.[0]?.duration;
+  if (!dur) return 0;
+  return parseInt(String(dur).replace(/s$/, ""), 10) || 0;
+}
+
 // ─── LOGIN ──────────────────────────────────────────────
 export const motoristaLogin = createServerFn({ method: "POST" })
   .inputValidator((d) =>
@@ -283,6 +319,37 @@ export const motoristaAceitarOferta = createServerFn({ method: "POST" })
       }
     } catch (e) {
       console.error("[creditos-diaria] falhou auto-baixa:", e);
+    }
+
+    // ── ETA de coleta via Google Routes API ──
+    // Best-effort: não bloqueia o aceite se falhar (rede, sem GPS, etc.).
+    try {
+      if (corrida?.origem_lat && corrida?.origem_lng) {
+        const { data: gps } = await supabaseAdmin
+          .from("motorista_gps")
+          .select("lat,lng,criado_em")
+          .eq("motorista_codigo", data.codigo)
+          .order("criado_em", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (gps?.lat && gps?.lng) {
+          const segundos = await calcularEtaSegundos(
+            { lat: gps.lat, lng: gps.lng },
+            { lat: corrida.origem_lat, lng: corrida.origem_lng },
+          );
+          if (segundos && segundos > 0) {
+            await supabaseAdmin
+              .from("corridas")
+              .update({
+                eta_coleta_segundos: segundos,
+                eta_coleta_atualizado_em: new Date().toISOString(),
+              })
+              .eq("id", corridaId);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("[eta-coleta] falhou:", e);
     }
 
     return { corrida };

@@ -34,7 +34,7 @@ const CENTRO: [number, number] = [-24.0122, -46.4097];
 
 export default function MapInner({ motoristas }: { motoristas: MapMotorista[] }) {
   const center: [number, number] =
-    motoristas.length > 0 ? [Number(motociclistas[0].lat), Number(motociclistas[0].lng)] : CENTRO;
+    motoristas.length > 0 ? [Number(motoristas[0].lat), Number(motoristas[0].lng)] : CENTRO;
 
   return (
     <MapContainer

@@ -10,9 +10,11 @@ import { toast } from "sonner";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
 import { NovaCorridaDialog } from "@/components/nova-corrida-dialog";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { DashboardKpis } from "@/components/dashboard-kpis";
 import { MapPin, Users, ListChecks, CheckCircle2, XCircle, UserPlus, DollarSign, Rocket } from "lucide-react";
 import { dispararOfertas, lancarCorridaAgendada } from "@/lib/corridas.functions";
 import { marcarStaleOffline } from "@/lib/motoristas.functions";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -180,7 +182,10 @@ function DashboardPage() {
         </div>
       </div>
 
+      <DashboardKpis />
+
       <div className="grid gap-4 lg:grid-cols-[1fr_400px]">
+
         <div className="space-y-4">
           <Card className="p-0 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">

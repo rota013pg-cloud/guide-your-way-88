@@ -443,6 +443,9 @@ export type Database = {
         Row: {
           atualizado_em: string
           comprovante_enviado_em: string | null
+          comprovante_rejeicao_motivo: string | null
+          comprovante_rejeitado_em: string | null
+          comprovante_url: string | null
           criado_em: string
           dia_op: string
           disparou_aviso_em: string | null
@@ -459,6 +462,9 @@ export type Database = {
         Insert: {
           atualizado_em?: string
           comprovante_enviado_em?: string | null
+          comprovante_rejeicao_motivo?: string | null
+          comprovante_rejeitado_em?: string | null
+          comprovante_url?: string | null
           criado_em?: string
           dia_op: string
           disparou_aviso_em?: string | null
@@ -475,6 +481,9 @@ export type Database = {
         Update: {
           atualizado_em?: string
           comprovante_enviado_em?: string | null
+          comprovante_rejeicao_motivo?: string | null
+          comprovante_rejeitado_em?: string | null
+          comprovante_url?: string | null
           criado_em?: string
           dia_op?: string
           disparou_aviso_em?: string | null

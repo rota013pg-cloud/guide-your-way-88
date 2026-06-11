@@ -672,12 +672,12 @@ function MotoristaApp() {
           cobranca={cobranca}
           config={cobrancaCfg}
           enviando={enviandoLib}
-          onJaPaguei={async () => {
+          onJaPaguei={async (comprovanteBase64) => {
             if (!sessao) return;
             setEnviandoLib(true);
             try {
-              await solicitarLibFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } });
-              mostrarToast("Aguardando confirmação da central");
+              await solicitarLibFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token, comprovanteBase64 } });
+              mostrarToast("Comprovante enviado — aguardando confirmação");
             } catch (e) {
               mostrarToast(e instanceof Error ? e.message : "Erro");
             } finally {
@@ -689,6 +689,7 @@ function MotoristaApp() {
         />
 
       )}
+
 
       {sessao && tela !== "login" && (
         <MotoristaBottomNav

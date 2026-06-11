@@ -31,6 +31,8 @@ import {
 import { listarCobrancasHoje, liberarMotorista, bloquearMotorista } from "@/lib/cobranca.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { CobrancasExtrasPanel, MarcarDiariaComExtrasDialog } from "@/components/cobrancas-extras-panel";
+import { ComprovantesPendentesPanel } from "@/components/comprovantes-pendentes-panel";
+
 // pdf-lib é pesado e só precisa ao clicar "Gerar PDF" — import dinâmico.
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
@@ -155,7 +157,10 @@ function FinanceiroPage() {
         </p>
       </div>
 
+      <ComprovantesPendentesPanel />
+
       {/* ─── Cards de resumo ─── */}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="p-4">
           <div className="text-xs uppercase text-muted-foreground">Diárias pagas</div>

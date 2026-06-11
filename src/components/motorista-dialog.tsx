@@ -14,6 +14,13 @@ import { maskTelefone, maskCPF } from "@/lib/masks";
 import { previewProximoCodigoMotorista, salvarMotorista } from "@/lib/motoristas.functions";
 import { toast } from "sonner";
 
+type PrioridadeCriterios = {
+  experiencia?: boolean;
+  avaliacao?: boolean;
+  equipamentos?: boolean;
+  pontualidade?: boolean;
+};
+
 type Motorista = {
   codigo: string;
   nome: string;
@@ -31,6 +38,10 @@ type Motorista = {
   doc_veiculo?: string | null;
   foto_moto?: string | null;
   doc_endereco?: string | null;
+  ear?: boolean | null;
+  vistoria_status?: "pendente" | "aprovada" | "reprovada" | "vencida" | null;
+  vistoria_em?: string | null;
+  prioridade_criterios?: PrioridadeCriterios | null;
 };
 
 export function MotoristaDialog({

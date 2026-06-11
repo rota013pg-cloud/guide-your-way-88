@@ -59,7 +59,7 @@ function HistoricoPage() {
   });
   const [ate, setAte] = useState(hojeISO());
   const [status, setStatus] = useState<string>("Todos");
-  const [motociclista, setMotorista] = useState<string>("__all");
+  const [motorista, setMotorista] = useState<string>("__all");
   const [cliente, setCliente] = useState<string>("");
   const [clienteAplicado, setClienteAplicado] = useState<string>("");
   const [exportando, setExportando] = useState(false);

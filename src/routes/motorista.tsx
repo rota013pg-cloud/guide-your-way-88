@@ -21,6 +21,7 @@ import {
 import { expirarOferta } from "@/lib/corridas.functions";
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
+import { PanicButton } from "@/components/motorista/panic-button";
 import { playChatBeep } from "@/lib/notification-sound";
 import { LogoRota013 } from "@/components/logo-rota013";
 
@@ -696,6 +697,16 @@ function MotoristaApp() {
           onAbrirCobranca={() => setForcarCobranca(true)}
         />
       )}
+
+      {sessao && tela !== "login" && (
+        <PanicButton
+          codigo={sessao.motorista.codigo}
+          token={sessao.token}
+          corridaId={corridaAtual?.id ?? null}
+          onToast={mostrarToast}
+        />
+      )}
+
 
       {carregando && <AguardeOverlay />}
       {toast && <div className="moto-toast">{toast}</div>}

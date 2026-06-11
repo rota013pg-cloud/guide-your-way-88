@@ -513,3 +513,34 @@ export const motoristaConcluirParada = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+// ─── ALERTAS DE SEGURANÇA (pânico / comportamento suspeito) ────
+export const motoristaEnviarAlerta = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      codigo: z.string(),
+      token: z.string(),
+      tipo: z.enum(["panico", "suspeito"]),
+      corridaId: z.number().nullable().optional(),
+      lat: z.number().nullable().optional(),
+      lng: z.number().nullable().optional(),
+      observacao: z.string().max(500).optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await validarToken(data.codigo, data.token);
+    const { data: alerta, error } = await supabaseAdmin
+      .from("motorista_alertas")
+      .insert({
+        motorista_codigo: data.codigo,
+        tipo: data.tipo,
+        corrida_id: data.corridaId ?? null,
+        latitude: data.lat ?? null,
+        longitude: data.lng ?? null,
+        observacao: data.observacao ?? null,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, id: alerta.id };
+  });

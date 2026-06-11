@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatNotifier } from "@/components/chat-notifier";
 import { CobrancaNotifier } from "@/components/cobranca-notifier";
+import { AlertaNotifier } from "@/components/alerta-notifier";
 import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
 import {
   decideDashboardAuth,
@@ -106,6 +107,8 @@ function AuthenticatedLayout() {
             <div className="flex-1" />
             <CobrancaNotifier />
             <ChatNotifier />
+            <AlertaNotifier />
+
             {email && !email.endsWith("@painel.local") && (
               <span className="text-xs text-muted-foreground truncate max-w-[40ch]">{email}</span>
             )}

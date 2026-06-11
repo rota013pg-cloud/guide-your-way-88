@@ -330,6 +330,56 @@ export type Database = {
           },
         ]
       }
+      motorista_alertas: {
+        Row: {
+          atendido_em: string | null
+          atendido_observacao: string | null
+          atendido_por: string | null
+          corrida_id: number | null
+          criado_em: string
+          id: number
+          latitude: number | null
+          longitude: number | null
+          motorista_codigo: string
+          observacao: string | null
+          tipo: Database["public"]["Enums"]["tipo_alerta_motorista"]
+        }
+        Insert: {
+          atendido_em?: string | null
+          atendido_observacao?: string | null
+          atendido_por?: string | null
+          corrida_id?: number | null
+          criado_em?: string
+          id?: number
+          latitude?: number | null
+          longitude?: number | null
+          motorista_codigo: string
+          observacao?: string | null
+          tipo: Database["public"]["Enums"]["tipo_alerta_motorista"]
+        }
+        Update: {
+          atendido_em?: string | null
+          atendido_observacao?: string | null
+          atendido_por?: string | null
+          corrida_id?: number | null
+          criado_em?: string
+          id?: number
+          latitude?: number | null
+          longitude?: number | null
+          motorista_codigo?: string
+          observacao?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_alerta_motorista"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motorista_alertas_corrida_id_fkey"
+            columns: ["corrida_id"]
+            isOneToOne: false
+            referencedRelation: "corridas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       motorista_auth: {
         Row: {
           atualizado_em: string
@@ -881,6 +931,7 @@ export type Database = {
         | "Bloqueado"
         | "Excluido"
       status_motorista_auth: "Ativo" | "Bloqueado"
+      tipo_alerta_motorista: "panico" | "suspeito"
       tipo_pagamento: "Dinheiro" | "Pix" | "Cartão" | "Maquininha" | "Conta"
     }
     CompositeTypes: {
@@ -1043,6 +1094,7 @@ export const Constants = {
         "Excluido",
       ],
       status_motorista_auth: ["Ativo", "Bloqueado"],
+      tipo_alerta_motorista: ["panico", "suspeito"],
       tipo_pagamento: ["Dinheiro", "Pix", "Cartão", "Maquininha", "Conta"],
     },
   },

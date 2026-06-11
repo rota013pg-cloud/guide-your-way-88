@@ -1,128 +1,47 @@
+# Plano de implementação — Manual Rota013
 
-# Plano: Financeiro + App Motorista Premium + Painel Mobile
-
-Trabalho extenso dividido em 4 frentes. Posso entregar tudo em uma única rodada, mas recomendo executar em fases para facilitar testes.
-
----
-
-## Fase 1 — Módulo Financeiro (cobrança automática)
-
-### Banco (migration)
-- Adicionar em `app_config` (via JSON): `chavePix`, `tipoChavePix`, `whatsappCentral` (já existe), `percentualBloqueio` (default 50).
-- Nova tabela `motorista_cobranca`:
-  - `motorista_codigo`, `dia_op` (date), `status` ('Pendente'|'Aguardando'|'Pago'|'Bloqueado'), `faturamento_dia` (numeric), `disparou_aviso_em`, `disparou_bloqueio_em`, `comprovante_enviado_em`, `liberado_em`, `liberado_por`.
-  - Único por (motorista_codigo, dia_op).
-- Função SQL `recomputa_cobranca(motorista_codigo)`:
-  - Soma `valor_final` de corridas Concluídas no dia operacional.
-  - Cria/atualiza linha. Se faturamento > 0 e sem diária paga → status `Pendente`.
-  - Se faturamento >= (1 + percentualBloqueio/100) × valorDiaria → status `Bloqueado`.
-  - Se houver registro em `financeiro` tipo Diária no dia → status `Pago`.
-- Trigger em `corridas` (AFTER UPDATE de status para Concluída) chama `recomputa_cobranca`.
-- Trigger em `financeiro` (AFTER INSERT) marca cobrança como `Pago`.
-- Realtime: ADD `motorista_cobranca` ao publication.
-
-### Backend (server functions)
-- `src/lib/cobranca.functions.ts`:
-  - `listarCobrancasHoje()` — para painel operador.
-  - `minhaCobranca()` — para motorista (server fn auth motorista via sessão existente).
-  - `solicitarLiberacao(motoristaCodigo)` — motorista marca comprovante enviado.
-  - `liberarMotorista(motoristaCodigo)` — operador confirma pagamento, insere em `financeiro`.
-
-### UI Operador
-- Em `/financeiro`, painel novo "Cobranças do dia" listando motoristas com:
-  - Faturamento atual / valor diária / status / botão "Bloquear app" / "Confirmar pagamento e liberar".
-- Toast/notificação quando motorista atinge gatilho de bloqueio (via Realtime).
-- Toast quando motorista solicita liberação.
-
-### UI Motorista
-- Modal de aviso de pagamento (status Pendente): "Você atingiu o faturamento da diária. Pague R$ X via PIX." + botão **Copiar chave PIX** + botão **Já paguei** (envia solicitação) + nota "Envie o comprovante para WhatsApp da central para acelerar".
-- Modal de **bloqueio parcial** (status Bloqueado): tela cheia, app travado, mesmo conteúdo + botão WhatsApp.
-- App só volta a receber ofertas quando status virar `Pago`.
+Vou implementar as 19 atualizações em **5 fases sequenciais**, cada fase entregando valor utilizável. Ao final, reviso completamente a tela `Instruções` para refletir o sistema real.
 
 ---
 
-## Fase 2 — App Motorista PWA Premium
+## Fase 1 — Segurança (botão de pânico)
+1. **Tabela `motorista_alertas`** (id, motorista_codigo, tipo: panico|suspeito, lat, lng, criado_em, atendido_em, atendido_por, observacao) com RLS + GRANTs + realtime.
+2. **App motociclista**: botão fixo de pânico (modal de confirmação 3s) + botão "Comportamento suspeito" no card da corrida ativa. Envia localização atual.
+3. **Painel**: modal de alerta crítico (som + vibração visual) listando alertas abertos, com link `tel:190`, `tel:192`, `tel:193` e botão "Marcar atendido". Notifier global em `__root.tsx`.
 
-### Instalabilidade
-- Adicionar `public/manifest.webmanifest` com `display: "standalone"`, ícones, theme_color, scope `/motorista`.
-- Adicionar meta tags iOS (apple-touch-icon, apple-mobile-web-app-capable).
-- **Sem service worker** (evita problemas no preview iframe — instalável basta).
-- `viewport`: `width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover`.
-- CSS: `touch-action: manipulation`, `overscroll-behavior: none`, bloqueio de rotação via `screen.orientation.lock('portrait')` quando suportado + CSS fallback.
+## Fase 2 — Fluxo de corrida
+4. **Modal "Simular corrida"** no `nova-corrida-dialog`: mostra resumo (cliente, trajeto, valor, forma pgto, ETA estimado).
+5. **Botão "Copiar mensagem WhatsApp"** com template configurável (cliente recebe valor + dados do motociclista após aceite).
+6. **Etapa "Aguardando confirmação do cliente"** antes de lançar — checkbox "Cliente confirmou".
+7. **ETA repassado ao painel**: quando motociclista aceita, calcula e exibe no card.
+8. **Tolerância 5 min ao chegar** (app motociclista): contador visual após "Cheguei", sem bloquear.
+9. **Confirmação "Pagamento recebido"** antes de iniciar viagem em corridas pagas no ato.
 
-### Layout mobile nativo
-- Refatorar `src/routes/motorista.tsx`:
-  - Header sticky com saudação + status motorista.
-  - Conteúdo em "telas" navegáveis (Home/Corrida atual, Histórico, Faturamento, Chat, Perfil).
-  - **Bottom navigation bar** fixo com 5 ícones: Início, Histórico, Faturamento, Chat, Perfil.
-  - Cards com sombras suaves, tipografia maior, áreas de toque ≥ 48px.
-  - Safe-area insets (`env(safe-area-inset-bottom)`).
-- Componentes novos:
-  - `MotoristaBottomNav`
-  - `MotoristaPerfilSheet` (alterar senha)
-  - `MotoristaChatSheet` (chat simples com operador — reusa `mural_recados` ou nova tabela `chat_motorista`)
-  - `MotoristaHistoricoSheet`
-  - `MotoristaFaturamentoSheet` (faturamento do dia + cobranças passadas)
+## Fase 3 — Histórico de pessoas (ocorrências)
+10. **Tabela `ocorrencias_pessoa`** (id, tipo_pessoa: cliente|motociclista|passageiro, pessoa_id, tipo: ocorrencia|elogio|reclamacao|orientacao|advertencia|suspensao, nivel 1-4, descricao, evidencia_url, operador_id, criado_em).
+11. **Dialog "Histórico" no card de cliente e motociclista**: lista + form de nova ocorrência + contadores no card (badge vermelho se reclamação recente).
+12. **Passageiros**: novo campo `passageiros` (jsonb) na corrida — nome, idade (bloqueio <16), com seu próprio histórico.
 
-### Chat motorista ↔ operador
-- Nova tabela `chat_motorista`: `motorista_codigo`, `autor` ('motorista'|'operador'), `texto`, `lido`, `criado_em`. Realtime habilitado.
-- Lado operador: aba "Chat" na sidebar com lista de conversas.
+## Fase 4 — Cadastro + solicitações especiais
+13. **Campo `ear` (boolean)** e `vistoria_status` em motoristas. Critérios de prioridade como checkboxes no cadastro (experiência, avaliação, equipamentos).
+14. **Solicitações especiais na corrida**: chips selecionáveis (Animal, Bagagem, 3º passageiro, Capa de chuva) → exibidos para motociclista.
 
----
+## Fase 5 — Financeiro + Dashboard
+15. **Validação de comprovante PIX**: motociclista anexa imagem ao solicitar liberação; painel mostra fila com Aprovar/Rejeitar.
+16. **Validade da diária até 06:00**: corrige texto/lógica onde necessário, aviso visual de bloqueio (≥150% sem pagar).
+17. **KPIs no dashboard**: cards com tempo médio atendimento, taxa cancelamento, ocorrências por nível (7d), tempo médio distribuição, inadimplência.
 
-## Fase 3 — Painel Operador Mobile
-
-- Aplicar mesmas regras de PWA (manifest único cobrindo painel + motorista, ou separar por scope).
-- Em `_authenticated.tsx`: detectar viewport mobile → renderizar layout alternativo com bottom nav (Dashboard, Corridas, Mural, Financeiro, Mais).
-- Sidebar atual continua para desktop. Em mobile, vira drawer + bottom nav.
-- Tabelas viram cards em mobile (já parcialmente, revisar Corridas/Financeiro/Histórico).
-- Bloqueios de zoom/rotação iguais ao motorista.
+## Final — Documentação
+18. **Reescrita completa de `/instrucoes`**: nova seção "Segurança" (pânico, ocorrências), atualização das seções existentes com os novos fluxos (simular, confirmar cliente, comprovante PIX, KPIs, solicitações especiais, EAR/vistoria), nova seção "Atalhos do motociclista" com tolerância 5 min e pagamento recebido. Remove qualquer texto desatualizado.
 
 ---
 
-## Fase 4 — Configurações
-- Em `/configuracoes` adicionar campos:
-  - Chave PIX, Tipo chave PIX (CPF/Email/Telefone/Aleatória).
-  - Percentual de gatilho de bloqueio (default 50%).
-  - WhatsApp da central (já existe).
+## Detalhes técnicos
+- Toda escrita do app motociclista passa por server fn com `validateMotoristaToken` (mantém arquitetura dual existente).
+- Tabelas novas: RLS + GRANT explícito (operador via `is_operador`, motorista via server fn admin).
+- Realtime habilitado em `motorista_alertas` (policy `anon` + GRANT `anon SELECT` para sub realtime).
+- PDFs (`historico-pdf`, `financeiro-pdf`) ganham linha de ocorrências relevantes.
+- KPIs calculados em server fn única `getDashboardKpis` (cache 30s no client).
 
----
-
-## Arquivos previstos
-
-**Migrations:** 1 migration cobrindo tabelas `motorista_cobranca`, `chat_motorista`, funções e triggers.
-
-**Criar:**
-- `src/lib/cobranca.functions.ts`
-- `src/lib/chat-motorista.functions.ts`
-- `src/components/motorista/bottom-nav.tsx`
-- `src/components/motorista/cobranca-modal.tsx`
-- `src/components/motorista/bloqueio-modal.tsx`
-- `src/components/motorista/perfil-sheet.tsx`
-- `src/components/motorista/chat-sheet.tsx`
-- `src/components/motorista/historico-sheet.tsx`
-- `src/components/motorista/faturamento-sheet.tsx`
-- `src/components/operador/mobile-bottom-nav.tsx`
-- `src/components/operador/cobrancas-panel.tsx`
-- `src/routes/_authenticated/chat.tsx`
-- `public/manifest.webmanifest`
-- `public/icons/*` (gerados)
-
-**Editar:**
-- `src/routes/motorista.tsx` (refator completo)
-- `src/routes/_authenticated.tsx` (mobile layout)
-- `src/routes/_authenticated/financeiro.tsx` (painel cobranças)
-- `src/routes/_authenticated/configuracoes.tsx` (PIX + %)
-- `src/lib/config.functions.ts` (novos campos)
-- `src/routes/__root.tsx` (manifest + meta tags)
-- `src/styles.css` (regras mobile, safe-area, no-zoom)
-
----
-
-## Riscos / observações
-- **PWA**: como avisado pela diretriz Lovable, vou usar manifest-only (sem service worker) para evitar problemas no preview. Instalação "Adicionar à tela inicial" funcionará no celular real.
-- **Lock de orientação**: só funciona em modo standalone (após instalar). Em browser comum, apenas CSS rotaciona a mensagem.
-- **Chat realtime**: vou usar Supabase Realtime — tabela nova é mais limpa que reusar mural.
-- O escopo é grande (~20 arquivos novos/editados). Posso executar tudo numa sequência só, mas se preferir, divido por fase para validar entre etapas.
-
-**Quer que eu execute tudo de uma vez, ou prefere ir por fase (1 → 2 → 3 → 4)?**
+## Ordem de entrega
+Vou entregar **fase a fase**, em mensagens separadas, para que você possa testar incrementalmente. Confirma que posso começar pela **Fase 1 (Segurança / pânico)**?

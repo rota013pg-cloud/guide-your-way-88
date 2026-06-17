@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ParceirosRouteImport } from './routes/parceiros'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
@@ -40,9 +42,24 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParceirosRoute = ParceirosRouteImport.update({
+  id: '/parceiros',
+  path: '/parceiros',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PainelRoute = PainelRouteImport.update({
   id: '/painel',
   path: '/painel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParceirosRoute = ParceirosRouteImport.update({
+  id: '/parceiros',
+  path: '/parceiros',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComoFuncionaRoute = ComoFuncionaRouteImport.update({
+  id: '/como-funciona',
+  path: '/como-funciona',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MotoristaRoute = MotoristaRouteImport.update({
@@ -53,6 +70,11 @@ const MotoristaRoute = MotoristaRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComoFuncionaRoute = ComoFuncionaRouteImport.update({
+  id: '/como-funciona',
+  path: '/como-funciona',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -164,9 +186,11 @@ const AuthenticatedChatMotoristasRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/como-funciona': typeof ComoFuncionaRoute
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
+  '/parceiros': typeof ParceirosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
@@ -190,9 +214,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/como-funciona': typeof ComoFuncionaRoute
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
+  '/parceiros': typeof ParceirosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
@@ -218,9 +244,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/como-funciona': typeof ComoFuncionaRoute
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
+  '/parceiros': typeof ParceirosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
@@ -246,9 +274,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/como-funciona'
     | '/login'
     | '/motorista'
     | '/painel'
+    | '/parceiros'
     | '/reset-password'
     | '/chat-motoristas'
     | '/clientes'
@@ -272,9 +302,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/como-funciona'
     | '/login'
     | '/motorista'
     | '/painel'
+    | '/parceiros'
     | '/reset-password'
     | '/chat-motoristas'
     | '/clientes'
@@ -299,9 +331,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/como-funciona'
     | '/login'
     | '/motorista'
     | '/painel'
+    | '/parceiros'
     | '/reset-password'
     | '/_authenticated/chat-motoristas'
     | '/_authenticated/clientes'
@@ -327,9 +361,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  ComoFuncionaRoute: typeof ComoFuncionaRoute
   LoginRoute: typeof LoginRoute
   MotoristaRoute: typeof MotoristaRoute
   PainelRoute: typeof PainelRoute
+  ParceirosRoute: typeof ParceirosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ClienteAppRoute: typeof ClienteAppRoute
   ClienteCadastroRoute: typeof ClienteCadastroRoute
@@ -346,6 +382,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parceiros': {
+      id: '/parceiros'
+      path: '/parceiros'
+      fullPath: '/parceiros'
+      preLoaderRoute: typeof ParceirosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/painel': {
@@ -367,6 +410,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/como-funciona': {
+      id: '/como-funciona'
+      path: '/como-funciona'
+      fullPath: '/como-funciona'
+      preLoaderRoute: typeof ComoFuncionaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -558,9 +608,11 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  ComoFuncionaRoute: ComoFuncionaRoute,
   LoginRoute: LoginRoute,
   MotoristaRoute: MotoristaRoute,
   PainelRoute: PainelRoute,
+  ParceirosRoute: ParceirosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ClienteAppRoute: ClienteAppRoute,
   ClienteCadastroRoute: ClienteCadastroRoute,

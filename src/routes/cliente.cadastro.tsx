@@ -1,0 +1,159 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, type FormEvent } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { setClienteToken } from "@/lib/cliente-auth";
+
+const TERMOS_VERSAO = "1.0";
+
+export const Route = createFileRoute("/cliente/cadastro")({
+  ssr: false,
+  head: () => ({ meta: [{ title: "Criar conta — Rota 013" }] }),
+  component: ClienteCadastroPage,
+});
+
+function ClienteCadastroPage() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    nome: "",
+    email: "",
+    senha: "",
+    telefone: "",
+    cpf: "",
+    logradouro: "",
+    numero: "",
+    bairro: "",
+    cidade: "Praia Grande",
+  });
+  const [aceito, setAceito] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!aceito) {
+      toast.error("Você precisa aceitar os Termos de Uso");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("cliente_cadastrar", {
+        _nome: form.nome,
+        _email: form.email,
+        _senha: form.senha,
+        _telefone: form.telefone,
+        _cpf: form.cpf,
+        _logradouro: form.logradouro,
+        _numero: form.numero,
+        _bairro: form.bairro,
+        _cidade: form.cidade,
+        _termos_versao: TERMOS_VERSAO,
+        _user_agent: navigator.userAgent,
+      });
+      if (error) throw error;
+      const payload = data as unknown as { token: string };
+      setClienteToken(payload.token);
+      toast.success("Conta criada com sucesso!");
+      navigate({ to: "/cliente/app", replace: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Não foi possível cadastrar";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background px-4 py-6">
+      <Card className="mx-auto w-full max-w-md p-6 rounded-2xl">
+        <div className="mb-5 text-center">
+          <span className="logo-r013 text-4xl">
+            R013<span>.</span>
+          </span>
+          <h1 className="mt-2 text-xl font-semibold">Criar conta</h1>
+        </div>
+        <form onSubmit={onSubmit} className="space-y-3">
+          <Field label="Nome completo" id="nome" value={form.nome} onChange={(v) => set("nome", v)} required minLength={3} />
+          <Field label="E-mail" id="email" type="email" value={form.email} onChange={(v) => set("email", v)} required autoComplete="email" />
+          <Field label="Senha (mín. 8 caracteres)" id="senha" type="password" value={form.senha} onChange={(v) => set("senha", v)} required minLength={8} autoComplete="new-password" />
+          <Field label="Telefone (com DDD)" id="telefone" value={form.telefone} onChange={(v) => set("telefone", v)} required inputMode="tel" />
+          <Field label="CPF" id="cpf" value={form.cpf} onChange={(v) => set("cpf", v)} required inputMode="numeric" />
+
+          <div className="pt-2">
+            <p className="text-sm font-semibold mb-2">Endereço</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="col-span-2">
+                <Field label="Rua" id="logradouro" value={form.logradouro} onChange={(v) => set("logradouro", v)} />
+              </div>
+              <Field label="Nº" id="numero" value={form.numero} onChange={(v) => set("numero", v)} />
+            </div>
+            <Field label="Bairro" id="bairro" value={form.bairro} onChange={(v) => set("bairro", v)} />
+            <Field label="Cidade" id="cidade" value={form.cidade} onChange={(v) => set("cidade", v)} />
+          </div>
+
+          <label className="flex items-start gap-2 pt-2 cursor-pointer">
+            <Checkbox checked={aceito} onCheckedChange={(c) => setAceito(c === true)} className="mt-0.5" />
+            <span className="text-sm text-muted-foreground">
+              Aceito os Termos de Uso e Política de Privacidade (v{TERMOS_VERSAO}).
+            </span>
+          </label>
+
+          <Button type="submit" className="w-full rounded-xl mt-2" disabled={loading}>
+            {loading ? "Criando..." : "Criar conta"}
+          </Button>
+        </form>
+        <p className="mt-5 text-sm text-center text-muted-foreground">
+          Já tem conta?{" "}
+          <Link to="/cliente/login" className="text-primary hover:underline">
+            Entrar
+          </Link>
+        </p>
+      </Card>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  id,
+  value,
+  onChange,
+  type = "text",
+  required,
+  minLength,
+  autoComplete,
+  inputMode,
+}: {
+  label: string;
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  required?: boolean;
+  minLength?: number;
+  autoComplete?: string;
+  inputMode?: "tel" | "numeric" | "text" | "email";
+}) {
+  return (
+    <div>
+      <Label htmlFor={id} className="mb-1.5 block">{label}</Label>
+      <Input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        minLength={minLength}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        className="rounded-xl"
+      />
+    </div>
+  );
+}

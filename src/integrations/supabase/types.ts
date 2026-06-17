@@ -62,42 +62,148 @@ export type Database = {
         }
         Relationships: []
       }
+      cliente_auth: {
+        Row: {
+          atualizado_em: string
+          cliente_codigo: string
+          criado_em: string
+          email_lower: string
+          reset_token: string | null
+          reset_token_expira_em: string | null
+          senha_hash: string
+          ultimo_acesso_em: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          cliente_codigo: string
+          criado_em?: string
+          email_lower: string
+          reset_token?: string | null
+          reset_token_expira_em?: string | null
+          senha_hash: string
+          ultimo_acesso_em?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          cliente_codigo?: string
+          criado_em?: string
+          email_lower?: string
+          reset_token?: string | null
+          reset_token_expira_em?: string | null
+          senha_hash?: string
+          ultimo_acesso_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_auth_cliente_codigo_fkey"
+            columns: ["cliente_codigo"]
+            isOneToOne: true
+            referencedRelation: "clientes"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
+      cliente_sessoes: {
+        Row: {
+          cliente_codigo: string
+          criado_em: string
+          id: number
+          ip: string | null
+          status: string
+          token: string
+          ultima_atividade_em: string
+          user_agent: string | null
+        }
+        Insert: {
+          cliente_codigo: string
+          criado_em?: string
+          id?: number
+          ip?: string | null
+          status?: string
+          token: string
+          ultima_atividade_em?: string
+          user_agent?: string | null
+        }
+        Update: {
+          cliente_codigo?: string
+          criado_em?: string
+          id?: number
+          ip?: string | null
+          status?: string
+          token?: string
+          ultima_atividade_em?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_sessoes_cliente_codigo_fkey"
+            columns: ["cliente_codigo"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       clientes: {
         Row: {
           atualizado_em: string
           cidade: string | null
           codigo: string
           corridas: number
+          cpf: string | null
           criado_em: string
+          email: string | null
           endereco: string | null
+          endereco_bairro: string | null
+          endereco_cidade: string | null
+          endereco_logradouro: string | null
+          endereco_numero: string | null
           indicacao: string | null
           nome: string
           observacoes: string | null
           telefone: string | null
+          termos_aceitos_em: string | null
+          termos_versao: string | null
         }
         Insert: {
           atualizado_em?: string
           cidade?: string | null
           codigo: string
           corridas?: number
+          cpf?: string | null
           criado_em?: string
+          email?: string | null
           endereco?: string | null
+          endereco_bairro?: string | null
+          endereco_cidade?: string | null
+          endereco_logradouro?: string | null
+          endereco_numero?: string | null
           indicacao?: string | null
           nome: string
           observacoes?: string | null
           telefone?: string | null
+          termos_aceitos_em?: string | null
+          termos_versao?: string | null
         }
         Update: {
           atualizado_em?: string
           cidade?: string | null
           codigo?: string
           corridas?: number
+          cpf?: string | null
           criado_em?: string
+          email?: string | null
           endereco?: string | null
+          endereco_bairro?: string | null
+          endereco_cidade?: string | null
+          endereco_logradouro?: string | null
+          endereco_numero?: string | null
           indicacao?: string | null
           nome?: string
           observacoes?: string | null
           telefone?: string | null
+          termos_aceitos_em?: string | null
+          termos_versao?: string | null
         }
         Relationships: []
       }
@@ -967,6 +1073,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cliente_cadastrar: {
+        Args: {
+          _bairro: string
+          _cidade: string
+          _cpf: string
+          _email: string
+          _ip?: string
+          _logradouro: string
+          _nome: string
+          _numero: string
+          _senha: string
+          _telefone: string
+          _termos_versao: string
+          _user_agent?: string
+        }
+        Returns: Json
+      }
+      cliente_login: {
+        Args: {
+          _email: string
+          _ip?: string
+          _senha: string
+          _user_agent?: string
+        }
+        Returns: Json
+      }
+      cliente_logout: { Args: { _token: string }; Returns: undefined }
+      cliente_me: { Args: { _token: string }; Returns: Json }
+      cliente_redefinir_senha: {
+        Args: { _nova_senha: string; _token: string }
+        Returns: Json
+      }
+      cliente_solicitar_reset: { Args: { _email: string }; Returns: Json }
       dia_operacional: { Args: { _ts?: string }; Returns: string }
       has_role: {
         Args: {

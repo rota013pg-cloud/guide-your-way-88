@@ -13,9 +13,9 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as ClienteRouteImport } from './routes/cliente'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClienteRedefinirSenhaRouteImport } from './routes/cliente.redefinir-senha'
 import { Route as ClienteLoginRouteImport } from './routes/cliente.login'
 import { Route as ClienteEsqueciSenhaRouteImport } from './routes/cliente.esqueci-senha'
@@ -55,11 +55,6 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ClienteRoute = ClienteRouteImport.update({
-  id: '/cliente',
-  path: '/cliente',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -69,30 +64,35 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClienteIndexRoute = ClienteIndexRouteImport.update({
+  id: '/cliente/',
+  path: '/cliente/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClienteRedefinirSenhaRoute = ClienteRedefinirSenhaRouteImport.update({
-  id: '/redefinir-senha',
-  path: '/redefinir-senha',
-  getParentRoute: () => ClienteRoute,
+  id: '/cliente/redefinir-senha',
+  path: '/cliente/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteLoginRoute = ClienteLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => ClienteRoute,
+  id: '/cliente/login',
+  path: '/cliente/login',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteEsqueciSenhaRoute = ClienteEsqueciSenhaRouteImport.update({
-  id: '/esqueci-senha',
-  path: '/esqueci-senha',
-  getParentRoute: () => ClienteRoute,
+  id: '/cliente/esqueci-senha',
+  path: '/cliente/esqueci-senha',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteCadastroRoute = ClienteCadastroRouteImport.update({
-  id: '/cadastro',
-  path: '/cadastro',
-  getParentRoute: () => ClienteRoute,
+  id: '/cliente/cadastro',
+  path: '/cliente/cadastro',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteAppRoute = ClienteAppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => ClienteRoute,
+  id: '/cliente/app',
+  path: '/cliente/app',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   id: '/usuarios',
@@ -164,7 +164,6 @@ const AuthenticatedChatMotoristasRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
@@ -187,10 +186,10 @@ export interface FileRoutesByFullPath {
   '/cliente/esqueci-senha': typeof ClienteEsqueciSenhaRoute
   '/cliente/login': typeof ClienteLoginRoute
   '/cliente/redefinir-senha': typeof ClienteRedefinirSenhaRoute
+  '/cliente/': typeof ClienteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
@@ -213,12 +212,12 @@ export interface FileRoutesByTo {
   '/cliente/esqueci-senha': typeof ClienteEsqueciSenhaRoute
   '/cliente/login': typeof ClienteLoginRoute
   '/cliente/redefinir-senha': typeof ClienteRedefinirSenhaRoute
+  '/cliente': typeof ClienteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
@@ -241,12 +240,12 @@ export interface FileRoutesById {
   '/cliente/esqueci-senha': typeof ClienteEsqueciSenhaRoute
   '/cliente/login': typeof ClienteLoginRoute
   '/cliente/redefinir-senha': typeof ClienteRedefinirSenhaRoute
+  '/cliente/': typeof ClienteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/cliente'
     | '/login'
     | '/motorista'
     | '/painel'
@@ -269,10 +268,10 @@ export interface FileRouteTypes {
     | '/cliente/esqueci-senha'
     | '/cliente/login'
     | '/cliente/redefinir-senha'
+    | '/cliente/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/cliente'
     | '/login'
     | '/motorista'
     | '/painel'
@@ -295,11 +294,11 @@ export interface FileRouteTypes {
     | '/cliente/esqueci-senha'
     | '/cliente/login'
     | '/cliente/redefinir-senha'
+    | '/cliente'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/cliente'
     | '/login'
     | '/motorista'
     | '/painel'
@@ -322,16 +321,22 @@ export interface FileRouteTypes {
     | '/cliente/esqueci-senha'
     | '/cliente/login'
     | '/cliente/redefinir-senha'
+    | '/cliente/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  ClienteRoute: typeof ClienteRouteWithChildren
   LoginRoute: typeof LoginRoute
   MotoristaRoute: typeof MotoristaRoute
   PainelRoute: typeof PainelRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ClienteAppRoute: typeof ClienteAppRoute
+  ClienteCadastroRoute: typeof ClienteCadastroRoute
+  ClienteEsqueciSenhaRoute: typeof ClienteEsqueciSenhaRoute
+  ClienteLoginRoute: typeof ClienteLoginRoute
+  ClienteRedefinirSenhaRoute: typeof ClienteRedefinirSenhaRoute
+  ClienteIndexRoute: typeof ClienteIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -364,13 +369,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cliente': {
-      id: '/cliente'
-      path: '/cliente'
-      fullPath: '/cliente'
-      preLoaderRoute: typeof ClienteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -385,40 +383,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cliente/': {
+      id: '/cliente/'
+      path: '/cliente'
+      fullPath: '/cliente/'
+      preLoaderRoute: typeof ClienteIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cliente/redefinir-senha': {
       id: '/cliente/redefinir-senha'
-      path: '/redefinir-senha'
+      path: '/cliente/redefinir-senha'
       fullPath: '/cliente/redefinir-senha'
       preLoaderRoute: typeof ClienteRedefinirSenhaRouteImport
-      parentRoute: typeof ClienteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/cliente/login': {
       id: '/cliente/login'
-      path: '/login'
+      path: '/cliente/login'
       fullPath: '/cliente/login'
       preLoaderRoute: typeof ClienteLoginRouteImport
-      parentRoute: typeof ClienteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/cliente/esqueci-senha': {
       id: '/cliente/esqueci-senha'
-      path: '/esqueci-senha'
+      path: '/cliente/esqueci-senha'
       fullPath: '/cliente/esqueci-senha'
       preLoaderRoute: typeof ClienteEsqueciSenhaRouteImport
-      parentRoute: typeof ClienteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/cliente/cadastro': {
       id: '/cliente/cadastro'
-      path: '/cadastro'
+      path: '/cliente/cadastro'
       fullPath: '/cliente/cadastro'
       preLoaderRoute: typeof ClienteCadastroRouteImport
-      parentRoute: typeof ClienteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/cliente/app': {
       id: '/cliente/app'
-      path: '/app'
+      path: '/cliente/app'
       fullPath: '/cliente/app'
       preLoaderRoute: typeof ClienteAppRouteImport
-      parentRoute: typeof ClienteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/usuarios': {
       id: '/_authenticated/usuarios'
@@ -550,33 +555,19 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
-interface ClienteRouteChildren {
-  ClienteAppRoute: typeof ClienteAppRoute
-  ClienteCadastroRoute: typeof ClienteCadastroRoute
-  ClienteEsqueciSenhaRoute: typeof ClienteEsqueciSenhaRoute
-  ClienteLoginRoute: typeof ClienteLoginRoute
-  ClienteRedefinirSenhaRoute: typeof ClienteRedefinirSenhaRoute
-}
-
-const ClienteRouteChildren: ClienteRouteChildren = {
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
+  MotoristaRoute: MotoristaRoute,
+  PainelRoute: PainelRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ClienteAppRoute: ClienteAppRoute,
   ClienteCadastroRoute: ClienteCadastroRoute,
   ClienteEsqueciSenhaRoute: ClienteEsqueciSenhaRoute,
   ClienteLoginRoute: ClienteLoginRoute,
   ClienteRedefinirSenhaRoute: ClienteRedefinirSenhaRoute,
-}
-
-const ClienteRouteWithChildren =
-  ClienteRoute._addFileChildren(ClienteRouteChildren)
-
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  ClienteRoute: ClienteRouteWithChildren,
-  LoginRoute: LoginRoute,
-  MotoristaRoute: MotoristaRoute,
-  PainelRoute: PainelRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
+  ClienteIndexRoute: ClienteIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Bike, Car, MapPin, Clock, ShieldCheck } from "lucide-react";
 
-export const Route = createFileRoute("/cliente")({
+export const Route = createFileRoute("/cliente/")({
   ssr: false,
   head: () => ({
     meta: [

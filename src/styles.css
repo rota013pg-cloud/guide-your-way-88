@@ -23,6 +23,11 @@ html, body {
   overscroll-behavior: none;
 }
 
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -181,12 +186,15 @@ html, body {
   transform: rotate(45deg);
 }
 
-/* iOS safe-area insets para painel do operador */
+/* iOS safe-area insets para apps móveis */
 [data-sidebar="sidebar"] {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
 }
 .app-header-safe {
-  padding-top: env(safe-area-inset-top);
-  height: calc(3rem + env(safe-area-inset-top));
+  padding-top: max(0.75rem, var(--safe-top));
+  min-height: calc(4rem + var(--safe-top));
+}
+.app-bottom-nav-safe {
+  padding-bottom: var(--safe-bottom);
 }

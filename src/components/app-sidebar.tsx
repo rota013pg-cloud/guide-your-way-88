@@ -93,7 +93,7 @@ export function AppSidebar() {
 
   const sair = async () => {
     await supabase.auth.signOut();
-    navigate({ to: "/login", replace: true });
+    navigate({ to: "/operador/login", replace: true });
   };
 
   const onPickFoto = async (file: File) => {

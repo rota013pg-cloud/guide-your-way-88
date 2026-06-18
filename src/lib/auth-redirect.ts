@@ -12,7 +12,7 @@ export type AuthRedirectReason = "unauthenticated" | "session_error" | "timeout"
 export type DashboardAuthDecision =
   | {
       kind: "redirect";
-      to: "/login";
+      to: "/operador/login";
       replace: true;
       search: { reason: AuthRedirectReason; from: "/dashboard" };
       message: string;
@@ -38,13 +38,14 @@ export const SESSION_CHECK_TIMEOUT_MS = 8000;
 function makeRedirect(reason: AuthRedirectReason): DashboardAuthDecision {
   return {
     kind: "redirect",
-    to: "/login",
+    to: "/operador/login",
     replace: true,
     search: { reason, from: "/dashboard" },
     message: AUTH_MESSAGES[reason],
     delayMs: REDIRECT_DELAY_MS,
   };
 }
+
 
 export function decideDashboardAuth(session: AuthSessionLike): DashboardAuthDecision {
   if (!session) return makeRedirect("unauthenticated");

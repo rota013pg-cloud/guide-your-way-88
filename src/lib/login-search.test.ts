@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loginSearchSchema } from "@/routes/login";
+import { loginSearchSchema } from "@/routes/operador.login";
 
 describe("login search params sanitização", () => {
   it("reason ausente permanece undefined", () => {

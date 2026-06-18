@@ -50,7 +50,7 @@ function ResetPasswordPage() {
       if (error) throw error;
       toast.success("Senha redefinida ✓");
       await supabase.auth.signOut();
-      navigate({ to: "/login", replace: true });
+      navigate({ to: "/operador/login", replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao redefinir senha.");
     } finally {
@@ -71,7 +71,7 @@ function ResetPasswordPage() {
             <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               Link de redefinição inválido ou expirado. Volte para o login e solicite um novo link.
             </div>
-            <Link to="/login" className="text-sm text-primary hover:underline">← Voltar ao login</Link>
+            <Link to="/operador/login" className="text-sm text-primary hover:underline">← Voltar ao login</Link>
           </div>
         ) : (
           <form onSubmit={salvar} className="space-y-4">

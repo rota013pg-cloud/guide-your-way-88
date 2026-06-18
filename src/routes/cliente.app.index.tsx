@@ -116,7 +116,7 @@ function ClienteAppHome() {
         _paradas: paradas.map((p) => ({ text: p.text, lat: p.lat, lng: p.lng })),
         _distancia_km: Number(cotacao.distancia.toFixed(2)),
         _valor: cotacao.valor,
-        _observacoes: null,
+        _observacoes: "",
       });
       if (error) throw error;
       toast.success("Corrida solicitada! Procurando motociclista...");

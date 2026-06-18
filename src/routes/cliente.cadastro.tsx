@@ -70,7 +70,7 @@ function ClienteCadastroPage() {
         _numero: form.numero,
         _bairro: form.bairro,
         _cidade: form.cidade,
-        _termos_versao: TERMOS_VERSAO,
+        _termos_versao: versaoTermos,
         _user_agent: navigator.userAgent,
       });
       if (error) throw error;
@@ -134,7 +134,7 @@ function ClienteCadastroPage() {
           <label className="flex items-start gap-2 pt-2 cursor-pointer">
             <Checkbox checked={aceito} onCheckedChange={(c) => setAceito(c === true)} className="mt-0.5" />
             <span className="text-sm text-muted-foreground">
-              Aceito os Termos de Uso e Política de Privacidade (v{TERMOS_VERSAO}).
+              Aceito os Termos de Uso e Política de Privacidade (v{versaoTermos}).
             </span>
           </label>
 

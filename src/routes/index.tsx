@@ -9,7 +9,7 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Rota013 — Mototáxi rápido e confiável em Praia Grande" },
+      { title: "Rota013 — Mobilidade Urbana rápido e confiável em Praia Grande" },
       {
         name: "description",
         content:

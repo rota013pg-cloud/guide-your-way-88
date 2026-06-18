@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatNotifier } from "@/components/chat-notifier";
+import { ChatClienteNotifier } from "@/components/chat-cliente-notifier";
 import { CobrancaNotifier } from "@/components/cobranca-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
 import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
@@ -107,6 +108,7 @@ function AuthenticatedLayout() {
             <div className="flex-1" />
             <CobrancaNotifier />
             <ChatNotifier />
+            <ChatClienteNotifier />
             <AlertaNotifier />
 
             {email && !email.endsWith("@painel.local") && (

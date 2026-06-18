@@ -1,7 +1,7 @@
 /**
- * Notificador global do painel: sino com badge + popover com prévia
- * das últimas mensagens recebidas no chat dos motoristas. Toca toast quando
- * chega mensagem nova (autor = motorista) e o operador não está no chat.
+ * Notificador global do painel para chat com CLIENTES.
+ * Sino com badge + popover, toast, som (playChatBeep) e notificação
+ * desktop (Web Notifications) quando o operador não está na tela de chat.
  */
 import { useEffect, useRef, useState } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
@@ -20,7 +20,7 @@ import { ensureNotificationPermission, showDesktopNotification } from "@/lib/des
 
 type Msg = {
   id: number;
-  motorista_codigo: string;
+  cliente_codigo: string;
   autor: string;
   autor_nome: string | null;
   texto: string;
@@ -28,21 +28,21 @@ type Msg = {
   lido: boolean;
 };
 
-export function ChatNotifier() {
+export function ChatClienteNotifier() {
   const [naoLidas, setNaoLidas] = useState<Msg[]>([]);
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
-  const noChat = pathname === "/chat-motoristas";
+  const noChat = pathname === "/chat-clientes";
   const noChatRef = useRef(noChat);
   noChatRef.current = noChat;
 
   const recarregar = async () => {
     try {
       const { data } = await supabase
-        .from("chat_motorista")
-        .select("id,motorista_codigo,autor,autor_nome,texto,criado_em,lido")
-        .eq("autor", "motorista")
+        .from("chat_cliente")
+        .select("id,cliente_codigo,autor,autor_nome,texto,criado_em,lido")
+        .eq("autor", "cliente")
         .eq("lido", false)
         .order("criado_em", { ascending: false })
         .limit(20);
@@ -56,47 +56,36 @@ export function ChatNotifier() {
     ensureNotificationPermission();
     recarregar();
     const ch = supabase
-      .channel("chat-notifier")
+      .channel("chat-cliente-notifier")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_motorista" },
-        async (payload) => {
+        { event: "INSERT", schema: "public", table: "chat_cliente" },
+        (payload) => {
           const m = payload.new as Msg;
-          if (m.autor !== "motorista") return;
+          if (m.autor !== "cliente") return;
           recarregar();
           if (!noChatRef.current) {
             playChatBeep();
-            const previewNotif = m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
+            const nome = m.autor_nome ?? m.cliente_codigo;
+            const preview = m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
             showDesktopNotification({
-              id: `mot-${m.id}`,
-              title: `💬 ${m.autor_nome ?? m.motorista_codigo}`,
-              body: previewNotif,
-              tag: `chat-motorista-${m.motorista_codigo}`,
-              onClick: () => navigate({ to: "/chat-motoristas" }),
+              id: `cli-${m.id}`,
+              title: `💬 ${nome}`,
+              body: preview,
+              tag: `chat-cliente-${m.cliente_codigo}`,
+              onClick: () => navigate({ to: "/chat-clientes" }),
             });
-            const { data: mot } = await supabase
-              .from("motoristas")
-              .select("foto,nome")
-              .eq("codigo", m.motorista_codigo)
-              .maybeSingle();
-            const nome = mot?.nome ?? m.autor_nome ?? m.motorista_codigo;
-            const inicial = (nome[0] ?? "M").toUpperCase();
-            const preview =
-              m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
             toast.custom(
               (id) => (
                 <button
                   onClick={() => {
                     toast.dismiss(id);
-                    navigate({ to: "/chat-motoristas" });
+                    navigate({ to: "/chat-clientes" });
                   }}
                   className="flex items-start gap-3 w-[340px] max-w-[88vw] rounded-lg border border-border bg-card text-card-foreground shadow-lg p-3 text-left hover:bg-muted/40 transition"
                 >
-                  <div
-                    className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0 bg-cover bg-center"
-                    style={mot?.foto ? { backgroundImage: `url('${mot.foto}')` } : undefined}
-                  >
-                    {!mot?.foto && inicial}
+                  <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0">
+                    {(nome[0] ?? "C").toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-semibold truncate">💬 {nome}</div>
@@ -113,14 +102,13 @@ export function ChatNotifier() {
       )
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "chat_motorista" },
+        { event: "UPDATE", schema: "public", table: "chat_cliente" },
         () => recarregar(),
       )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [navigate]);
 
-  // Recarregar quando o operador entra no chat (mensagens marcadas como lidas)
   useEffect(() => {
     if (noChat) recarregar();
   }, [noChat]);
@@ -134,7 +122,7 @@ export function ChatNotifier() {
           variant="ghost"
           size="icon"
           className="relative h-9 w-9"
-          aria-label={`Notificações${total ? ` (${total} não lidas)` : ""}`}
+          aria-label={`Mensagens de clientes${total ? ` (${total} não lidas)` : ""}`}
         >
           <Bell className="h-4 w-4" />
           {total > 0 && (
@@ -150,13 +138,12 @@ export function ChatNotifier() {
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between px-3 py-2 border-b border-border">
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <MessageSquare className="h-4 w-4" /> Mensagens dos motociclistas
+            <MessageSquare className="h-4 w-4" /> Mensagens dos clientes
           </div>
           {total > 0 && (
             <span className="text-[10px] text-muted-foreground">{total} não lida{total > 1 ? "s" : ""}</span>
           )}
         </div>
-
         <div className="max-h-80 overflow-y-auto">
           {total === 0 ? (
             <div className="px-3 py-8 text-center text-xs text-muted-foreground">
@@ -166,13 +153,13 @@ export function ChatNotifier() {
             naoLidas.map((m) => (
               <Link
                 key={m.id}
-                to="/chat-motoristas"
+                to="/chat-clientes"
                 onClick={() => setOpen(false)}
                 className="block px-3 py-2 border-b border-border last:border-0 hover:bg-muted/60 transition"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-semibold truncate">
-                    {m.autor_nome ?? m.motorista_codigo}
+                    {m.autor_nome ?? m.cliente_codigo}
                   </span>
                   <span className="text-[10px] text-muted-foreground shrink-0">
                     {new Date(m.criado_em).toLocaleTimeString("pt-BR", {
@@ -188,10 +175,9 @@ export function ChatNotifier() {
             ))
           )}
         </div>
-
         <div className="border-t border-border px-3 py-2 text-right">
           <Link
-            to="/chat-motoristas"
+            to="/chat-clientes"
             onClick={() => setOpen(false)}
             className="text-xs text-primary hover:underline"
           >

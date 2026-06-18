@@ -13,6 +13,7 @@ export const Route = createFileRoute("/privacidade")({
       },
       { property: "og:title", content: "Política de Privacidade — Rota013" },
     ],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
   component: PrivacidadePage,
 });

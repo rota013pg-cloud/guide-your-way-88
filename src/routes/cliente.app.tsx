@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/cliente/app")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Minha conta — Rota 013" }] }),
+  head: () => ({ meta: [{ title: "Minha conta — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
   component: ClienteAppPage,
 });
 

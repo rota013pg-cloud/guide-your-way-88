@@ -22,6 +22,7 @@ export const Route = createFileRoute("/")({
           "Conectamos passageiros e motoristas parceiros em Praia Grande e região com tecnologia, agilidade e segurança.",
       },
     ],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
   component: IndexPage,
 });

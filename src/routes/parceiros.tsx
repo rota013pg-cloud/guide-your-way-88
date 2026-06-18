@@ -20,6 +20,7 @@ export const Route = createFileRoute("/parceiros")({
           "100% dos ganhos para o motorista. Sem comissão, sem fidelidade. Cadastre-se agora.",
       },
     ],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
   component: ParceirosPage,
 });

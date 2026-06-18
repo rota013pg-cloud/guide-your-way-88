@@ -16,7 +16,7 @@ const TERMOS_VERSAO = "1.0";
 
 export const Route = createFileRoute("/cliente/cadastro")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Criar conta — Rota 013" }] }),
+  head: () => ({ meta: [{ title: "Criar conta — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
   component: ClienteCadastroPage,
 });
 

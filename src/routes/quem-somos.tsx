@@ -18,6 +18,7 @@ export const Route = createFileRoute("/quem-somos")({
           "Conheça a história, missão e propósito da Rota013, plataforma de mobilidade do Litoral Sul de SP.",
       },
     ],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
   component: QuemSomosPage,
 });

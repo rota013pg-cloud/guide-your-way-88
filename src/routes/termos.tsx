@@ -13,6 +13,7 @@ export const Route = createFileRoute("/termos")({
       },
       { property: "og:title", content: "Termos de Uso — Rota013" },
     ],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
   component: TermosPage,
 });

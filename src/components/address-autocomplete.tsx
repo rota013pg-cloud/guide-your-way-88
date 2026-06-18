@@ -8,6 +8,12 @@ export type AddressValue = {
   lat?: number;
   lng?: number;
   placeId?: string;
+  route?: string;
+  streetNumber?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
 };
 
 type Props = {
@@ -101,13 +107,23 @@ export function AddressAutocomplete({
     try {
       const { Place } = (await window.google.maps.importLibrary("places")) as any;
       const place = new Place({ id: s.placeId, requestedLanguage: "pt-BR" });
-      await place.fetchFields({ fields: ["formattedAddress", "location"] });
+      await place.fetchFields({ fields: ["formattedAddress", "location", "addressComponents"] });
       sessionRef.current = null; // encerra sessão de billing
+      const comps: any[] = place.addressComponents ?? [];
+      const get = (type: string) =>
+        comps.find((c) => (c.types ?? []).includes(type))?.longText ??
+        comps.find((c) => (c.types ?? []).includes(type))?.shortText;
       onChange({
         text: place.formattedAddress ?? `${s.main} ${s.secondary}`.trim(),
         lat: place.location?.lat(),
         lng: place.location?.lng(),
         placeId: s.placeId,
+        route: get("route"),
+        streetNumber: get("street_number"),
+        neighborhood: get("sublocality") ?? get("sublocality_level_1") ?? get("neighborhood"),
+        city: get("administrative_area_level_2") ?? get("locality"),
+        state: get("administrative_area_level_1"),
+        postalCode: get("postal_code"),
       });
     } catch (e) {
       console.warn("place details error", e);

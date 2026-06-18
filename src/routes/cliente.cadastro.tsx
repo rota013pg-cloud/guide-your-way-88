@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { setClienteToken } from "@/lib/cliente-auth";
+import { LogoRota013 } from "@/components/logo-rota013";
+import { maskTelefone, maskCPF } from "@/lib/masks";
 
 const TERMOS_VERSAO = "1.0";
 
@@ -73,17 +75,17 @@ function ClienteCadastroPage() {
     <div className="min-h-screen bg-background px-4 py-6">
       <Card className="mx-auto w-full max-w-md p-6 rounded-2xl">
         <div className="mb-5 text-center">
-          <span className="logo-r013 text-4xl">
-            R013<span>.</span>
-          </span>
+          <div className="flex justify-center">
+            <LogoRota013 className="text-5xl" />
+          </div>
           <h1 className="mt-2 text-xl font-semibold">Criar conta</h1>
         </div>
         <form onSubmit={onSubmit} className="space-y-3">
-          <Field label="Nome completo" id="nome" value={form.nome} onChange={(v) => set("nome", v)} required minLength={3} />
+          <Field label="Nome completo" id="nome" value={form.nome} onChange={(v) => set("nome", v.toUpperCase())} required minLength={3} />
           <Field label="E-mail" id="email" type="email" value={form.email} onChange={(v) => set("email", v)} required autoComplete="email" />
           <Field label="Senha (mín. 8 caracteres)" id="senha" type="password" value={form.senha} onChange={(v) => set("senha", v)} required minLength={8} autoComplete="new-password" />
-          <Field label="Telefone (com DDD)" id="telefone" value={form.telefone} onChange={(v) => set("telefone", v)} required inputMode="tel" />
-          <Field label="CPF" id="cpf" value={form.cpf} onChange={(v) => set("cpf", v)} required inputMode="numeric" />
+          <Field label="Telefone (com DDD)" id="telefone" value={form.telefone} onChange={(v) => set("telefone", maskTelefone(v))} required inputMode="tel" />
+          <Field label="CPF" id="cpf" value={form.cpf} onChange={(v) => set("cpf", maskCPF(v))} required inputMode="numeric" />
 
           <div className="pt-2">
             <p className="text-sm font-semibold mb-2">Endereço</p>

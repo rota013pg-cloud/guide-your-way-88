@@ -75,10 +75,17 @@ function ClienteAppLayout() {
     if (!token) return;
     let cancelado = false;
     let timeoutId: number | undefined;
+    let consultando = false;
     let ultimoId = 0;
     let primeiraCarga = true;
 
     const checar = async () => {
+      if (consultando) return;
+      consultando = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = undefined;
+      }
       try {
         const { data, error } = await supabase.rpc("cliente_listar_mensagens", { _token: token });
         if (cancelado || error || !data) return;
@@ -130,6 +137,7 @@ function ClienteAppLayout() {
           );
         }
       } finally {
+        consultando = false;
         if (!cancelado) timeoutId = window.setTimeout(checar, document.hidden ? 10000 : 3000);
       }
     };

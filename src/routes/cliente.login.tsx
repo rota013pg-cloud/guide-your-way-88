@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { getClienteToken, setClienteToken } from "@/lib/cliente-auth";
+import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/cliente/login")({
   ssr: false,
@@ -50,9 +51,9 @@ function ClienteLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md p-6 rounded-2xl">
         <div className="mb-6 text-center">
-          <span className="logo-r013 text-5xl">
-            R013<span>.</span>
-          </span>
+          <div className="flex justify-center">
+            <LogoRota013 className="text-5xl" />
+          </div>
           <h1 className="mt-3 text-xl font-semibold">Entrar</h1>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">

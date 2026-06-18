@@ -52,13 +52,13 @@ function ClienteAppLayout() {
     navigate({ to: "/cliente", replace: true });
   };
 
-  const menuItems = [
+  const menuItems: { to: string; label: string; icon: typeof Home; exact?: boolean }[] = [
     { to: "/cliente/app", label: "Solicitar Corrida", icon: Bike, exact: true },
     { to: "/cliente/app/historico", label: "Histórico de Corridas", icon: ClipboardList },
     { to: "/cliente/app/perfil", label: "Meus Dados", icon: User },
     { to: "/cliente/app/senha", label: "Alterar Senha", icon: KeyRound },
     { to: "/cliente/app/chat", label: "Falar com a Central", icon: MessageCircle },
-  ] as const;
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-16">

@@ -44,9 +44,8 @@ function ClienteAppLayout() {
     if (!loading && !cliente) navigate({ to: "/cliente/login", replace: true });
   }, [loading, cliente, navigate]);
 
-  useEffect(() => {
-    if (!loading && !cliente) navigate({ to: "/cliente/login", replace: true });
-  }, [loading, cliente, navigate]);
+
+
 
   // Notificação global: som + desktop notif quando chega msg da central
   // e o cliente NÃO está na tela de chat.

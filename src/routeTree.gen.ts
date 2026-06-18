@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as QuemSomosRouteImport } from './routes/quem-somos'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ParceirosRouteImport } from './routes/parceiros'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MotoristaRouteImport } from './routes/motorista'
@@ -52,6 +53,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const QuemSomosRoute = QuemSomosRouteImport.update({
   id: '/quem-somos',
   path: '/quem-somos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParceirosRoute = ParceirosRouteImport.update({
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
@@ -287,6 +296,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/painel'
     | '/parceiros'
+    | '/privacidade'
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/painel'
     | '/parceiros'
+    | '/privacidade'
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
@@ -348,6 +359,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/painel'
     | '/parceiros'
+    | '/privacidade'
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
@@ -380,6 +392,7 @@ export interface RootRouteChildren {
   MotoristaRoute: typeof MotoristaRoute
   PainelRoute: typeof PainelRoute
   ParceirosRoute: typeof ParceirosRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   QuemSomosRoute: typeof QuemSomosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermosRoute: typeof TermosRoute
@@ -412,6 +425,13 @@ declare module '@tanstack/react-router' {
       path: '/quem-somos'
       fullPath: '/quem-somos'
       preLoaderRoute: typeof QuemSomosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parceiros': {
@@ -643,6 +663,7 @@ const rootRouteChildren: RootRouteChildren = {
   MotoristaRoute: MotoristaRoute,
   PainelRoute: PainelRoute,
   ParceirosRoute: ParceirosRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   QuemSomosRoute: QuemSomosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermosRoute: TermosRoute,

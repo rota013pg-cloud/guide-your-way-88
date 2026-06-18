@@ -32,6 +32,44 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_cliente: {
+        Row: {
+          autor: string
+          autor_nome: string | null
+          cliente_codigo: string
+          criado_em: string
+          id: number
+          lido: boolean
+          texto: string
+        }
+        Insert: {
+          autor: string
+          autor_nome?: string | null
+          cliente_codigo: string
+          criado_em?: string
+          id?: number
+          lido?: boolean
+          texto: string
+        }
+        Update: {
+          autor?: string
+          autor_nome?: string | null
+          cliente_codigo?: string
+          criado_em?: string
+          id?: number
+          lido?: boolean
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_cliente_cliente_codigo_fkey"
+            columns: ["cliente_codigo"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       chat_motorista: {
         Row: {
           autor: string
@@ -1106,6 +1144,10 @@ export type Database = {
         }
         Returns: Json
       }
+      cliente_enviar_mensagem: {
+        Args: { _texto: string; _token: string }
+        Returns: Json
+      }
       cliente_listar_corridas: {
         Args: { _token: string }
         Returns: {
@@ -1147,6 +1189,24 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "corridas"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      cliente_listar_mensagens: {
+        Args: { _token: string }
+        Returns: {
+          autor: string
+          autor_nome: string | null
+          cliente_codigo: string
+          criado_em: string
+          id: number
+          lido: boolean
+          texto: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "chat_cliente"
           isOneToOne: false
           isSetofReturn: true
         }

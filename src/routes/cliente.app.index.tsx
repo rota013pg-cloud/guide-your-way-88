@@ -15,6 +15,7 @@ import { MapPin, Plus, X, Bike, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
+import { PWAInstallBanner } from "@/components/pwa-install-banner";
 
 export const Route = createFileRoute("/cliente/app/")({
   ssr: false,
@@ -133,12 +134,15 @@ function ClienteAppHome() {
 
   return (
     <div className="px-4 py-4 space-y-4">
+      <PWAInstallBanner />
       <div>
         <h2 className="text-2xl font-bold">Para onde vamos?</h2>
         <p className="text-sm text-muted-foreground flex items-center gap-1">
           <Bike className="size-4" /> {motoristas.length} mototaxista{motoristas.length === 1 ? "" : "s"} por perto
         </p>
       </div>
+
+
 
       {/* Mapa */}
       <Card className="rounded-2xl overflow-hidden">

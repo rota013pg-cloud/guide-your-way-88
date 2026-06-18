@@ -35,7 +35,7 @@ function IndexPage() {
     if (typeof window !== "undefined") {
       const host = window.location.hostname;
       if (host.startsWith("operador.")) {
-        navigate({ to: "/login", replace: true });
+        navigate({ to: "/operador/login", replace: true });
         return;
       }
       if (host.startsWith("app.")) {

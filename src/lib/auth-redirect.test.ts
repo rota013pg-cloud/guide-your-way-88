@@ -12,7 +12,7 @@ describe("decideDashboardAuth", () => {
   it("redireciona para /login?reason=unauthenticated&from=/dashboard quando a sessão é nula", () => {
     expect(decideDashboardAuth(null)).toEqual({
       kind: "redirect",
-      to: "/login",
+      to: "/operador/login",
       replace: true,
       search: { reason: "unauthenticated", from: "/dashboard" },
       message: UNAUTHENTICATED_MESSAGE,
@@ -47,7 +47,7 @@ describe("decideDashboardAuthError", () => {
     expect(d.kind).toBe("redirect");
     if (d.kind === "redirect") {
       expect(d.search).toEqual({ reason: "session_error", from: "/dashboard" });
-      expect(d.to).toBe("/login");
+      expect(d.to).toBe("/operador/login");
       expect(d.message).toBe(AUTH_MESSAGES.session_error);
     }
   });
@@ -113,7 +113,7 @@ describe("fluxo de redirecionamento do dashboard", () => {
     expect(toastError).toHaveBeenCalledWith(UNAUTHENTICATED_MESSAGE);
     vi.advanceTimersByTime(REDIRECT_DELAY_MS);
     expect(navigate).toHaveBeenCalledWith({
-      to: "/login",
+      to: "/operador/login",
       replace: true,
       search: { reason: "unauthenticated", from: "/dashboard" },
     });
@@ -139,7 +139,7 @@ describe("fluxo de redirecionamento do dashboard", () => {
     expect(toastError).toHaveBeenCalledWith(AUTH_MESSAGES.session_error);
     vi.advanceTimersByTime(REDIRECT_DELAY_MS);
     expect(navigate).toHaveBeenCalledWith({
-      to: "/login",
+      to: "/operador/login",
       replace: true,
       search: { reason: "session_error", from: "/dashboard" },
     });
@@ -169,7 +169,7 @@ describe("fluxo de redirecionamento do dashboard", () => {
 
     vi.advanceTimersByTime(REDIRECT_DELAY_MS);
     expect(navigate).toHaveBeenCalledWith({
-      to: "/login",
+      to: "/operador/login",
       replace: true,
       search: { reason: "timeout", from: "/dashboard" },
     });

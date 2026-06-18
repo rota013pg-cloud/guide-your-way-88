@@ -20,7 +20,7 @@ export const loginSearchSchema = z.object({
   from: fallback(z.string().max(500).optional(), "/dashboard"),
 });
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/operador/login")({
   head: () => ({
     meta: [
       { title: "Entrar — Rota 013" },

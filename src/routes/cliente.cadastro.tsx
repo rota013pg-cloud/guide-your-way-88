@@ -113,7 +113,7 @@ function ClienteCadastroPage() {
                 <Field label="Bairro" id="bairro" value={form.bairro} onChange={(v) => set("bairro", v)} />
               </div>
             </div>
-            <Field label="Bairro" id="bairro" value={form.bairro} onChange={(v) => set("bairro", v)} />
+            <Field label="Complemento" id="complemento" value={form.complemento} onChange={(v) => set("complemento", v)} />
             <Field label="Cidade" id="cidade" value={form.cidade} onChange={(v) => set("cidade", v)} />
           </div>
 

@@ -53,7 +53,7 @@ function ClienteCadastroPage() {
         _senha: form.senha,
         _telefone: form.telefone,
         _cpf: form.cpf,
-        _logradouro: form.logradouro,
+        _logradouro: form.complemento ? `${form.logradouro} — ${form.complemento}` : form.logradouro,
         _numero: form.numero,
         _bairro: form.bairro,
         _cidade: form.cidade,

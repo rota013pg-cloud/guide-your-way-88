@@ -31,6 +31,7 @@ function ClienteCadastroPage() {
     logradouro: "",
     numero: "",
     bairro: "",
+    complemento: "",
     cidade: "Praia Grande",
   });
   const [aceito, setAceito] = useState(false);
@@ -56,6 +57,7 @@ function ClienteCadastroPage() {
         _numero: form.numero,
         _bairro: form.bairro,
         _cidade: form.cidade,
+        _complemento: form.complemento,
         _termos_versao: TERMOS_VERSAO,
         _user_agent: navigator.userAgent,
       });

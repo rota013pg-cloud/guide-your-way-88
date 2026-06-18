@@ -15,6 +15,7 @@ import { MapPin, Plus, X, Bike, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
+import { PWAInstallBanner } from "@/components/pwa-install-banner";
 
 export const Route = createFileRoute("/cliente/app/")({
   ssr: false,

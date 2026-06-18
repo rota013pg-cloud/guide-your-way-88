@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Save, Loader2, FileText, Eye } from "lucide-react";
 import { lerConfig, salvarTermos } from "@/lib/config.functions";
 
-export const Route = createFileRoute("/_authenticated/termos")({
+export const Route = createFileRoute("/_authenticated/termos-config")({
   ssr: false,
   head: () => ({ meta: [{ title: "Termos e Condições — Rota 013" }] }),
   component: TermosPage,

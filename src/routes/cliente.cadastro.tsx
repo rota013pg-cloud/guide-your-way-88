@@ -1,18 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { setClienteToken } from "@/lib/cliente-auth";
 import { LogoRota013 } from "@/components/logo-rota013";
 import { maskTelefone, maskCPF } from "@/lib/masks";
 import { AddressAutocomplete } from "@/components/address-autocomplete";
-
-const TERMOS_VERSAO = "1.0";
+import { lerTermosPublico } from "@/lib/config.functions";
 
 export const Route = createFileRoute("/cliente/cadastro")({
   ssr: false,

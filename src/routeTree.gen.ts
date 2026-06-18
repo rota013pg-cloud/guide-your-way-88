@@ -16,6 +16,7 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ParceirosRouteImport } from './routes/parceiros'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MotoristaRouteImport } from './routes/motorista'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as InstalarRouteImport } from './routes/instalar'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -74,6 +75,11 @@ const PainelRoute = PainelRouteImport.update({
 const MotoristaRoute = MotoristaRouteImport.update({
   id: '/motorista',
   path: '/motorista',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstalarRoute = InstalarRouteImport.update({
@@ -202,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/instalar': typeof InstalarRoute
+  '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
@@ -234,6 +241,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/instalar': typeof InstalarRoute
+  '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/como-funciona': typeof ComoFuncionaRoute
   '/instalar': typeof InstalarRoute
+  '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/'
     | '/como-funciona'
     | '/instalar'
+    | '/login'
     | '/motorista'
     | '/painel'
     | '/parceiros'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/'
     | '/como-funciona'
     | '/instalar'
+    | '/login'
     | '/motorista'
     | '/painel'
     | '/parceiros'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/como-funciona'
     | '/instalar'
+    | '/login'
     | '/motorista'
     | '/painel'
     | '/parceiros'
@@ -401,6 +413,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ComoFuncionaRoute: typeof ComoFuncionaRoute
   InstalarRoute: typeof InstalarRoute
+  LoginRoute: typeof LoginRoute
   MotoristaRoute: typeof MotoristaRoute
   PainelRoute: typeof PainelRoute
   ParceirosRoute: typeof ParceirosRoute
@@ -466,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/motorista'
       fullPath: '/motorista'
       preLoaderRoute: typeof MotoristaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instalar': {
@@ -680,6 +700,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ComoFuncionaRoute: ComoFuncionaRoute,
   InstalarRoute: InstalarRoute,
+  LoginRoute: LoginRoute,
   MotoristaRoute: MotoristaRoute,
   PainelRoute: PainelRoute,
   ParceirosRoute: ParceirosRoute,

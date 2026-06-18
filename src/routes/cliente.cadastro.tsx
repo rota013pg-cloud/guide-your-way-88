@@ -1,18 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { setClienteToken } from "@/lib/cliente-auth";
 import { LogoRota013 } from "@/components/logo-rota013";
 import { maskTelefone, maskCPF } from "@/lib/masks";
 import { AddressAutocomplete } from "@/components/address-autocomplete";
-
-const TERMOS_VERSAO = "1.0";
+import { lerTermosPublico } from "@/lib/config.functions";
 
 export const Route = createFileRoute("/cliente/cadastro")({
   ssr: false,
@@ -36,6 +40,15 @@ function ClienteCadastroPage() {
   });
   const [aceito, setAceito] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [openTermos, setOpenTermos] = useState(false);
+
+  const lerTermosFn = useServerFn(lerTermosPublico);
+  const { data: termos } = useQuery({
+    queryKey: ["termos-publico"],
+    queryFn: () => lerTermosFn(),
+    staleTime: 60_000,
+  });
+  const versaoTermos = termos?.versao ?? "1.0";
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -57,7 +70,7 @@ function ClienteCadastroPage() {
         _numero: form.numero,
         _bairro: form.bairro,
         _cidade: form.cidade,
-        _termos_versao: TERMOS_VERSAO,
+        _termos_versao: versaoTermos,
         _user_agent: navigator.userAgent,
       });
       if (error) throw error;
@@ -118,16 +131,49 @@ function ClienteCadastroPage() {
             <Field label="Cidade" id="cidade" value={form.cidade} onChange={(v) => set("cidade", v)} />
           </div>
 
-          <label className="flex items-start gap-2 pt-2 cursor-pointer">
-            <Checkbox checked={aceito} onCheckedChange={(c) => setAceito(c === true)} className="mt-0.5" />
-            <span className="text-sm text-muted-foreground">
-              Aceito os Termos de Uso e Política de Privacidade (v{TERMOS_VERSAO}).
-            </span>
-          </label>
+          <div className="pt-2 space-y-2">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <Checkbox checked={aceito} onCheckedChange={(c) => setAceito(c === true)} className="mt-0.5" />
+              <span className="text-sm text-muted-foreground">
+                Li e aceito os{" "}
+                <Dialog open={openTermos} onOpenChange={setOpenTermos}>
+                  <DialogTrigger asChild>
+                    <button type="button" className="text-primary hover:underline font-medium">
+                      Termos e Condições
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>Termos e Condições (v{versaoTermos})</DialogTitle>
+                    </DialogHeader>
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none overflow-y-auto pr-2"
+                      dangerouslySetInnerHTML={{ __html: termos?.conteudo ?? "Carregando…" }}
+                    />
+                    <div className="pt-3 border-t flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setOpenTermos(false)}>Fechar</Button>
+                      <Button
+                        onClick={() => { setAceito(true); setOpenTermos(false); }}
+                      >
+                        Li e aceito
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                {" "}(v{versaoTermos}).
+              </span>
+            </label>
+            {!aceito && (
+              <p className="text-xs text-muted-foreground">
+                Você deve aceitar os Termos e Condições para prosseguir com o cadastro.
+              </p>
+            )}
+          </div>
 
-          <Button type="submit" className="w-full rounded-xl mt-2" disabled={loading}>
+          <Button type="submit" className="w-full rounded-xl mt-2" disabled={loading || !aceito}>
             {loading ? "Criando..." : "Criar conta"}
           </Button>
+
         </form>
         <p className="mt-5 text-sm text-center text-muted-foreground">
           Já tem conta?{" "}

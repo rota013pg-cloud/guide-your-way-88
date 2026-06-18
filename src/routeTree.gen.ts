@@ -28,10 +28,10 @@ import { Route as ClienteEsqueciSenhaRouteImport } from './routes/cliente.esquec
 import { Route as ClienteCadastroRouteImport } from './routes/cliente.cadastro'
 import { Route as ClienteAppRouteImport } from './routes/cliente.app'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
+import { Route as AuthenticatedTermosConfigRouteImport } from './routes/_authenticated/termos-config'
 import { Route as AuthenticatedTarifasRouteImport } from './routes/_authenticated/tarifas'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedMotociclistasRouteImport } from './routes/_authenticated/motociclistas'
-import { Route as AuthenticatedMensagensRouteImport } from './routes/_authenticated/mensagens'
 import { Route as AuthenticatedInstrucoesRouteImport } from './routes/_authenticated/instrucoes'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
@@ -141,6 +141,12 @@ const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   path: '/usuarios',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTermosConfigRoute =
+  AuthenticatedTermosConfigRouteImport.update({
+    id: '/termos-config',
+    path: '/termos-config',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTarifasRoute = AuthenticatedTarifasRouteImport.update({
   id: '/tarifas',
   path: '/tarifas',
@@ -157,11 +163,6 @@ const AuthenticatedMotociclistasRoute =
     path: '/motociclistas',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedMensagensRoute = AuthenticatedMensagensRouteImport.update({
-  id: '/mensagens',
-  path: '/mensagens',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedInstrucoesRoute = AuthenticatedInstrucoesRouteImport.update({
   id: '/instrucoes',
   path: '/instrucoes',
@@ -256,10 +257,10 @@ export interface FileRoutesByFullPath {
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/instrucoes': typeof AuthenticatedInstrucoesRoute
-  '/mensagens': typeof AuthenticatedMensagensRoute
   '/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
+  '/termos-config': typeof AuthenticatedTermosConfigRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/cliente/app': typeof ClienteAppRouteWithChildren
   '/cliente/cadastro': typeof ClienteCadastroRoute
@@ -294,10 +295,10 @@ export interface FileRoutesByTo {
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/instrucoes': typeof AuthenticatedInstrucoesRoute
-  '/mensagens': typeof AuthenticatedMensagensRoute
   '/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
+  '/termos-config': typeof AuthenticatedTermosConfigRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/cliente/cadastro': typeof ClienteCadastroRoute
   '/cliente/esqueci-senha': typeof ClienteEsqueciSenhaRoute
@@ -333,10 +334,10 @@ export interface FileRoutesById {
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/instrucoes': typeof AuthenticatedInstrucoesRoute
-  '/_authenticated/mensagens': typeof AuthenticatedMensagensRoute
   '/_authenticated/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/tarifas': typeof AuthenticatedTarifasRoute
+  '/_authenticated/termos-config': typeof AuthenticatedTermosConfigRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/cliente/app': typeof ClienteAppRouteWithChildren
   '/cliente/cadastro': typeof ClienteCadastroRoute
@@ -373,10 +374,10 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/historico'
     | '/instrucoes'
-    | '/mensagens'
     | '/motociclistas'
     | '/mural'
     | '/tarifas'
+    | '/termos-config'
     | '/usuarios'
     | '/cliente/app'
     | '/cliente/cadastro'
@@ -411,10 +412,10 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/historico'
     | '/instrucoes'
-    | '/mensagens'
     | '/motociclistas'
     | '/mural'
     | '/tarifas'
+    | '/termos-config'
     | '/usuarios'
     | '/cliente/cadastro'
     | '/cliente/esqueci-senha'
@@ -449,10 +450,10 @@ export interface FileRouteTypes {
     | '/_authenticated/financeiro'
     | '/_authenticated/historico'
     | '/_authenticated/instrucoes'
-    | '/_authenticated/mensagens'
     | '/_authenticated/motociclistas'
     | '/_authenticated/mural'
     | '/_authenticated/tarifas'
+    | '/_authenticated/termos-config'
     | '/_authenticated/usuarios'
     | '/cliente/app'
     | '/cliente/cadastro'
@@ -624,6 +625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/termos-config': {
+      id: '/_authenticated/termos-config'
+      path: '/termos-config'
+      fullPath: '/termos-config'
+      preLoaderRoute: typeof AuthenticatedTermosConfigRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/tarifas': {
       id: '/_authenticated/tarifas'
       path: '/tarifas'
@@ -643,13 +651,6 @@ declare module '@tanstack/react-router' {
       path: '/motociclistas'
       fullPath: '/motociclistas'
       preLoaderRoute: typeof AuthenticatedMotociclistasRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/mensagens': {
-      id: '/_authenticated/mensagens'
-      path: '/mensagens'
-      fullPath: '/mensagens'
-      preLoaderRoute: typeof AuthenticatedMensagensRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/instrucoes': {
@@ -763,10 +764,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedInstrucoesRoute: typeof AuthenticatedInstrucoesRoute
-  AuthenticatedMensagensRoute: typeof AuthenticatedMensagensRoute
   AuthenticatedMotociclistasRoute: typeof AuthenticatedMotociclistasRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedTarifasRoute: typeof AuthenticatedTarifasRoute
+  AuthenticatedTermosConfigRoute: typeof AuthenticatedTermosConfigRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
 }
 
@@ -780,10 +781,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedInstrucoesRoute: AuthenticatedInstrucoesRoute,
-  AuthenticatedMensagensRoute: AuthenticatedMensagensRoute,
   AuthenticatedMotociclistasRoute: AuthenticatedMotociclistasRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedTarifasRoute: AuthenticatedTarifasRoute,
+  AuthenticatedTermosConfigRoute: AuthenticatedTermosConfigRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
 }
 

@@ -13,6 +13,12 @@ export type MensagemTemplate = {
   texto: string;
 };
 
+export type TermosDoc = {
+  versao: string;
+  conteudo: string; // HTML
+  atualizadoEm: string | null;
+};
+
 export type AppConfig = {
   empresa: string;
   cidadeBase: string;
@@ -24,6 +30,14 @@ export type AppConfig = {
   alertaAgendadaMin: number;
   percentualBloqueio: number;
   templates: MensagemTemplate[];
+  termos: TermosDoc;
+};
+
+const TERMOS_DEFAULT: TermosDoc = {
+  versao: "1.0",
+  conteudo:
+    "<h2>Termos e Condições</h2><p>Bem-vindo à Rota 013. Ao criar sua conta, você concorda com nossas regras de uso do serviço de motofrete.</p><p>Edite este conteúdo no painel administrativo &gt; Termos e Condições.</p>",
+  atualizadoEm: null,
 };
 
 const CONFIG_DEFAULT: AppConfig = {
@@ -37,12 +51,18 @@ const CONFIG_DEFAULT: AppConfig = {
   alertaAgendadaMin: 15,
   percentualBloqueio: 50,
   templates: [],
+  termos: TERMOS_DEFAULT,
 };
 
 const TemplateSchema = z.object({
   id: z.string().min(1).max(40),
   titulo: z.string().min(1).max(80),
   texto: z.string().min(1).max(2000),
+});
+
+const TermosSchema = z.object({
+  versao: z.string().min(1).max(20),
+  conteudo: z.string().min(1).max(50000),
 });
 
 const ConfigSchema = z.object({
@@ -109,3 +129,41 @@ export const salvarTemplates = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ─── SALVAR TERMOS (admin) ───────────────────────────────
+export const salvarTermos = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => TermosSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: roles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId as string);
+    const ehAdmin = (roles ?? []).some((r) => r.role === "admin");
+    if (!ehAdmin) throw new Error("Apenas administradores podem alterar os Termos.");
+
+    const { data: atual } = await supabaseAdmin
+      .from("app_config").select("config_json").eq("id", 1).maybeSingle();
+    const cfg = { ...CONFIG_DEFAULT, ...((atual?.config_json ?? {}) as Partial<AppConfig>) };
+    cfg.termos = {
+      versao: data.versao,
+      conteudo: data.conteudo,
+      atualizadoEm: new Date().toISOString(),
+    };
+    const { error } = await supabaseAdmin
+      .from("app_config")
+      .upsert({ id: 1, config_json: cfg, atualizado_em: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    return { ok: true, termos: cfg.termos };
+  });
+
+// ─── LER TERMOS (público — usado no cadastro) ────────────
+export const lerTermosPublico = createServerFn({ method: "GET" }).handler(async () => {
+  const { data } = await supabaseAdmin
+    .from("app_config")
+    .select("config_json")
+    .eq("id", 1)
+    .maybeSingle();
+  const cfg = { ...CONFIG_DEFAULT, ...((data?.config_json ?? {}) as Partial<AppConfig>) };
+  return cfg.termos ?? TERMOS_DEFAULT;
+});

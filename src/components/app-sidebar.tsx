@@ -53,7 +53,7 @@ const gestao: Item[] = [
   { title: "Financeiro", url: "/financeiro", icon: DollarSign },
   { title: "Tarifas", url: "/tarifas", icon: Tag, adminOnly: true },
   { title: "Histórico", url: "/historico", icon: History },
-  { title: "Mensagens", url: "/mensagens", icon: MessageSquare },
+  { title: "Termos e Condições", url: "/termos-config", icon: MessageSquare, adminOnly: true },
   { title: "Usuários", url: "/usuarios", icon: UserCog, adminOnly: true },
   { title: "Configurações", url: "/configuracoes", icon: Settings, adminOnly: true },
   { title: "Instruções", url: "/instrucoes", icon: BookOpen },

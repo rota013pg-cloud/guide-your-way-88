@@ -41,6 +41,7 @@ import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedChatMotoristasRouteImport } from './routes/_authenticated/chat-motoristas'
+import { Route as AuthenticatedChatClientesRouteImport } from './routes/_authenticated/chat-clientes'
 import { Route as ClienteAppIndexRouteImport } from './routes/cliente.app.index'
 import { Route as ClienteAppSenhaRouteImport } from './routes/cliente.app.senha'
 import { Route as ClienteAppPerfilRouteImport } from './routes/cliente.app.perfil'
@@ -208,6 +209,12 @@ const AuthenticatedChatMotoristasRoute =
     path: '/chat-motoristas',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedChatClientesRoute =
+  AuthenticatedChatClientesRouteImport.update({
+    id: '/chat-clientes',
+    path: '/chat-clientes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ClienteAppIndexRoute = ClienteAppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -246,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/chat-clientes': typeof AuthenticatedChatClientesRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -284,6 +292,7 @@ export interface FileRoutesByTo {
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/chat-clientes': typeof AuthenticatedChatClientesRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -323,6 +332,7 @@ export interface FileRoutesById {
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/_authenticated/chat-clientes': typeof AuthenticatedChatClientesRoute
   '/_authenticated/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
+    | '/chat-clientes'
     | '/chat-motoristas'
     | '/clientes'
     | '/configuracoes'
@@ -401,6 +412,7 @@ export interface FileRouteTypes {
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
+    | '/chat-clientes'
     | '/chat-motoristas'
     | '/clientes'
     | '/configuracoes'
@@ -439,6 +451,7 @@ export interface FileRouteTypes {
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
+    | '/_authenticated/chat-clientes'
     | '/_authenticated/chat-motoristas'
     | '/_authenticated/clientes'
     | '/_authenticated/configuracoes'
@@ -714,6 +727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatMotoristasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/chat-clientes': {
+      id: '/_authenticated/chat-clientes'
+      path: '/chat-clientes'
+      fullPath: '/chat-clientes'
+      preLoaderRoute: typeof AuthenticatedChatClientesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/cliente/app/': {
       id: '/cliente/app/'
       path: '/'
@@ -753,6 +773,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedChatClientesRoute: typeof AuthenticatedChatClientesRoute
   AuthenticatedChatMotoristasRoute: typeof AuthenticatedChatMotoristasRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
@@ -769,6 +790,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedChatClientesRoute: AuthenticatedChatClientesRoute,
   AuthenticatedChatMotoristasRoute: AuthenticatedChatMotoristasRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,

@@ -1162,8 +1162,34 @@ export type Database = {
       }
       cliente_logout: { Args: { _token: string }; Returns: undefined }
       cliente_me: { Args: { _token: string }; Returns: Json }
+      cliente_motoristas_online: {
+        Args: never
+        Returns: {
+          codigo: string
+          lat: number
+          lng: number
+          nome: string
+          status: string
+        }[]
+      }
       cliente_redefinir_senha: {
         Args: { _nova_senha: string; _token: string }
+        Returns: Json
+      }
+      cliente_solicitar_corrida: {
+        Args: {
+          _destino: string
+          _destino_lat: number
+          _destino_lng: number
+          _distancia_km: number
+          _observacoes: string
+          _origem: string
+          _origem_lat: number
+          _origem_lng: number
+          _paradas: Json
+          _token: string
+          _valor: number
+        }
         Returns: Json
       }
       cliente_solicitar_reset: { Args: { _email: string }; Returns: Json }

@@ -17,6 +17,7 @@ import { Route as ParceirosRouteImport } from './routes/parceiros'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as InstalarRouteImport } from './routes/instalar'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -78,6 +79,11 @@ const MotoristaRoute = MotoristaRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstalarRoute = InstalarRouteImport.update({
+  id: '/instalar',
+  path: '/instalar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComoFuncionaRoute = ComoFuncionaRouteImport.update({
@@ -195,6 +201,7 @@ const AuthenticatedChatMotoristasRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/como-funciona': typeof ComoFuncionaRoute
+  '/instalar': typeof InstalarRoute
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
@@ -226,6 +233,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/como-funciona': typeof ComoFuncionaRoute
+  '/instalar': typeof InstalarRoute
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/como-funciona': typeof ComoFuncionaRoute
+  '/instalar': typeof InstalarRoute
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/como-funciona'
+    | '/instalar'
     | '/login'
     | '/motorista'
     | '/painel'
@@ -323,6 +333,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/como-funciona'
+    | '/instalar'
     | '/login'
     | '/motorista'
     | '/painel'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/como-funciona'
+    | '/instalar'
     | '/login'
     | '/motorista'
     | '/painel'
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ComoFuncionaRoute: typeof ComoFuncionaRoute
+  InstalarRoute: typeof InstalarRoute
   LoginRoute: typeof LoginRoute
   MotoristaRoute: typeof MotoristaRoute
   PainelRoute: typeof PainelRoute
@@ -460,6 +473,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instalar': {
+      id: '/instalar'
+      path: '/instalar'
+      fullPath: '/instalar'
+      preLoaderRoute: typeof InstalarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/como-funciona': {
@@ -659,6 +679,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ComoFuncionaRoute: ComoFuncionaRoute,
+  InstalarRoute: InstalarRoute,
   LoginRoute: LoginRoute,
   MotoristaRoute: MotoristaRoute,
   PainelRoute: PainelRoute,

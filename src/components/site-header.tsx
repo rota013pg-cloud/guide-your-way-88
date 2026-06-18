@@ -7,7 +7,7 @@ import { useState } from "react";
 const nav = [
   { to: "/parceiros", label: "Quero ser parceiro" },
   { to: "/como-funciona", label: "Como funciona" },
-  { to: "/", label: "Quem somos" },
+  { to: "/quem-somos", label: "Quem somos" },
 ] as const;
 
 export function SiteHeader() {

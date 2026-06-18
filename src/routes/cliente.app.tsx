@@ -19,6 +19,7 @@ import {
   User,
 } from "lucide-react";
 import { useCliente } from "@/lib/cliente-auth";
+import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/cliente/app")({
   ssr: false,
@@ -72,7 +73,15 @@ function ClienteAppLayout() {
           </SheetTrigger>
           <SheetContent side="left" className="w-72 p-0 flex flex-col">
             <SheetHeader className="border-b border-border p-4 text-left">
-              <SheetTitle className="truncate">{cliente.nome}</SheetTitle>
+              <Link
+                to="/cliente/app"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Início"
+                className="inline-flex items-center"
+              >
+                <LogoRota013 className="text-3xl" />
+              </Link>
+              <SheetTitle className="truncate mt-2">{cliente.nome}</SheetTitle>
               <p className="text-xs text-muted-foreground truncate">{cliente.email ?? cliente.telefone ?? cliente.codigo}</p>
             </SheetHeader>
             <nav className="flex-1 p-2">
@@ -106,7 +115,9 @@ function ClienteAppLayout() {
           </SheetContent>
         </Sheet>
 
-        <h1 className="text-base font-semibold">Rota 013</h1>
+        <Link to="/cliente/app" aria-label="Início" className="inline-flex items-center">
+          <LogoRota013 className="text-2xl" />
+        </Link>
 
         <Button variant="ghost" size="icon" aria-label="Falar com a central" asChild>
           <Link to="/cliente/app/chat">

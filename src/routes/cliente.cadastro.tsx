@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { setClienteToken } from "@/lib/cliente-auth";
 import { LogoRota013 } from "@/components/logo-rota013";
 import { maskTelefone, maskCPF } from "@/lib/masks";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 
 const TERMOS_VERSAO = "1.0";
 
@@ -89,11 +90,20 @@ function ClienteCadastroPage() {
 
           <div className="pt-2">
             <p className="text-sm font-semibold mb-2">Endereço</p>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="col-span-2">
-                <Field label="Rua" id="logradouro" value={form.logradouro} onChange={(v) => set("logradouro", v)} />
-              </div>
+            <div>
+              <Label htmlFor="logradouro" className="mb-1.5 block">Rua</Label>
+              <AddressAutocomplete
+                id="logradouro"
+                value={form.logradouro}
+                onChange={(v) => set("logradouro", v.text)}
+                placeholder="Comece a digitar a rua…"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2 mt-3">
               <Field label="Nº" id="numero" value={form.numero} onChange={(v) => set("numero", v)} />
+              <div className="col-span-2">
+                <Field label="Bairro" id="bairro" value={form.bairro} onChange={(v) => set("bairro", v)} />
+              </div>
             </div>
             <Field label="Bairro" id="bairro" value={form.bairro} onChange={(v) => set("bairro", v)} />
             <Field label="Cidade" id="cidade" value={form.cidade} onChange={(v) => set("cidade", v)} />

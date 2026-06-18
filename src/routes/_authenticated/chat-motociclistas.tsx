@@ -24,7 +24,7 @@ import {
 import { Send, MessageSquare, RefreshCw, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/chat-motoristas")({
+export const Route = createFileRoute("/_authenticated/chat-motociclistas")({
   head: () => ({ meta: [{ title: "Chat motociclistas — Rota013" }] }),
   component: ChatMotoristasPage,
 });

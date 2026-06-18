@@ -15,8 +15,7 @@ import { Route as QuemSomosRouteImport } from './routes/quem-somos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ParceirosRouteImport } from './routes/parceiros'
 import { Route as PainelRouteImport } from './routes/painel'
-import { Route as MotoristaRouteImport } from './routes/motorista'
-import { Route as LoginRouteImport } from './routes/login'
+import { Route as MotociclistaRouteImport } from './routes/motociclista'
 import { Route as InstalarRouteImport } from './routes/instalar'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -31,7 +30,7 @@ import { Route as ClienteAppRouteImport } from './routes/cliente.app'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedTarifasRouteImport } from './routes/_authenticated/tarifas'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
-import { Route as AuthenticatedMotoristasRouteImport } from './routes/_authenticated/motoristas'
+import { Route as AuthenticatedMotociclistasRouteImport } from './routes/_authenticated/motociclistas'
 import { Route as AuthenticatedMensagensRouteImport } from './routes/_authenticated/mensagens'
 import { Route as AuthenticatedInstrucoesRouteImport } from './routes/_authenticated/instrucoes'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -40,7 +39,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticated/corridas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
-import { Route as AuthenticatedChatMotoristasRouteImport } from './routes/_authenticated/chat-motoristas'
+import { Route as AuthenticatedChatMotociclistasRouteImport } from './routes/_authenticated/chat-motociclistas'
 import { Route as AuthenticatedChatClientesRouteImport } from './routes/_authenticated/chat-clientes'
 import { Route as ClienteAppIndexRouteImport } from './routes/cliente.app.index'
 import { Route as ClienteAppSenhaRouteImport } from './routes/cliente.app.senha'
@@ -78,14 +77,9 @@ const PainelRoute = PainelRouteImport.update({
   path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MotoristaRoute = MotoristaRouteImport.update({
-  id: '/motorista',
-  path: '/motorista',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const MotociclistaRoute = MotociclistaRouteImport.update({
+  id: '/motociclista',
+  path: '/motociclista',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstalarRoute = InstalarRouteImport.update({
@@ -157,11 +151,12 @@ const AuthenticatedMuralRoute = AuthenticatedMuralRouteImport.update({
   path: '/mural',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedMotoristasRoute = AuthenticatedMotoristasRouteImport.update({
-  id: '/motoristas',
-  path: '/motoristas',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+const AuthenticatedMotociclistasRoute =
+  AuthenticatedMotociclistasRouteImport.update({
+    id: '/motociclistas',
+    path: '/motociclistas',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMensagensRoute = AuthenticatedMensagensRouteImport.update({
   id: '/mensagens',
   path: '/mensagens',
@@ -203,10 +198,10 @@ const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
   path: '/clientes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedChatMotoristasRoute =
-  AuthenticatedChatMotoristasRouteImport.update({
-    id: '/chat-motoristas',
-    path: '/chat-motoristas',
+const AuthenticatedChatMotociclistasRoute =
+  AuthenticatedChatMotociclistasRouteImport.update({
+    id: '/chat-motociclistas',
+    path: '/chat-motociclistas',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedChatClientesRoute =
@@ -245,8 +240,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/instalar': typeof InstalarRoute
-  '/login': typeof LoginRoute
-  '/motorista': typeof MotoristaRoute
+  '/motociclista': typeof MotociclistaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -254,7 +248,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
   '/chat-clientes': typeof AuthenticatedChatClientesRoute
-  '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
+  '/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
@@ -263,7 +257,7 @@ export interface FileRoutesByFullPath {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/mensagens': typeof AuthenticatedMensagensRoute
-  '/motoristas': typeof AuthenticatedMotoristasRoute
+  '/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -284,8 +278,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/instalar': typeof InstalarRoute
-  '/login': typeof LoginRoute
-  '/motorista': typeof MotoristaRoute
+  '/motociclista': typeof MotociclistaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -293,7 +286,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
   '/chat-clientes': typeof AuthenticatedChatClientesRoute
-  '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
+  '/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
@@ -302,7 +295,7 @@ export interface FileRoutesByTo {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/mensagens': typeof AuthenticatedMensagensRoute
-  '/motoristas': typeof AuthenticatedMotoristasRoute
+  '/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -324,8 +317,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/como-funciona': typeof ComoFuncionaRoute
   '/instalar': typeof InstalarRoute
-  '/login': typeof LoginRoute
-  '/motorista': typeof MotoristaRoute
+  '/motociclista': typeof MotociclistaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -333,7 +325,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
   '/_authenticated/chat-clientes': typeof AuthenticatedChatClientesRoute
-  '/_authenticated/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
+  '/_authenticated/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corridas': typeof AuthenticatedCorridasRoute
@@ -342,7 +334,7 @@ export interface FileRoutesById {
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/_authenticated/mensagens': typeof AuthenticatedMensagensRoute
-  '/_authenticated/motoristas': typeof AuthenticatedMotoristasRoute
+  '/_authenticated/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/tarifas': typeof AuthenticatedTarifasRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
@@ -365,8 +357,7 @@ export interface FileRouteTypes {
     | '/'
     | '/como-funciona'
     | '/instalar'
-    | '/login'
-    | '/motorista'
+    | '/motociclista'
     | '/painel'
     | '/parceiros'
     | '/privacidade'
@@ -374,7 +365,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/termos'
     | '/chat-clientes'
-    | '/chat-motoristas'
+    | '/chat-motociclistas'
     | '/clientes'
     | '/configuracoes'
     | '/corridas'
@@ -383,7 +374,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/instrucoes'
     | '/mensagens'
-    | '/motoristas'
+    | '/motociclistas'
     | '/mural'
     | '/tarifas'
     | '/usuarios'
@@ -404,8 +395,7 @@ export interface FileRouteTypes {
     | '/'
     | '/como-funciona'
     | '/instalar'
-    | '/login'
-    | '/motorista'
+    | '/motociclista'
     | '/painel'
     | '/parceiros'
     | '/privacidade'
@@ -413,7 +403,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/termos'
     | '/chat-clientes'
-    | '/chat-motoristas'
+    | '/chat-motociclistas'
     | '/clientes'
     | '/configuracoes'
     | '/corridas'
@@ -422,7 +412,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/instrucoes'
     | '/mensagens'
-    | '/motoristas'
+    | '/motociclistas'
     | '/mural'
     | '/tarifas'
     | '/usuarios'
@@ -443,8 +433,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/como-funciona'
     | '/instalar'
-    | '/login'
-    | '/motorista'
+    | '/motociclista'
     | '/painel'
     | '/parceiros'
     | '/privacidade'
@@ -452,7 +441,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/termos'
     | '/_authenticated/chat-clientes'
-    | '/_authenticated/chat-motoristas'
+    | '/_authenticated/chat-motociclistas'
     | '/_authenticated/clientes'
     | '/_authenticated/configuracoes'
     | '/_authenticated/corridas'
@@ -461,7 +450,7 @@ export interface FileRouteTypes {
     | '/_authenticated/historico'
     | '/_authenticated/instrucoes'
     | '/_authenticated/mensagens'
-    | '/_authenticated/motoristas'
+    | '/_authenticated/motociclistas'
     | '/_authenticated/mural'
     | '/_authenticated/tarifas'
     | '/_authenticated/usuarios'
@@ -484,8 +473,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ComoFuncionaRoute: typeof ComoFuncionaRoute
   InstalarRoute: typeof InstalarRoute
-  LoginRoute: typeof LoginRoute
-  MotoristaRoute: typeof MotoristaRoute
+  MotociclistaRoute: typeof MotociclistaRoute
   PainelRoute: typeof PainelRoute
   ParceirosRoute: typeof ParceirosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
@@ -545,18 +533,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/motorista': {
-      id: '/motorista'
-      path: '/motorista'
-      fullPath: '/motorista'
-      preLoaderRoute: typeof MotoristaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/motociclista': {
+      id: '/motociclista'
+      path: '/motociclista'
+      fullPath: '/motociclista'
+      preLoaderRoute: typeof MotociclistaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instalar': {
@@ -657,11 +638,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMuralRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/motoristas': {
-      id: '/_authenticated/motoristas'
-      path: '/motoristas'
-      fullPath: '/motoristas'
-      preLoaderRoute: typeof AuthenticatedMotoristasRouteImport
+    '/_authenticated/motociclistas': {
+      id: '/_authenticated/motociclistas'
+      path: '/motociclistas'
+      fullPath: '/motociclistas'
+      preLoaderRoute: typeof AuthenticatedMotociclistasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/mensagens': {
@@ -720,11 +701,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/chat-motoristas': {
-      id: '/_authenticated/chat-motoristas'
-      path: '/chat-motoristas'
-      fullPath: '/chat-motoristas'
-      preLoaderRoute: typeof AuthenticatedChatMotoristasRouteImport
+    '/_authenticated/chat-motociclistas': {
+      id: '/_authenticated/chat-motociclistas'
+      path: '/chat-motociclistas'
+      fullPath: '/chat-motociclistas'
+      preLoaderRoute: typeof AuthenticatedChatMotociclistasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/chat-clientes': {
@@ -774,7 +755,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedChatClientesRoute: typeof AuthenticatedChatClientesRoute
-  AuthenticatedChatMotoristasRoute: typeof AuthenticatedChatMotoristasRoute
+  AuthenticatedChatMotociclistasRoute: typeof AuthenticatedChatMotociclistasRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorridasRoute: typeof AuthenticatedCorridasRoute
@@ -783,7 +764,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedInstrucoesRoute: typeof AuthenticatedInstrucoesRoute
   AuthenticatedMensagensRoute: typeof AuthenticatedMensagensRoute
-  AuthenticatedMotoristasRoute: typeof AuthenticatedMotoristasRoute
+  AuthenticatedMotociclistasRoute: typeof AuthenticatedMotociclistasRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedTarifasRoute: typeof AuthenticatedTarifasRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
@@ -791,7 +772,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChatClientesRoute: AuthenticatedChatClientesRoute,
-  AuthenticatedChatMotoristasRoute: AuthenticatedChatMotoristasRoute,
+  AuthenticatedChatMotociclistasRoute: AuthenticatedChatMotociclistasRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorridasRoute: AuthenticatedCorridasRoute,
@@ -800,7 +781,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedInstrucoesRoute: AuthenticatedInstrucoesRoute,
   AuthenticatedMensagensRoute: AuthenticatedMensagensRoute,
-  AuthenticatedMotoristasRoute: AuthenticatedMotoristasRoute,
+  AuthenticatedMotociclistasRoute: AuthenticatedMotociclistasRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedTarifasRoute: AuthenticatedTarifasRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
@@ -835,8 +816,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ComoFuncionaRoute: ComoFuncionaRoute,
   InstalarRoute: InstalarRoute,
-  LoginRoute: LoginRoute,
-  MotoristaRoute: MotoristaRoute,
+  MotociclistaRoute: MotociclistaRoute,
   PainelRoute: PainelRoute,
   ParceirosRoute: ParceirosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
@@ -854,13 +834,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

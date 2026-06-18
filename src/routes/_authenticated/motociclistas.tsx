@@ -15,7 +15,7 @@ import { OcorrenciasDialog } from "@/components/ocorrencias-dialog";
 import { useRole } from "@/hooks/use-role";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/motoristas")({
+export const Route = createFileRoute("/_authenticated/motociclistas")({
   ssr: false,
   head: () => ({ meta: [{ title: "Motociclistas — Rota 013" }] }),
   component: MotoristasPage,

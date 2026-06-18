@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Bike, Car, MapPin, Clock, ShieldCheck } from "lucide-react";
+import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/cliente/")({
   ssr: false,
@@ -26,9 +27,7 @@ function ClienteLanding() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="flex items-center justify-between px-5 py-4">
-        <span className="logo-r013 text-3xl">
-          R013<span>.</span>
-        </span>
+        <LogoRota013 className="text-3xl" />
         <Link to="/cliente/login">
           <Button variant="ghost" size="sm" className="rounded-xl">
             Entrar

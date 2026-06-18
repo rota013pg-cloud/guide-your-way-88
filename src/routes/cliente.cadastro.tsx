@@ -40,6 +40,15 @@ function ClienteCadastroPage() {
   });
   const [aceito, setAceito] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [openTermos, setOpenTermos] = useState(false);
+
+  const lerTermosFn = useServerFn(lerTermosPublico);
+  const { data: termos } = useQuery({
+    queryKey: ["termos-publico"],
+    queryFn: () => lerTermosFn(),
+    staleTime: 60_000,
+  });
+  const versaoTermos = termos?.versao ?? "1.0";
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 

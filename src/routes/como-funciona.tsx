@@ -20,6 +20,7 @@ export const Route = createFileRoute("/como-funciona")({
           "Solicite corridas pela plataforma web Rota013. Sem WhatsApp, sem espera — tudo direto pelo app no navegador.",
       },
     ],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
   component: ComoFuncionaPage,
 });

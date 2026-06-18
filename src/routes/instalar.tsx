@@ -14,6 +14,7 @@ export const Route = createFileRoute("/instalar")({
       },
       { property: "og:title", content: "Instalar o app — Rota013" },
     ],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
   component: InstalarPage,
 });

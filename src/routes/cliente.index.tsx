@@ -19,6 +19,7 @@ export const Route = createFileRoute("/cliente/")({
         content: "Peça sua corrida em segundos. Mobilidade Urbana e táxi em Praia Grande.",
       },
     ],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
   component: ClienteLanding,
 });

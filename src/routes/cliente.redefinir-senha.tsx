@@ -13,7 +13,7 @@ const search = z.object({ token: fallback(z.string().optional(), undefined) });
 
 export const Route = createFileRoute("/cliente/redefinir-senha")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Redefinir senha — Rota 013" }] }),
+  head: () => ({ meta: [{ title: "Redefinir senha — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
   validateSearch: zodValidator(search),
   component: RedefinirSenhaPage,
 });

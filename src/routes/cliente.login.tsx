@@ -11,7 +11,7 @@ import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/cliente/login")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Entrar — Rota 013" }] }),
+  head: () => ({ meta: [{ title: "Entrar — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
   component: ClienteLoginPage,
 });
 

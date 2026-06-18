@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/cliente/esqueci-senha")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Esqueci minha senha — Rota 013" }] }),
+  head: () => ({ meta: [{ title: "Esqueci minha senha — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
   component: EsqueciSenhaPage,
 });
 

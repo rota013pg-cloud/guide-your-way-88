@@ -20,6 +20,10 @@ import {
 } from "lucide-react";
 import { useCliente } from "@/lib/cliente-auth";
 import { LogoRota013 } from "@/components/logo-rota013";
+import { supabase } from "@/integrations/supabase/client";
+import { ensureAudioUnlock, playChatBeep } from "@/lib/notification-sound";
+import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/cliente/app")({
   ssr: false,
@@ -39,6 +43,73 @@ function ClienteAppLayout() {
   useEffect(() => {
     if (!loading && !cliente) navigate({ to: "/cliente/login", replace: true });
   }, [loading, cliente, navigate]);
+
+
+
+
+  // Notificação global: som + desktop notif quando chega msg da central
+  // e o cliente NÃO está na tela de chat.
+  useEffect(() => {
+    if (!cliente) return;
+    ensureAudioUnlock();
+    ensureNotificationPermission();
+    const ch = supabase
+      .channel(`chat_cliente_global_${cliente.codigo}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_cliente",
+          filter: `cliente_codigo=eq.${cliente.codigo}`,
+        },
+        (payload) => {
+          const m = payload.new as {
+            id: number;
+            autor: string;
+            autor_nome: string | null;
+            texto: string;
+          };
+          if (m.autor !== "central") return;
+          // Se já está no chat, a própria tela cuida do som/notif
+          if (window.location.pathname.startsWith("/cliente/app/chat")) return;
+          playChatBeep();
+          const nome = m.autor_nome ?? "Central";
+          const preview = m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
+          showDesktopNotification({
+            id: `cli-glob-${m.id}`,
+            title: `💬 ${nome}`,
+            body: preview,
+            tag: "chat-cliente-central",
+            onClick: () => navigate({ to: "/cliente/app/chat" }),
+          });
+          toast.custom(
+            (id) => (
+              <button
+                onClick={() => {
+                  toast.dismiss(id);
+                  navigate({ to: "/cliente/app/chat" });
+                }}
+                className="flex items-start gap-3 w-[340px] max-w-[88vw] rounded-lg border border-border bg-card text-card-foreground shadow-lg p-3 text-left hover:bg-muted/40 transition"
+              >
+                <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0">
+                  {(nome[0] ?? "C").toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold truncate">💬 {nome}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5 whitespace-pre-wrap break-words">
+                    {preview}
+                  </div>
+                </div>
+              </button>
+            ),
+            { duration: 6000 },
+          );
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [cliente, navigate]);
 
   if (loading || !cliente) {
     return (

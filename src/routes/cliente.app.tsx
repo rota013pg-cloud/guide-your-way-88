@@ -215,7 +215,17 @@ function ClienteAppLayout() {
                   </Link>
                 );
               })}
-            </nav>
+      </nav>
+
+      {/* Fallback de trava de orientação para iOS (manifest/lock API não bloqueiam fora do fullscreen) */}
+      <div className="rotate-lock-overlay" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2" />
+          <line x1="12" y1="18" x2="12" y2="18" />
+        </svg>
+        <p className="text-base font-medium">Gire o aparelho para o modo retrato</p>
+        <p className="text-sm text-muted-foreground">Este app funciona apenas em pé.</p>
+      </div>
             <div className="border-t border-border p-2">
               <button
                 onClick={sair}

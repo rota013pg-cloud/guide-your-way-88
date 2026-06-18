@@ -44,6 +44,24 @@ function ClienteAppLayout() {
     if (!loading && !cliente) navigate({ to: "/cliente/login", replace: true });
   }, [loading, cliente, navigate]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const lockPortrait = () => {
+      const orientation = window.screen?.orientation as ScreenOrientation | undefined;
+      if (!orientation || typeof orientation.lock !== "function") return;
+      void orientation.lock("portrait-primary").catch(() => undefined);
+    };
+    lockPortrait();
+    window.addEventListener("touchend", lockPortrait, { passive: true });
+    window.addEventListener("click", lockPortrait);
+    document.addEventListener("visibilitychange", lockPortrait);
+    return () => {
+      window.removeEventListener("touchend", lockPortrait);
+      window.removeEventListener("click", lockPortrait);
+      document.removeEventListener("visibilitychange", lockPortrait);
+    };
+  }, []);
+
 
 
 
@@ -56,65 +74,82 @@ function ClienteAppLayout() {
     const token = getClienteToken();
     if (!token) return;
     let cancelado = false;
+    let timeoutId: number | undefined;
+    let consultando = false;
     let ultimoId = 0;
     let primeiraCarga = true;
 
     const checar = async () => {
-      const { data, error } = await supabase.rpc("cliente_listar_mensagens", { _token: token });
-      if (cancelado || error || !data) return;
-      const lista = data as Array<{
-        id: number;
-        autor: string;
-        autor_nome: string | null;
-        texto: string;
-      }>;
-      const novos = lista.filter((m) => m.id > ultimoId && m.autor === "central");
-      ultimoId = lista.reduce((acc, m) => (m.id > acc ? m.id : acc), ultimoId);
-      if (primeiraCarga) {
-        primeiraCarga = false;
-        return;
+      if (consultando) return;
+      consultando = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = undefined;
       }
-      if (window.location.pathname.startsWith("/cliente/app/chat")) return;
-      for (const m of novos) {
-        playChatBeep();
-        const nome = m.autor_nome ?? "Central";
-        const preview = m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
-        showDesktopNotification({
-          id: `cli-glob-${m.id}`,
-          title: `💬 ${nome}`,
-          body: preview,
-          tag: "chat-cliente-central",
-          onClick: () => navigate({ to: "/cliente/app/chat" }),
-        });
-        toast.custom(
-          (id) => (
-            <button
-              onClick={() => {
-                toast.dismiss(id);
-                navigate({ to: "/cliente/app/chat" });
-              }}
-              className="flex items-start gap-3 w-[340px] max-w-[88vw] rounded-lg border border-border bg-card text-card-foreground shadow-lg p-3 text-left hover:bg-muted/40 transition"
-            >
-              <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0">
-                {(nome[0] ?? "C").toUpperCase()}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold truncate">💬 {nome}</div>
-                <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5 whitespace-pre-wrap break-words">
-                  {preview}
+      try {
+        const { data, error } = await supabase.rpc("cliente_listar_mensagens", { _token: token });
+        if (cancelado || error || !data) return;
+        const lista = data as Array<{
+          id: number;
+          autor: string;
+          autor_nome: string | null;
+          texto: string;
+        }>;
+        const novos = lista.filter((m) => m.id > ultimoId && m.autor === "central");
+        ultimoId = lista.reduce((acc, m) => (m.id > acc ? m.id : acc), ultimoId);
+        if (primeiraCarga) {
+          primeiraCarga = false;
+          return;
+        }
+        if (window.location.pathname.startsWith("/cliente/app/chat")) return;
+        for (const m of novos) {
+          playChatBeep();
+          const nome = m.autor_nome ?? "Central";
+          const preview = m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
+          showDesktopNotification({
+            id: `cli-glob-${m.id}`,
+            title: `💬 ${nome}`,
+            body: preview,
+            tag: "chat-cliente-central",
+            onClick: () => navigate({ to: "/cliente/app/chat" }),
+          });
+          toast.custom(
+            (id) => (
+              <button
+                onClick={() => {
+                  toast.dismiss(id);
+                  navigate({ to: "/cliente/app/chat" });
+                }}
+                className="flex items-start gap-3 w-[340px] max-w-[88vw] rounded-lg border border-border bg-card text-card-foreground shadow-lg p-3 text-left hover:bg-muted/40 transition"
+              >
+                <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0">
+                  {(nome[0] ?? "C").toUpperCase()}
                 </div>
-              </div>
-            </button>
-          ),
-          { duration: 6000 },
-        );
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold truncate">💬 {nome}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5 whitespace-pre-wrap break-words">
+                    {preview}
+                  </div>
+                </div>
+              </button>
+            ),
+            { duration: 6000 },
+          );
+        }
+      } finally {
+        consultando = false;
+        if (!cancelado) timeoutId = window.setTimeout(checar, document.hidden ? 10000 : 3000);
       }
     };
     void checar();
-    const iv = setInterval(checar, 5000);
+    const checarAgora = () => void checar();
+    window.addEventListener("focus", checarAgora);
+    document.addEventListener("visibilitychange", checarAgora);
     return () => {
       cancelado = true;
-      clearInterval(iv);
+      if (timeoutId) clearTimeout(timeoutId);
+      window.removeEventListener("focus", checarAgora);
+      document.removeEventListener("visibilitychange", checarAgora);
     };
   }, [cliente, navigate]);
 
@@ -142,7 +177,7 @@ function ClienteAppLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground pb-16">
       {/* Header */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 backdrop-blur px-4 py-3">
+      <header className="app-header-safe sticky top-0 z-30 flex items-end justify-between border-b border-border bg-background/95 backdrop-blur px-4 pb-3">
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Abrir menu">
@@ -209,7 +244,7 @@ function ClienteAppLayout() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur">
+      <nav className="app-bottom-nav-safe fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-md items-center justify-around">
           <BottomTab to="/cliente/app" icon={Home} label="Início" active={pathname === "/cliente/app"} />
           <BottomTab

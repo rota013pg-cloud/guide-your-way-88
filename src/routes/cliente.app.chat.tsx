@@ -30,6 +30,7 @@ function ChatPage() {
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [texto, setTexto] = useState("");
   const [sending, setSending] = useState(false);
+  const ultimoIdRef = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // desbloqueia áudio + pede permissão de notificação
@@ -54,35 +55,51 @@ function ChatPage() {
     const token = getClienteToken();
     if (!token || !cliente) return;
     let cancelado = false;
-    let ultimoId = 0;
+    let timeoutId: number | undefined;
+    let consultando = false;
     let primeiraCarga = true;
 
     const carregar = async () => {
-      const { data, error } = await supabase.rpc("cliente_listar_mensagens", { _token: token });
-      if (cancelado || error || !data) return;
-      const lista = data as unknown as Mensagem[];
-      const novosDaCentral = lista.filter((m) => m.id > ultimoId && m.autor === "central");
-      ultimoId = lista.reduce((acc, m) => (m.id > acc ? m.id : acc), ultimoId);
-      setMensagens(lista);
-      if (!primeiraCarga) {
-        for (const novo of novosDaCentral) {
-          playChatBeep();
-          const preview = novo.texto.length > 120 ? novo.texto.slice(0, 120) + "…" : novo.texto;
-          showDesktopNotification({
-            id: `cli-msg-${novo.id}`,
-            title: `💬 ${novo.autor_nome ?? "Central"}`,
-            body: preview,
-            tag: "chat-cliente-central",
-          });
-        }
+      if (consultando) return;
+      consultando = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = undefined;
       }
-      primeiraCarga = false;
+      try {
+        const { data, error } = await supabase.rpc("cliente_listar_mensagens", { _token: token });
+        if (cancelado || error || !data) return;
+        const lista = data as unknown as Mensagem[];
+        const novosDaCentral = lista.filter((m) => m.id > ultimoIdRef.current && m.autor === "central");
+        ultimoIdRef.current = lista.reduce((acc, m) => (m.id > acc ? m.id : acc), ultimoIdRef.current);
+        setMensagens(lista);
+        if (!primeiraCarga) {
+          for (const novo of novosDaCentral) {
+            playChatBeep();
+            const preview = novo.texto.length > 120 ? novo.texto.slice(0, 120) + "…" : novo.texto;
+            showDesktopNotification({
+              id: `cli-msg-${novo.id}`,
+              title: `💬 ${novo.autor_nome ?? "Central"}`,
+              body: preview,
+              tag: "chat-cliente-central",
+            });
+          }
+        }
+        primeiraCarga = false;
+      } finally {
+        consultando = false;
+        if (!cancelado) timeoutId = window.setTimeout(carregar, document.hidden ? 10000 : 2000);
+      }
     };
     void carregar();
-    const iv = setInterval(carregar, 4000);
+    const carregarAgora = () => void carregar();
+    window.addEventListener("focus", carregarAgora);
+    document.addEventListener("visibilitychange", carregarAgora);
     return () => {
       cancelado = true;
-      clearInterval(iv);
+      if (timeoutId) clearTimeout(timeoutId);
+      window.removeEventListener("focus", carregarAgora);
+      document.removeEventListener("visibilitychange", carregarAgora);
     };
   }, [cliente]);
 
@@ -102,6 +119,12 @@ function ChatPage() {
       const { error } = await supabase.rpc("cliente_enviar_mensagem", { _token: token, _texto: t });
       if (error) throw error;
       setTexto("");
+      const { data } = await supabase.rpc("cliente_listar_mensagens", { _token: token });
+      if (data) {
+        const lista = data as unknown as Mensagem[];
+        ultimoIdRef.current = lista.reduce((acc, m) => (m.id > acc ? m.id : acc), ultimoIdRef.current);
+        setMensagens(lista);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao enviar");
     } finally {

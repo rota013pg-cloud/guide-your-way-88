@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
-import { Zap, ShieldCheck, Handshake, Smartphone, Waves, CheckCircle2 } from "lucide-react";
+import { Zap, ShieldCheck, Handshake, Smartphone, Waves, CheckCircle2, LogIn } from "lucide-react";
 import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/")({

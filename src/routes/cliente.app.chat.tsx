@@ -47,11 +47,7 @@ function ChatPage() {
       if (w) setWhatsapp(w.replace(/\D/g, ""));
     })();
   }, []);
-      const cfg = (data?.config_json as Record<string, unknown> | null) ?? {};
-      const w = typeof cfg.whatsappCentral === "string" ? cfg.whatsappCentral : "";
-      if (w) setWhatsapp(w.replace(/\D/g, ""));
-    })();
-  }, []);
+
 
   // carrega mensagens + subscribe realtime
   useEffect(() => {

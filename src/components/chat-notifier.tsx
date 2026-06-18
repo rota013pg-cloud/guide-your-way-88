@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { playChatBeep } from "@/lib/notification-sound";
+import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";
 
 type Msg = {
   id: number;
@@ -52,6 +53,7 @@ export function ChatNotifier() {
   };
 
   useEffect(() => {
+    ensureNotificationPermission();
     recarregar();
     const ch = supabase
       .channel("chat-notifier")
@@ -64,6 +66,14 @@ export function ChatNotifier() {
           recarregar();
           if (!noChatRef.current) {
             playChatBeep();
+            const previewNotif = m.texto.length > 120 ? m.texto.slice(0, 120) + "…" : m.texto;
+            showDesktopNotification({
+              id: `mot-${m.id}`,
+              title: `💬 ${m.autor_nome ?? m.motorista_codigo}`,
+              body: previewNotif,
+              tag: `chat-motorista-${m.motorista_codigo}`,
+              onClick: () => navigate({ to: "/chat-motoristas" }),
+            });
             const { data: mot } = await supabase
               .from("motoristas")
               .select("foto,nome")

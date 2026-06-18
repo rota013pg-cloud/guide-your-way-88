@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as QuemSomosRouteImport } from './routes/quem-somos'
 import { Route as ParceirosRouteImport } from './routes/parceiros'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MotoristaRouteImport } from './routes/motorista'
@@ -40,6 +41,11 @@ import { Route as AuthenticatedChatMotoristasRouteImport } from './routes/_authe
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuemSomosRoute = QuemSomosRouteImport.update({
+  id: '/quem-somos',
+  path: '/quem-somos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParceirosRoute = ParceirosRouteImport.update({
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
+  '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
+  '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/motorista': typeof MotoristaRoute
   '/painel': typeof PainelRoute
   '/parceiros': typeof ParceirosRoute
+  '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/painel'
     | '/parceiros'
+    | '/quem-somos'
     | '/reset-password'
     | '/chat-motoristas'
     | '/clientes'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/painel'
     | '/parceiros'
+    | '/quem-somos'
     | '/reset-password'
     | '/chat-motoristas'
     | '/clientes'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/painel'
     | '/parceiros'
+    | '/quem-somos'
     | '/reset-password'
     | '/_authenticated/chat-motoristas'
     | '/_authenticated/clientes'
@@ -356,6 +368,7 @@ export interface RootRouteChildren {
   MotoristaRoute: typeof MotoristaRoute
   PainelRoute: typeof PainelRoute
   ParceirosRoute: typeof ParceirosRoute
+  QuemSomosRoute: typeof QuemSomosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ClienteAppRoute: typeof ClienteAppRoute
   ClienteCadastroRoute: typeof ClienteCadastroRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quem-somos': {
+      id: '/quem-somos'
+      path: '/quem-somos'
+      fullPath: '/quem-somos'
+      preLoaderRoute: typeof QuemSomosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parceiros': {
@@ -603,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   MotoristaRoute: MotoristaRoute,
   PainelRoute: PainelRoute,
   ParceirosRoute: ParceirosRoute,
+  QuemSomosRoute: QuemSomosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ClienteAppRoute: ClienteAppRoute,
   ClienteCadastroRoute: ClienteCadastroRoute,

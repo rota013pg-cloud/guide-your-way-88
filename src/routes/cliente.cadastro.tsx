@@ -131,16 +131,49 @@ function ClienteCadastroPage() {
             <Field label="Cidade" id="cidade" value={form.cidade} onChange={(v) => set("cidade", v)} />
           </div>
 
-          <label className="flex items-start gap-2 pt-2 cursor-pointer">
-            <Checkbox checked={aceito} onCheckedChange={(c) => setAceito(c === true)} className="mt-0.5" />
-            <span className="text-sm text-muted-foreground">
-              Aceito os Termos de Uso e Política de Privacidade (v{versaoTermos}).
-            </span>
-          </label>
+          <div className="pt-2 space-y-2">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <Checkbox checked={aceito} onCheckedChange={(c) => setAceito(c === true)} className="mt-0.5" />
+              <span className="text-sm text-muted-foreground">
+                Li e aceito os{" "}
+                <Dialog open={openTermos} onOpenChange={setOpenTermos}>
+                  <DialogTrigger asChild>
+                    <button type="button" className="text-primary hover:underline font-medium">
+                      Termos e Condições
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>Termos e Condições (v{versaoTermos})</DialogTitle>
+                    </DialogHeader>
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none overflow-y-auto pr-2"
+                      dangerouslySetInnerHTML={{ __html: termos?.conteudo ?? "Carregando…" }}
+                    />
+                    <div className="pt-3 border-t flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setOpenTermos(false)}>Fechar</Button>
+                      <Button
+                        onClick={() => { setAceito(true); setOpenTermos(false); }}
+                      >
+                        Li e aceito
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                {" "}(v{versaoTermos}).
+              </span>
+            </label>
+            {!aceito && (
+              <p className="text-xs text-muted-foreground">
+                Você deve aceitar os Termos e Condições para prosseguir com o cadastro.
+              </p>
+            )}
+          </div>
 
-          <Button type="submit" className="w-full rounded-xl mt-2" disabled={loading}>
+          <Button type="submit" className="w-full rounded-xl mt-2" disabled={loading || !aceito}>
             {loading ? "Criando..." : "Criar conta"}
           </Button>
+
         </form>
         <p className="mt-5 text-sm text-center text-muted-foreground">
           Já tem conta?{" "}

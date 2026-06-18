@@ -77,7 +77,7 @@ export function CobrancaNotifier() {
               <button
                 onClick={() => {
                   toast.dismiss(id);
-                  navigate({ to: "/motoristas" });
+                  navigate({ to: "/motociclistas" });
                 }}
                 className="flex items-start gap-3 w-[340px] max-w-[88vw] rounded-lg border border-border bg-card text-card-foreground shadow-lg p-3 text-left hover:bg-muted/40 transition"
               >
@@ -161,7 +161,7 @@ export function CobrancaNotifier() {
             travados.map((c) => (
               <Link
                 key={c.id}
-                to="/motoristas"
+                to="/motociclistas"
                 onClick={() => setOpen(false)}
                 className="block px-3 py-2 border-b border-border last:border-0 hover:bg-muted/60 transition"
               >

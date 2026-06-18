@@ -33,7 +33,7 @@ export function ChatNotifier() {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
-  const noChat = pathname === "/chat-motoristas";
+  const noChat = pathname === "/chat-motociclistas";
   const noChatRef = useRef(noChat);
   noChatRef.current = noChat;
 
@@ -72,7 +72,7 @@ export function ChatNotifier() {
               title: `💬 ${m.autor_nome ?? m.motorista_codigo}`,
               body: previewNotif,
               tag: `chat-motorista-${m.motorista_codigo}`,
-              onClick: () => navigate({ to: "/chat-motoristas" }),
+              onClick: () => navigate({ to: "/chat-motociclistas" }),
             });
             const { data: mot } = await supabase
               .from("motoristas")
@@ -88,7 +88,7 @@ export function ChatNotifier() {
                 <button
                   onClick={() => {
                     toast.dismiss(id);
-                    navigate({ to: "/chat-motoristas" });
+                    navigate({ to: "/chat-motociclistas" });
                   }}
                   className="flex items-start gap-3 w-[340px] max-w-[88vw] rounded-lg border border-border bg-card text-card-foreground shadow-lg p-3 text-left hover:bg-muted/40 transition"
                 >
@@ -166,7 +166,7 @@ export function ChatNotifier() {
             naoLidas.map((m) => (
               <Link
                 key={m.id}
-                to="/chat-motoristas"
+                to="/chat-motociclistas"
                 onClick={() => setOpen(false)}
                 className="block px-3 py-2 border-b border-border last:border-0 hover:bg-muted/60 transition"
               >
@@ -191,7 +191,7 @@ export function ChatNotifier() {
 
         <div className="border-t border-border px-3 py-2 text-right">
           <Link
-            to="/chat-motoristas"
+            to="/chat-motociclistas"
             onClick={() => setOpen(false)}
             className="text-xs text-primary hover:underline"
           >

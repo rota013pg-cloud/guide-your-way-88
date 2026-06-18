@@ -18,7 +18,7 @@ import {
   MessageCircle,
   User,
 } from "lucide-react";
-import { useCliente } from "@/lib/cliente-auth";
+import { useCliente, getClienteToken } from "@/lib/cliente-auth";
 import { LogoRota013 } from "@/components/logo-rota013";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureAudioUnlock, playChatBeep } from "@/lib/notification-sound";

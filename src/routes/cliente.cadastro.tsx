@@ -31,6 +31,7 @@ function ClienteCadastroPage() {
     logradouro: "",
     numero: "",
     bairro: "",
+    complemento: "",
     cidade: "Praia Grande",
   });
   const [aceito, setAceito] = useState(false);
@@ -52,7 +53,7 @@ function ClienteCadastroPage() {
         _senha: form.senha,
         _telefone: form.telefone,
         _cpf: form.cpf,
-        _logradouro: form.logradouro,
+        _logradouro: form.complemento ? `${form.logradouro} — ${form.complemento}` : form.logradouro,
         _numero: form.numero,
         _bairro: form.bairro,
         _cidade: form.cidade,
@@ -113,7 +114,7 @@ function ClienteCadastroPage() {
                 <Field label="Bairro" id="bairro" value={form.bairro} onChange={(v) => set("bairro", v)} />
               </div>
             </div>
-            <Field label="Bairro" id="bairro" value={form.bairro} onChange={(v) => set("bairro", v)} />
+            <Field label="Complemento" id="complemento" value={form.complemento} onChange={(v) => set("complemento", v)} />
             <Field label="Cidade" id="cidade" value={form.cidade} onChange={(v) => set("cidade", v)} />
           </div>
 

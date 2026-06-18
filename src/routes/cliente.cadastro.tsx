@@ -95,7 +95,15 @@ function ClienteCadastroPage() {
               <AddressAutocomplete
                 id="logradouro"
                 value={form.logradouro}
-                onChange={(v) => set("logradouro", v.text)}
+                onChange={(v) =>
+                  setForm((f) => ({
+                    ...f,
+                    logradouro: v.route ?? v.text,
+                    numero: v.streetNumber ?? f.numero,
+                    bairro: v.neighborhood ?? f.bairro,
+                    cidade: v.city ?? f.cidade,
+                  }))
+                }
                 placeholder="Comece a digitar a rua…"
               />
             </div>

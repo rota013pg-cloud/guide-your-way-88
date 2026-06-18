@@ -7,6 +7,8 @@ import { MessageCircle, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken, useCliente } from "@/lib/cliente-auth";
 import { toast } from "sonner";
+import { ensureAudioUnlock, playChatBeep } from "@/lib/notification-sound";
+import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";
 
 export const Route = createFileRoute("/cliente/app/chat")({
   ssr: false,
@@ -30,10 +32,21 @@ function ChatPage() {
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // desbloqueia áudio + pede permissão de notificação
+  useEffect(() => {
+    ensureAudioUnlock();
+    ensureNotificationPermission();
+  }, []);
+
   // carrega WhatsApp configurado
   useEffect(() => {
     (async () => {
       const { data } = await supabase.from("app_config").select("config_json").eq("id", 1).maybeSingle();
+      const cfg = (data?.config_json as Record<string, unknown> | null) ?? {};
+      const w = typeof cfg.whatsappCentral === "string" ? cfg.whatsappCentral : "";
+      if (w) setWhatsapp(w.replace(/\D/g, ""));
+    })();
+  }, []);
       const cfg = (data?.config_json as Record<string, unknown> | null) ?? {};
       const w = typeof cfg.whatsappCentral === "string" ? cfg.whatsappCentral : "";
       if (w) setWhatsapp(w.replace(/\D/g, ""));
@@ -57,11 +70,21 @@ function ChatPage() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_cliente", filter: `cliente_codigo=eq.${cliente.codigo}` },
         (payload) => {
+          const novo = payload.new as Mensagem;
           setMensagens((prev) => {
-            const novo = payload.new as Mensagem;
             if (prev.some((m) => m.id === novo.id)) return prev;
             return [...prev, novo];
           });
+          if (novo.autor === "central") {
+            playChatBeep();
+            const preview = novo.texto.length > 120 ? novo.texto.slice(0, 120) + "…" : novo.texto;
+            showDesktopNotification({
+              id: `cli-msg-${novo.id}`,
+              title: `💬 ${novo.autor_nome ?? "Central"}`,
+              body: preview,
+              tag: "chat-cliente-central",
+            });
+          }
         },
       )
       .subscribe();

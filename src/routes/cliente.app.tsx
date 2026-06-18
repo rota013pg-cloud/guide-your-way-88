@@ -72,6 +72,22 @@ function ClienteAppPage() {
             <p>Código: <span className="text-foreground font-mono">{cliente.codigo}</span></p>
             {cliente.email && <p>E-mail: <span className="text-foreground">{cliente.email}</span></p>}
             {cliente.telefone && <p>Telefone: <span className="text-foreground">{cliente.telefone}</span></p>}
+            {cliente.cpf && <p>CPF: <span className="text-foreground">{cliente.cpf}</span></p>}
+            {(cliente.endereco_logradouro || cliente.endereco_cidade) && (
+              <p>
+                Endereço:{" "}
+                <span className="text-foreground">
+                  {[
+                    cliente.endereco_logradouro,
+                    cliente.endereco_numero,
+                    cliente.endereco_bairro,
+                    cliente.endereco_cidade,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </span>
+              </p>
+            )}
           </div>
         </Card>
       </main>

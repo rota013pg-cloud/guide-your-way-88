@@ -173,6 +173,19 @@ function IndexPage() {
       </main>
 
       <SiteFooter />
+
+      {/* Floating login button */}
+      <Link
+        to="/login"
+        aria-label="Acessar painel do operador"
+        className="fixed bottom-5 right-5 z-50 group"
+      >
+        <span className="absolute inset-0 rounded-full bg-primary/60 animate-ping" />
+        <span className="relative flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-primary-foreground font-semibold shadow-lg shadow-primary/40 transition-transform hover:scale-110">
+          <LogIn className="size-5" />
+          <span className="hidden sm:inline">Login</span>
+        </span>
+      </Link>
     </div>
   );
 }

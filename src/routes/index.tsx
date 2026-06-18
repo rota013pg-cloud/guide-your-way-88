@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Zap, ShieldCheck, Handshake, Smartphone, Waves, CheckCircle2 } from "lucide-react";
+import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -54,6 +55,9 @@ function IndexPage() {
         {/* Hero */}
         <section className="px-5 pt-12 pb-14 md:pt-20 md:pb-20">
           <div className="mx-auto max-w-4xl text-center">
+            <div className="flex justify-center mb-6">
+              <LogoRota013 className="text-6xl md:text-7xl" />
+            </div>
             <div className="inline-block text-xs uppercase tracking-widest text-primary mb-4">
               🏍️ Praia Grande & Litoral Sul de SP
             </div>

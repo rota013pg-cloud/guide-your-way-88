@@ -39,7 +39,7 @@ function IndexPage() {
         return;
       }
       if (host.startsWith("app.")) {
-        navigate({ to: "/motorista", replace: true });
+        navigate({ to: "/motociclista", replace: true });
         return;
       }
     }

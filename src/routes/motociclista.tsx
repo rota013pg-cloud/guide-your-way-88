@@ -25,7 +25,7 @@ import { PanicButton } from "@/components/motorista/panic-button";
 import { playChatBeep } from "@/lib/notification-sound";
 import { LogoRota013 } from "@/components/logo-rota013";
 
-export const Route = createFileRoute("/motorista")({
+export const Route = createFileRoute("/motociclista")({
   ssr: false,
   head: () => ({
     meta: [

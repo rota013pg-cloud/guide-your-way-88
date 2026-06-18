@@ -7,7 +7,7 @@ import { useState } from "react";
 const nav = [
   { to: "/parceiros", label: "Quero ser parceiro" },
   { to: "/como-funciona", label: "Como funciona" },
-  { to: "/", label: "Quem somos" },
+  { to: "/quem-somos", label: "Quem somos" },
 ] as const;
 
 export function SiteHeader() {
@@ -73,12 +73,27 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 mt-16">
-      <div className="mx-auto max-w-6xl px-5 py-8 flex flex-col md:flex-row gap-4 items-center justify-between">
-        <LogoRota013 className="text-xl" />
-        <div className="text-xs text-muted-foreground text-center md:text-right">
-          © {new Date().getFullYear()} Rota013 — Mobilidade urbana no Litoral Sul de SP
-          <div className="mt-1">contato@rota013.com.br</div>
+      <div className="mx-auto max-w-6xl px-5 py-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-2">
+          <LogoRota013 className="text-xl" />
+          <div className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Rota013 — Mobilidade no Litoral Sul de SP
+          </div>
+          <a
+            href="mailto:contato@rota013.com.br"
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            contato@rota013.com.br
+          </a>
         </div>
+        <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
+          <Link to="/como-funciona" className="hover:text-foreground">Como funciona</Link>
+          <Link to="/parceiros" className="hover:text-foreground">Quero ser parceiro</Link>
+          <Link to="/quem-somos" className="hover:text-foreground">Quem somos</Link>
+          <Link to="/instalar" className="hover:text-foreground">Instalar app</Link>
+          <Link to="/termos" className="hover:text-foreground">Termos de Uso</Link>
+          <Link to="/privacidade" className="hover:text-foreground">Privacidade</Link>
+        </nav>
       </div>
     </footer>
   );

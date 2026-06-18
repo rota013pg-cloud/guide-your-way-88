@@ -176,8 +176,9 @@ function IndexPage() {
 
       {/* Floating login button */}
       <Link
-        to="/login"
-        aria-label="Acessar painel do operador"
+        to="/cliente/login"
+        aria-label="Acessar app do cliente"
+
         className="fixed bottom-5 right-5 z-50 group"
       >
         <span className="absolute inset-0 rounded-full bg-primary/60 animate-ping" />

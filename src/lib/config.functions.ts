@@ -13,6 +13,12 @@ export type MensagemTemplate = {
   texto: string;
 };
 
+export type TermosDoc = {
+  versao: string;
+  conteudo: string; // HTML
+  atualizadoEm: string | null;
+};
+
 export type AppConfig = {
   empresa: string;
   cidadeBase: string;
@@ -24,6 +30,14 @@ export type AppConfig = {
   alertaAgendadaMin: number;
   percentualBloqueio: number;
   templates: MensagemTemplate[];
+  termos: TermosDoc;
+};
+
+const TERMOS_DEFAULT: TermosDoc = {
+  versao: "1.0",
+  conteudo:
+    "<h2>Termos e Condições</h2><p>Bem-vindo à Rota 013. Ao criar sua conta, você concorda com nossas regras de uso do serviço de motofrete.</p><p>Edite este conteúdo no painel administrativo &gt; Termos e Condições.</p>",
+  atualizadoEm: null,
 };
 
 const CONFIG_DEFAULT: AppConfig = {
@@ -37,12 +51,18 @@ const CONFIG_DEFAULT: AppConfig = {
   alertaAgendadaMin: 15,
   percentualBloqueio: 50,
   templates: [],
+  termos: TERMOS_DEFAULT,
 };
 
 const TemplateSchema = z.object({
   id: z.string().min(1).max(40),
   titulo: z.string().min(1).max(80),
   texto: z.string().min(1).max(2000),
+});
+
+const TermosSchema = z.object({
+  versao: z.string().min(1).max(20),
+  conteudo: z.string().min(1).max(50000),
 });
 
 const ConfigSchema = z.object({

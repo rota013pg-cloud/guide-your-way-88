@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AddressAutocomplete } from "@/components/address-autocomplete";
-import { maskTelefone } from "@/lib/masks";
+import { maskTelefone, maskCPF } from "@/lib/masks";
 import { previewProximoCodigoCliente, salvarCliente } from "@/lib/clientes.functions";
 import { toast } from "sonner";
 
@@ -19,6 +19,12 @@ type Cliente = {
   cidade: string | null;
   indicacao?: string | null;
   observacoes?: string | null;
+  email?: string | null;
+  cpf?: string | null;
+  endereco_logradouro?: string | null;
+  endereco_numero?: string | null;
+  endereco_bairro?: string | null;
+  endereco_cidade?: string | null;
 };
 
 export function ClienteDialog({
@@ -36,7 +42,11 @@ export function ClienteDialog({
 
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [endereco, setEndereco] = useState("");
+  const [email, setEmail] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [logradouro, setLogradouro] = useState("");
+  const [numero, setNumero] = useState("");
+  const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("Praia Grande");
   const [indicacao, setIndicacao] = useState("");
   const [obs, setObs] = useState("");
@@ -51,26 +61,41 @@ export function ClienteDialog({
     if (open) {
       setNome(cliente?.nome ?? "");
       setTelefone(cliente?.telefone ?? "");
-      setEndereco(cliente?.endereco ?? "");
-      setCidade(cliente?.cidade ?? "Praia Grande");
+      setEmail(cliente?.email ?? "");
+      setCpf(cliente?.cpf ? maskCPF(cliente.cpf) : "");
+      setLogradouro(cliente?.endereco_logradouro ?? "");
+      setNumero(cliente?.endereco_numero ?? "");
+      setBairro(cliente?.endereco_bairro ?? "");
+      setCidade(cliente?.endereco_cidade ?? cliente?.cidade ?? "Praia Grande");
       setIndicacao(cliente?.indicacao ?? "");
       setObs(cliente?.observacoes ?? "");
     }
   }, [open, cliente]);
 
   const mut = useMutation({
-    mutationFn: () =>
-      salvar({
+    mutationFn: () => {
+      const enderecoFmt = [
+        logradouro,
+        numero ? `, ${numero}` : "",
+        bairro ? ` - ${bairro}` : "",
+      ].join("").trim();
+      return salvar({
         data: {
           codigo: cliente?.codigo,
           nome,
           telefone,
-          endereco,
+          email: email.trim() || undefined,
+          cpf: cpf.replace(/\D/g, "") || undefined,
+          endereco: enderecoFmt,
           cidade,
+          logradouro,
+          numero,
+          bairro,
           indicacao,
           observacoes: obs,
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(cliente ? "Cliente atualizado" : "Cliente cadastrado");
       qc.invalidateQueries({ queryKey: ["clientes"] });
@@ -84,7 +109,7 @@ export function ClienteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {cliente ? `Editar cliente ${cliente.codigo}` : `Novo cliente (${codigoExibido})`}
@@ -95,21 +120,42 @@ export function ClienteDialog({
             <Label>Nome *</Label>
             <Input className="uppercase" value={nome} onChange={(e) => setNome(e.target.value.toUpperCase())} maxLength={120} />
           </div>
-          <div>
-            <Label>Telefone</Label>
-            <Input
-              value={telefone}
-              onChange={(e) => setTelefone(maskTelefone(e.target.value))}
-              placeholder="(13) 99999-9999"
-            />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label>Telefone</Label>
+              <Input value={telefone} onChange={(e) => setTelefone(maskTelefone(e.target.value))} placeholder="(13) 99999-9999" />
+            </div>
+            <div>
+              <Label>CPF</Label>
+              <Input value={cpf} onChange={(e) => setCpf(maskCPF(e.target.value))} inputMode="numeric" />
+            </div>
           </div>
           <div>
-            <Label>Endereço</Label>
+            <Label>E-mail</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={255} />
+          </div>
+          <div>
+            <Label>Rua</Label>
             <AddressAutocomplete
-              value={endereco}
-              onChange={(v) => setEndereco(v.text)}
-              placeholder="Rua, número, bairro…"
+              value={logradouro}
+              onChange={(v) => {
+                setLogradouro(v.route ?? v.text);
+                if (v.streetNumber) setNumero(v.streetNumber);
+                if (v.neighborhood) setBairro(v.neighborhood);
+                if (v.city) setCidade(v.city);
+              }}
+              placeholder="Comece a digitar a rua…"
             />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <Label>Nº</Label>
+              <Input value={numero} onChange={(e) => setNumero(e.target.value)} />
+            </div>
+            <div className="col-span-2">
+              <Label>Bairro</Label>
+              <Input value={bairro} onChange={(e) => setBairro(e.target.value)} />
+            </div>
           </div>
           <div>
             <Label>Cidade</Label>

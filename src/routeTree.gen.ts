@@ -41,6 +41,11 @@ import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedChatMotoristasRouteImport } from './routes/_authenticated/chat-motoristas'
+import { Route as ClienteAppIndexRouteImport } from './routes/cliente.app.index'
+import { Route as ClienteAppSenhaRouteImport } from './routes/cliente.app.senha'
+import { Route as ClienteAppPerfilRouteImport } from './routes/cliente.app.perfil'
+import { Route as ClienteAppHistoricoRouteImport } from './routes/cliente.app.historico'
+import { Route as ClienteAppChatRouteImport } from './routes/cliente.app.chat'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -203,6 +208,31 @@ const AuthenticatedChatMotoristasRoute =
     path: '/chat-motoristas',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ClienteAppIndexRoute = ClienteAppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ClienteAppRoute,
+} as any)
+const ClienteAppSenhaRoute = ClienteAppSenhaRouteImport.update({
+  id: '/senha',
+  path: '/senha',
+  getParentRoute: () => ClienteAppRoute,
+} as any)
+const ClienteAppPerfilRoute = ClienteAppPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => ClienteAppRoute,
+} as any)
+const ClienteAppHistoricoRoute = ClienteAppHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => ClienteAppRoute,
+} as any)
+const ClienteAppChatRoute = ClienteAppChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => ClienteAppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -229,13 +259,18 @@ export interface FileRoutesByFullPath {
   '/mural': typeof AuthenticatedMuralRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
-  '/cliente/app': typeof ClienteAppRoute
+  '/cliente/app': typeof ClienteAppRouteWithChildren
   '/cliente/cadastro': typeof ClienteCadastroRoute
   '/cliente/esqueci-senha': typeof ClienteEsqueciSenhaRoute
   '/cliente/login': typeof ClienteLoginRoute
   '/cliente/redefinir-senha': typeof ClienteRedefinirSenhaRoute
   '/operador/login': typeof OperadorLoginRoute
   '/cliente/': typeof ClienteIndexRoute
+  '/cliente/app/chat': typeof ClienteAppChatRoute
+  '/cliente/app/historico': typeof ClienteAppHistoricoRoute
+  '/cliente/app/perfil': typeof ClienteAppPerfilRoute
+  '/cliente/app/senha': typeof ClienteAppSenhaRoute
+  '/cliente/app/': typeof ClienteAppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -262,13 +297,17 @@ export interface FileRoutesByTo {
   '/mural': typeof AuthenticatedMuralRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
-  '/cliente/app': typeof ClienteAppRoute
   '/cliente/cadastro': typeof ClienteCadastroRoute
   '/cliente/esqueci-senha': typeof ClienteEsqueciSenhaRoute
   '/cliente/login': typeof ClienteLoginRoute
   '/cliente/redefinir-senha': typeof ClienteRedefinirSenhaRoute
   '/operador/login': typeof OperadorLoginRoute
   '/cliente': typeof ClienteIndexRoute
+  '/cliente/app/chat': typeof ClienteAppChatRoute
+  '/cliente/app/historico': typeof ClienteAppHistoricoRoute
+  '/cliente/app/perfil': typeof ClienteAppPerfilRoute
+  '/cliente/app/senha': typeof ClienteAppSenhaRoute
+  '/cliente/app': typeof ClienteAppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -297,13 +336,18 @@ export interface FileRoutesById {
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/tarifas': typeof AuthenticatedTarifasRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
-  '/cliente/app': typeof ClienteAppRoute
+  '/cliente/app': typeof ClienteAppRouteWithChildren
   '/cliente/cadastro': typeof ClienteCadastroRoute
   '/cliente/esqueci-senha': typeof ClienteEsqueciSenhaRoute
   '/cliente/login': typeof ClienteLoginRoute
   '/cliente/redefinir-senha': typeof ClienteRedefinirSenhaRoute
   '/operador/login': typeof OperadorLoginRoute
   '/cliente/': typeof ClienteIndexRoute
+  '/cliente/app/chat': typeof ClienteAppChatRoute
+  '/cliente/app/historico': typeof ClienteAppHistoricoRoute
+  '/cliente/app/perfil': typeof ClienteAppPerfilRoute
+  '/cliente/app/senha': typeof ClienteAppSenhaRoute
+  '/cliente/app/': typeof ClienteAppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -339,6 +383,11 @@ export interface FileRouteTypes {
     | '/cliente/redefinir-senha'
     | '/operador/login'
     | '/cliente/'
+    | '/cliente/app/chat'
+    | '/cliente/app/historico'
+    | '/cliente/app/perfil'
+    | '/cliente/app/senha'
+    | '/cliente/app/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -365,13 +414,17 @@ export interface FileRouteTypes {
     | '/mural'
     | '/tarifas'
     | '/usuarios'
-    | '/cliente/app'
     | '/cliente/cadastro'
     | '/cliente/esqueci-senha'
     | '/cliente/login'
     | '/cliente/redefinir-senha'
     | '/operador/login'
     | '/cliente'
+    | '/cliente/app/chat'
+    | '/cliente/app/historico'
+    | '/cliente/app/perfil'
+    | '/cliente/app/senha'
+    | '/cliente/app'
   id:
     | '__root__'
     | '/'
@@ -406,6 +459,11 @@ export interface FileRouteTypes {
     | '/cliente/redefinir-senha'
     | '/operador/login'
     | '/cliente/'
+    | '/cliente/app/chat'
+    | '/cliente/app/historico'
+    | '/cliente/app/perfil'
+    | '/cliente/app/senha'
+    | '/cliente/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -421,7 +479,7 @@ export interface RootRouteChildren {
   QuemSomosRoute: typeof QuemSomosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermosRoute: typeof TermosRoute
-  ClienteAppRoute: typeof ClienteAppRoute
+  ClienteAppRoute: typeof ClienteAppRouteWithChildren
   ClienteCadastroRoute: typeof ClienteCadastroRoute
   ClienteEsqueciSenhaRoute: typeof ClienteEsqueciSenhaRoute
   ClienteLoginRoute: typeof ClienteLoginRoute
@@ -656,6 +714,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatMotoristasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/cliente/app/': {
+      id: '/cliente/app/'
+      path: '/'
+      fullPath: '/cliente/app/'
+      preLoaderRoute: typeof ClienteAppIndexRouteImport
+      parentRoute: typeof ClienteAppRoute
+    }
+    '/cliente/app/senha': {
+      id: '/cliente/app/senha'
+      path: '/senha'
+      fullPath: '/cliente/app/senha'
+      preLoaderRoute: typeof ClienteAppSenhaRouteImport
+      parentRoute: typeof ClienteAppRoute
+    }
+    '/cliente/app/perfil': {
+      id: '/cliente/app/perfil'
+      path: '/perfil'
+      fullPath: '/cliente/app/perfil'
+      preLoaderRoute: typeof ClienteAppPerfilRouteImport
+      parentRoute: typeof ClienteAppRoute
+    }
+    '/cliente/app/historico': {
+      id: '/cliente/app/historico'
+      path: '/historico'
+      fullPath: '/cliente/app/historico'
+      preLoaderRoute: typeof ClienteAppHistoricoRouteImport
+      parentRoute: typeof ClienteAppRoute
+    }
+    '/cliente/app/chat': {
+      id: '/cliente/app/chat'
+      path: '/chat'
+      fullPath: '/cliente/app/chat'
+      preLoaderRoute: typeof ClienteAppChatRouteImport
+      parentRoute: typeof ClienteAppRoute
+    }
   }
 }
 
@@ -695,6 +788,26 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface ClienteAppRouteChildren {
+  ClienteAppChatRoute: typeof ClienteAppChatRoute
+  ClienteAppHistoricoRoute: typeof ClienteAppHistoricoRoute
+  ClienteAppPerfilRoute: typeof ClienteAppPerfilRoute
+  ClienteAppSenhaRoute: typeof ClienteAppSenhaRoute
+  ClienteAppIndexRoute: typeof ClienteAppIndexRoute
+}
+
+const ClienteAppRouteChildren: ClienteAppRouteChildren = {
+  ClienteAppChatRoute: ClienteAppChatRoute,
+  ClienteAppHistoricoRoute: ClienteAppHistoricoRoute,
+  ClienteAppPerfilRoute: ClienteAppPerfilRoute,
+  ClienteAppSenhaRoute: ClienteAppSenhaRoute,
+  ClienteAppIndexRoute: ClienteAppIndexRoute,
+}
+
+const ClienteAppRouteWithChildren = ClienteAppRoute._addFileChildren(
+  ClienteAppRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
@@ -708,7 +821,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuemSomosRoute: QuemSomosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermosRoute: TermosRoute,
-  ClienteAppRoute: ClienteAppRoute,
+  ClienteAppRoute: ClienteAppRouteWithChildren,
   ClienteCadastroRoute: ClienteCadastroRoute,
   ClienteEsqueciSenhaRoute: ClienteEsqueciSenhaRoute,
   ClienteLoginRoute: ClienteLoginRoute,
@@ -719,13 +832,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

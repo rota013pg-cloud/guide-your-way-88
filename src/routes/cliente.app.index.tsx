@@ -133,15 +133,15 @@ function ClienteAppHome() {
   };
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="px-4 py-4 space-y-4">
       <PWAInstallBanner />
-      <div className="px-4 pt-2">
+      <div>
         <h2 className="text-2xl font-bold">Para onde vamos?</h2>
         <p className="text-sm text-muted-foreground flex items-center gap-1">
           <Bike className="size-4" /> {motoristas.length} mototaxista{motoristas.length === 1 ? "" : "s"} por perto
         </p>
       </div>
-      <div className="px-4 space-y-4">
+
 
 
       {/* Mapa */}

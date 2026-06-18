@@ -49,44 +49,40 @@ function ChatPage() {
   }, []);
 
 
-  // carrega mensagens + subscribe realtime
+  // carrega mensagens via polling (Realtime anon removido por segurança)
   useEffect(() => {
     const token = getClienteToken();
     if (!token || !cliente) return;
+    let cancelado = false;
+    let ultimoId = 0;
+    let primeiraCarga = true;
 
     const carregar = async () => {
       const { data, error } = await supabase.rpc("cliente_listar_mensagens", { _token: token });
-      if (!error && data) setMensagens(data as unknown as Mensagem[]);
+      if (cancelado || error || !data) return;
+      const lista = data as unknown as Mensagem[];
+      const novosDaCentral = lista.filter((m) => m.id > ultimoId && m.autor === "central");
+      ultimoId = lista.reduce((acc, m) => (m.id > acc ? m.id : acc), ultimoId);
+      setMensagens(lista);
+      if (!primeiraCarga) {
+        for (const novo of novosDaCentral) {
+          playChatBeep();
+          const preview = novo.texto.length > 120 ? novo.texto.slice(0, 120) + "…" : novo.texto;
+          showDesktopNotification({
+            id: `cli-msg-${novo.id}`,
+            title: `💬 ${novo.autor_nome ?? "Central"}`,
+            body: preview,
+            tag: "chat-cliente-central",
+          });
+        }
+      }
+      primeiraCarga = false;
     };
     void carregar();
-
-    const ch = supabase
-      .channel(`chat_cliente_${cliente.codigo}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_cliente", filter: `cliente_codigo=eq.${cliente.codigo}` },
-        (payload) => {
-          const novo = payload.new as Mensagem;
-          setMensagens((prev) => {
-            if (prev.some((m) => m.id === novo.id)) return prev;
-            return [...prev, novo];
-          });
-          if (novo.autor === "central") {
-            playChatBeep();
-            const preview = novo.texto.length > 120 ? novo.texto.slice(0, 120) + "…" : novo.texto;
-            showDesktopNotification({
-              id: `cli-msg-${novo.id}`,
-              title: `💬 ${novo.autor_nome ?? "Central"}`,
-              body: preview,
-              tag: "chat-cliente-central",
-            });
-          }
-        },
-      )
-      .subscribe();
-
+    const iv = setInterval(carregar, 4000);
     return () => {
-      supabase.removeChannel(ch);
+      cancelado = true;
+      clearInterval(iv);
     };
   }, [cliente]);
 

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as QuemSomosRouteImport } from './routes/quem-somos'
 import { Route as ParceirosRouteImport } from './routes/parceiros'
@@ -38,6 +39,11 @@ import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authen
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedChatMotoristasRouteImport } from './routes/_authenticated/chat-motoristas'
 
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/parceiros': typeof ParceirosRoute
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/parceiros': typeof ParceirosRoute
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -249,6 +257,7 @@ export interface FileRoutesById {
   '/parceiros': typeof ParceirosRoute
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/_authenticated/chat-motoristas': typeof AuthenticatedChatMotoristasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/parceiros'
     | '/quem-somos'
     | '/reset-password'
+    | '/termos'
     | '/chat-motoristas'
     | '/clientes'
     | '/configuracoes'
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
     | '/parceiros'
     | '/quem-somos'
     | '/reset-password'
+    | '/termos'
     | '/chat-motoristas'
     | '/clientes'
     | '/configuracoes'
@@ -339,6 +350,7 @@ export interface FileRouteTypes {
     | '/parceiros'
     | '/quem-somos'
     | '/reset-password'
+    | '/termos'
     | '/_authenticated/chat-motoristas'
     | '/_authenticated/clientes'
     | '/_authenticated/configuracoes'
@@ -370,6 +382,7 @@ export interface RootRouteChildren {
   ParceirosRoute: typeof ParceirosRoute
   QuemSomosRoute: typeof QuemSomosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermosRoute: typeof TermosRoute
   ClienteAppRoute: typeof ClienteAppRoute
   ClienteCadastroRoute: typeof ClienteCadastroRoute
   ClienteEsqueciSenhaRoute: typeof ClienteEsqueciSenhaRoute
@@ -380,6 +393,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -625,6 +645,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParceirosRoute: ParceirosRoute,
   QuemSomosRoute: QuemSomosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermosRoute: TermosRoute,
   ClienteAppRoute: ClienteAppRoute,
   ClienteCadastroRoute: ClienteCadastroRoute,
   ClienteEsqueciSenhaRoute: ClienteEsqueciSenhaRoute,

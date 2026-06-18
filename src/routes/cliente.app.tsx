@@ -1,20 +1,39 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Bike, Car, LogOut } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Bike,
+  ClipboardList,
+  Home,
+  KeyRound,
+  LogOut,
+  Menu,
+  MessageCircle,
+  User,
+} from "lucide-react";
 import { useCliente } from "@/lib/cliente-auth";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/cliente/app")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Minha conta — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
-  component: ClienteAppPage,
+  head: () => ({
+    meta: [{ title: "Rota 013 — Mototáxi" }],
+    links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
+  }),
+  component: ClienteAppLayout,
 });
 
-function ClienteAppPage() {
+function ClienteAppLayout() {
   const navigate = useNavigate();
   const { cliente, loading, logout } = useCliente();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     if (!loading && !cliente) navigate({ to: "/cliente/login", replace: true });
@@ -33,87 +52,115 @@ function ClienteAppPage() {
     navigate({ to: "/cliente", replace: true });
   };
 
+  const menuItems = [
+    { to: "/cliente/app", label: "Solicitar Corrida", icon: Bike, exact: true },
+    { to: "/cliente/app/historico", label: "Histórico de Corridas", icon: ClipboardList },
+    { to: "/cliente/app/perfil", label: "Meus Dados", icon: User },
+    { to: "/cliente/app/senha", label: "Alterar Senha", icon: KeyRound },
+    { to: "/cliente/app/chat", label: "Falar com a Central", icon: MessageCircle },
+  ] as const;
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="flex items-center justify-between px-5 py-4 border-b border-border">
-        <div>
-          <p className="text-xs text-muted-foreground">Olá,</p>
-          <p className="font-semibold">{cliente.nome}</p>
-        </div>
-        <Button variant="ghost" size="icon" onClick={sair} aria-label="Sair">
-          <LogOut className="size-5" />
+    <div className="min-h-screen bg-background text-foreground pb-16">
+      {/* Header */}
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 backdrop-blur px-4 py-3">
+        <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Abrir menu">
+              <Menu className="size-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-72 p-0 flex flex-col">
+            <SheetHeader className="border-b border-border p-4 text-left">
+              <SheetTitle className="truncate">{cliente.nome}</SheetTitle>
+              <p className="text-xs text-muted-foreground truncate">{cliente.email ?? cliente.telefone ?? cliente.codigo}</p>
+            </SheetHeader>
+            <nav className="flex-1 p-2">
+              {menuItems.map((item) => {
+                const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setDrawerOpen(false)}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+                      active ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Icon className="size-5" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="border-t border-border p-2">
+              <button
+                onClick={sair}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-destructive hover:bg-destructive/10"
+              >
+                <LogOut className="size-5" />
+                Sair
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <h1 className="text-base font-semibold">Rota 013</h1>
+
+        <Button variant="ghost" size="icon" aria-label="Falar com a central" asChild>
+          <Link to="/cliente/app/chat">
+            <MessageCircle className="size-5" />
+          </Link>
         </Button>
       </header>
 
-      <main className="px-5 py-6 space-y-4">
-        <h1 className="text-2xl font-bold">Pedir corrida</h1>
-        <p className="text-sm text-muted-foreground">
-          Escolha o tipo de corrida que você precisa agora.
-        </p>
+      <main className="flex-1">
+        <Outlet />
+      </main>
 
-        <div className="grid grid-cols-2 gap-3">
-          <TipoCard
-            icon={<Bike className="size-8" />}
-            title="Mobilidade Urbana"
-            desc="Mais rápido"
-            onClick={() => toast.info("Em breve: pedido de mobilidade urbana.")}
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur">
+        <div className="mx-auto flex max-w-md items-center justify-around">
+          <BottomTab to="/cliente/app" icon={Home} label="Início" active={pathname === "/cliente/app"} />
+          <BottomTab
+            to="/cliente/app/historico"
+            icon={ClipboardList}
+            label="Histórico"
+            active={pathname.startsWith("/cliente/app/historico")}
           />
-          <TipoCard
-            icon={<Car className="size-8" />}
-            title="Táxi"
-            desc="Mais conforto"
-            onClick={() => toast.info("Em breve: pedido de táxi.")}
+          <BottomTab
+            to="/cliente/app/perfil"
+            icon={User}
+            label="Perfil"
+            active={pathname.startsWith("/cliente/app/perfil")}
           />
         </div>
-
-        <Card className="p-4 rounded-2xl">
-          <p className="text-sm font-semibold mb-2">Seus dados</p>
-          <div className="space-y-1 text-sm text-muted-foreground">
-            <p>Código: <span className="text-foreground font-mono">{cliente.codigo}</span></p>
-            {cliente.email && <p>E-mail: <span className="text-foreground">{cliente.email}</span></p>}
-            {cliente.telefone && <p>Telefone: <span className="text-foreground">{cliente.telefone}</span></p>}
-            {cliente.cpf && <p>CPF: <span className="text-foreground">{cliente.cpf}</span></p>}
-            {(cliente.endereco_logradouro || cliente.endereco_cidade) && (
-              <p>
-                Endereço:{" "}
-                <span className="text-foreground">
-                  {[
-                    cliente.endereco_logradouro,
-                    cliente.endereco_numero,
-                    cliente.endereco_bairro,
-                    cliente.endereco_cidade,
-                  ]
-                    .filter(Boolean)
-                    .join(", ")}
-                </span>
-              </p>
-            )}
-          </div>
-        </Card>
-      </main>
+      </nav>
     </div>
   );
 }
 
-function TipoCard({
-  icon,
-  title,
-  desc,
-  onClick,
+function BottomTab({
+  to,
+  icon: Icon,
+  label,
+  active,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-  onClick: () => void;
+  to: string;
+  icon: typeof Home;
+  label: string;
+  active: boolean;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className="rounded-2xl border border-border bg-card p-5 text-left active:scale-[0.98] transition"
+    <Link
+      to={to}
+      className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs ${
+        active ? "text-primary" : "text-muted-foreground"
+      }`}
     >
-      <div className="text-primary">{icon}</div>
-      <div className="mt-2 font-semibold">{title}</div>
-      <div className="text-xs text-muted-foreground">{desc}</div>
-    </button>
+      <Icon className="size-5" />
+      <span>{label}</span>
+    </Link>
   );
 }

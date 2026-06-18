@@ -34,7 +34,7 @@ function QuemSomosPage() {
             </h1>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
               A Rota013 é uma plataforma de mobilidade criada para organizar e
-              profissionalizar o serviço de mototáxi e táxi no Litoral Sul de
+              profissionalizar o serviço de mobilidade urbana e táxi no Litoral Sul de
               São Paulo. Conectamos passageiros, motoristas e operadores em uma
               única central, com tecnologia simples, transparente e construída
               localmente.

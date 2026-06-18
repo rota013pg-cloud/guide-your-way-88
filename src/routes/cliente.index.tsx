@@ -7,16 +7,16 @@ export const Route = createFileRoute("/cliente/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Rota 013 — Mototáxi e Táxi em Praia Grande" },
+      { title: "Rota 013 — Mobilidade Urbana e Táxi em Praia Grande" },
       {
         name: "description",
         content:
-          "Peça mototáxi ou táxi em Praia Grande pelo Rota 013. Rápido, seguro e com motoristas cadastrados.",
+          "Peça mobilidade urbana ou táxi em Praia Grande pelo Rota 013. Rápido, seguro e com motoristas cadastrados.",
       },
-      { property: "og:title", content: "Rota 013 — Mototáxi e Táxi em Praia Grande" },
+      { property: "og:title", content: "Rota 013 — Mobilidade Urbana e Táxi em Praia Grande" },
       {
         property: "og:description",
-        content: "Peça sua corrida em segundos. Mototáxi e táxi em Praia Grande.",
+        content: "Peça sua corrida em segundos. Mobilidade Urbana e táxi em Praia Grande.",
       },
     ],
   }),
@@ -42,7 +42,7 @@ function ClienteLanding() {
             segundos.
           </h1>
           <p className="mt-3 text-muted-foreground">
-            Peça mototáxi ou táxi com motoristas cadastrados pelo Rota 013.
+            Peça mobilidade urbana ou táxi com motoristas cadastrados pelo Rota 013.
           </p>
           <div className="mt-6 flex flex-col gap-3">
             <Link to="/cliente/cadastro">
@@ -59,7 +59,7 @@ function ClienteLanding() {
         </section>
 
         <section className="grid grid-cols-2 gap-3">
-          <FeatureCard icon={<Bike className="size-6" />} title="Mototáxi" desc="Mais rápido no trânsito" />
+          <FeatureCard icon={<Bike className="size-6" />} title="Mobilidade Urbana" desc="Mais rápido no trânsito" />
           <FeatureCard icon={<Car className="size-6" />} title="Táxi" desc="Conforto pra família" />
           <FeatureCard icon={<MapPin className="size-6" />} title="Praia Grande" desc="Cobertura total" />
           <FeatureCard icon={<Clock className="size-6" />} title="24h" desc="A qualquer hora" />

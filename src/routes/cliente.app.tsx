@@ -54,9 +54,9 @@ function ClienteAppPage() {
         <div className="grid grid-cols-2 gap-3">
           <TipoCard
             icon={<Bike className="size-8" />}
-            title="Mototáxi"
+            title="Mobilidade Urbana"
             desc="Mais rápido"
-            onClick={() => toast.info("Em breve: pedido de mototáxi.")}
+            onClick={() => toast.info("Em breve: pedido de mobilidade urbana.")}
           />
           <TipoCard
             icon={<Car className="size-8" />}

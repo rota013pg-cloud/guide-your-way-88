@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
+import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 
 export const Route = createFileRoute("/cliente/app/")({
   ssr: false,
@@ -71,6 +72,8 @@ function ClienteAppHome() {
   const [cotacao, setCotacao] = useState<{ distancia: number; valor: number } | null>(null);
   const [corridaAtiva, setCorridaAtiva] = useState<CorridaAtiva | null>(null);
   const [motoristaInfo, setMotoristaInfo] = useState<MotoristaInfo | null>(null);
+  const [avaliarCorridaId, setAvaliarCorridaId] = useState<number | null>(null);
+  const ultimaAtivaRef = useRef<CorridaAtiva | null>(null);
 
   // Polling da corrida ativa do cliente
   useEffect(() => {
@@ -82,20 +85,29 @@ function ClienteAppHome() {
       if (!alive) return;
       const lista = (data ?? []) as any[];
       const ativa = lista.find((c) => STATUS_ATIVO.has(c.status));
-      setCorridaAtiva(
-        ativa
-          ? {
-              id: ativa.id,
-              status: ativa.status,
-              motorista: ativa.motorista,
-              motorista_codigo: ativa.motorista_codigo,
-              origem: ativa.origem,
-              destino: ativa.destino,
-              valor_final: ativa.valor_final,
-              eta_chegada_em: ativa.eta_chegada_em ?? null,
-            }
-          : null,
-      );
+      const nova: CorridaAtiva | null = ativa
+        ? {
+            id: ativa.id,
+            status: ativa.status,
+            motorista: ativa.motorista,
+            motorista_codigo: ativa.motorista_codigo,
+            origem: ativa.origem,
+            destino: ativa.destino,
+            valor_final: ativa.valor_final,
+            eta_chegada_em: ativa.eta_chegada_em ?? null,
+          }
+        : null;
+
+      // Detectar transição: corrida ativa anterior agora aparece como Finalizada → abrir avaliação
+      const anterior = ultimaAtivaRef.current;
+      if (anterior && (!nova || nova.id !== anterior.id)) {
+        const finalizada = lista.find(
+          (c) => c.id === anterior.id && c.status === "Finalizada" && c.avaliada_em == null,
+        );
+        if (finalizada) setAvaliarCorridaId(anterior.id);
+      }
+      ultimaAtivaRef.current = nova;
+      setCorridaAtiva(nova);
     };
     void tick();
     const id = setInterval(tick, 5000);
@@ -230,11 +242,20 @@ function ClienteAppHome() {
 
   const especiaisLabels = especiais.map((v) => ESPECIAIS.find((e) => e.v === v)?.t ?? v);
 
+  const avaliacaoDialog = avaliarCorridaId != null ? (
+    <AvaliacaoCorridaDialog
+      corridaId={avaliarCorridaId}
+      open={true}
+      onClose={() => setAvaliarCorridaId(null)}
+    />
+  ) : null;
+
   // ─── Renderização condicional: corrida ativa ────────────────────
   if (corridaAtiva) {
     return (
       <div className="px-4 py-4 space-y-4">
         <CorridaAtivaCard corrida={corridaAtiva} motorista={motoristaInfo} />
+        {avaliacaoDialog}
       </div>
     );
   }
@@ -393,6 +414,7 @@ function ClienteAppHome() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {avaliacaoDialog}
     </div>
   );
 }

@@ -48,14 +48,26 @@ export type ClientePrefill = {
   telefone: string | null;
 };
 
+export type SolicitacaoInicial = {
+  id: number;
+  origem: AddressValue;
+  destino: AddressValue;
+  paradas: Array<{ text?: string; endereco?: string; lat?: number | null; lng?: number | null }>;
+  solicitacoesEspeciais: string[];
+  observacoes: string;
+  distanciaKm: number | null;
+};
+
 type Props = {
   onCriada?: () => void;
   open?: boolean;
   onOpenChange?: (v: boolean) => void;
   clientePrefill?: ClientePrefill | null;
+  solicitacaoInicial?: SolicitacaoInicial | null;
   /** Quando `open` não é controlado externamente, esconde o trigger padrão. */
   hideDefaultTrigger?: boolean;
 };
+
 
 const newId = () => Math.random().toString(36).slice(2, 9);
 

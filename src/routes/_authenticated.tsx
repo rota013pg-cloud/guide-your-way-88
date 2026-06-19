@@ -8,6 +8,8 @@ import { ChatNotifier } from "@/components/chat-notifier";
 import { ChatClienteNotifier } from "@/components/chat-cliente-notifier";
 import { CobrancaNotifier } from "@/components/cobranca-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
+import { NovaSolicitacaoNotifier } from "@/components/nova-solicitacao-notifier";
+
 import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
 import {
   decideDashboardAuth,

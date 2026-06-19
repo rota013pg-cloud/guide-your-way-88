@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
+import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 
 export const Route = createFileRoute("/cliente/app/")({
   ssr: false,

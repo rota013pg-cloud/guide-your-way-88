@@ -39,6 +39,7 @@ type CorridaAtiva = {
   origem: string | null;
   destino: string | null;
   valor_final: number | null;
+  eta_chegada_em: string | null;
 };
 
 type MotoristaInfo = {
@@ -91,6 +92,7 @@ function ClienteAppHome() {
               origem: ativa.origem,
               destino: ativa.destino,
               valor_final: ativa.valor_final,
+              eta_chegada_em: ativa.eta_chegada_em ?? null,
             }
           : null,
       );
@@ -438,6 +440,20 @@ function CorridaAtivaCard({
               <p className="font-semibold truncate">{motorista?.nome ?? corrida.motorista ?? "—"}</p>
             </div>
           </div>
+
+          {corrida.eta_chegada_em && (corrida.status === "Aceita" || corrida.status === "A caminho") && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-center">
+              <p className="text-sm text-foreground">
+                Seu motociclista está a caminho e deve chegar por volta das{" "}
+                <span className="font-bold text-primary">
+                  {new Date(corrida.eta_chegada_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                </span>
+                .
+              </p>
+            </div>
+          )}
+
+
 
           <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1.5 text-sm">
             {motorista?.moto && (

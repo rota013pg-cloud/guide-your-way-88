@@ -1,0 +1,1 @@
+ALTER TABLE public.corridas ADD COLUMN IF NOT EXISTS eta_chegada_em TIMESTAMPTZ;

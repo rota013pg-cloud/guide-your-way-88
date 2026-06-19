@@ -26,7 +26,7 @@ type Motorista = { codigo: string; nome: string; moto: string | null; placa: str
 type Corrida = {
   id: number; cliente: string | null; origem: string; destino: string | null;
   status: string; valor_final: number; motorista: string | null; motorista_codigo: string | null;
-  criado_em: string; eta_coleta_segundos: number | null;
+  criado_em: string; eta_coleta_segundos: number | null; eta_chegada_em: string | null;
 };
 type Gps = { motorista_codigo: string; lat: number; lng: number; criado_em: string };
 
@@ -49,7 +49,7 @@ function DashboardPage() {
     const dia = hojeOp.toISOString().slice(0, 10);
     const [m, c, g, cob] = await Promise.all([
       supabase.from("motoristas").select("codigo,nome,moto,placa,status").order("nome"),
-      supabase.from("corridas").select("id,cliente,origem,destino,status,valor_final,motorista,motorista_codigo,criado_em,eta_coleta_segundos").order("criado_em", { ascending: false }).limit(50),
+      supabase.from("corridas").select("id,cliente,origem,destino,status,valor_final,motorista,motorista_codigo,criado_em,eta_coleta_segundos,eta_chegada_em").order("criado_em", { ascending: false }).limit(50),
       supabase.from("motorista_gps").select("motorista_codigo,lat,lng,criado_em").order("criado_em", { ascending: false }).limit(200),
       supabase.from("motorista_cobranca").select("status").eq("dia_op", dia).in("status", ["Pendente", "Aguardando", "Bloqueado"]),
     ]);
@@ -119,14 +119,23 @@ function DashboardPage() {
 
   const finalizar = async (id: number) => {
     const { error } = await supabase.from("corridas").update({
-      status: "Finalizada", finalizada_em: new Date().toISOString(),
-    }).eq("id", id);
+      status: "Finalizada", finalizada_em: new Date().toISOString(), eta_chegada_em: null,
+    } as any).eq("id", id);
     if (error) toast.error(error.message); else toast.success("Corrida finalizada");
   };
 
   const cancelar = async (id: number) => {
-    const { error } = await supabase.from("corridas").update({ status: "Cancelada" }).eq("id", id);
+    const { error } = await supabase.from("corridas").update({ status: "Cancelada", eta_chegada_em: null }).eq("id", id);
     if (error) toast.error(error.message); else toast("Corrida cancelada");
+  };
+
+  const definirEta = async (id: number, minutos: number | null) => {
+    const payload = minutos == null
+      ? { eta_chegada_em: null }
+      : { eta_chegada_em: new Date(Date.now() + minutos * 60_000).toISOString() };
+    const { error } = await supabase.from("corridas").update(payload as any).eq("id", id);
+    if (error) toast.error(error.message);
+    else toast.success(minutos == null ? "ETA removido" : `ETA de ${minutos} min enviado ao cliente`);
   };
 
   const ofertasFn = useServerFn(dispararOfertas);
@@ -217,6 +226,7 @@ function DashboardPage() {
                   onCancelar={() => cancelar(c.id)}
                   onReofertar={() => reofertar(c.id)}
                   onLancarAgora={() => lancarAgora(c.id)}
+                  onDefinirEta={(min) => definirEta(c.id, min)}
                   corStatus={corStatus(c.status)}
                 />
               ))}
@@ -273,12 +283,26 @@ function DashboardPage() {
 }
 
 function CorridaAtivaCard({
-  c, motoristasOnline, onAtribuir, onFinalizar, onCancelar, onReofertar, onLancarAgora, corStatus,
+  c, motoristasOnline, onAtribuir, onFinalizar, onCancelar, onReofertar, onLancarAgora, onDefinirEta, corStatus,
 }: {
   c: Corrida; motoristasOnline: Motorista[]; onAtribuir: (cod: string) => void;
   onFinalizar: () => void; onCancelar: () => void;
-  onReofertar: () => void; onLancarAgora: () => void; corStatus: string;
+  onReofertar: () => void; onLancarAgora: () => void;
+  onDefinirEta: (min: number | null) => void; corStatus: string;
 }) {
+  const [etaInput, setEtaInput] = useState("");
+  const podeEta = !!c.motorista_codigo && (c.status === "Aceita" || c.status === "A caminho");
+  const hpc = c.eta_chegada_em ? new Date(c.eta_chegada_em) : null;
+  const enviarEta = () => {
+    const n = parseInt(etaInput, 10);
+    if (!Number.isFinite(n) || n < 1 || n > 120) {
+      toast.error("Informe um ETA válido entre 1 e 120 minutos.");
+      return;
+    }
+    if (!window.confirm(`Enviar ao cliente: chegada prevista em ${n} min?`)) return;
+    onDefinirEta(n);
+    setEtaInput("");
+  };
   return (
     <div className="rounded-lg border border-border p-3 space-y-2 hover:border-primary/40 transition-colors">
       <div className="flex items-start justify-between gap-2">
@@ -338,6 +362,31 @@ function CorridaAtivaCard({
           <XCircle className="h-3.5 w-3.5" />
         </Button>
       </div>
+
+      {podeEta && (
+        <div className="pt-2 border-t border-border space-y-1.5">
+          {hpc && (
+            <div className="text-[11px] text-success font-medium">
+              ✓ Cliente avisado: chegada às {hpc.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+            </div>
+          )}
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number" min={1} max={120} placeholder="ETA min"
+              value={etaInput} onChange={(e) => setEtaInput(e.target.value)}
+              className="h-8 w-20 rounded-md border border-border bg-background px-2 text-xs"
+            />
+            <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={enviarEta}>
+              Enviar ETA
+            </Button>
+            {hpc && (
+              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => onDefinirEta(null)}>
+                Limpar
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

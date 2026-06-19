@@ -322,6 +322,7 @@ export type Database = {
       corridas: {
         Row: {
           agendada_para: string | null
+          aguardando_registro: boolean
           alerta_antes_min: number
           alerta_disparado: boolean
           atualizado_em: string
@@ -358,6 +359,7 @@ export type Database = {
         }
         Insert: {
           agendada_para?: string | null
+          aguardando_registro?: boolean
           alerta_antes_min?: number
           alerta_disparado?: boolean
           atualizado_em?: string
@@ -394,6 +396,7 @@ export type Database = {
         }
         Update: {
           agendada_para?: string | null
+          aguardando_registro?: boolean
           alerta_antes_min?: number
           alerta_disparado?: boolean
           atualizado_em?: string
@@ -1152,6 +1155,7 @@ export type Database = {
         Args: { _token: string }
         Returns: {
           agendada_para: string | null
+          aguardando_registro: boolean
           alerta_antes_min: number
           alerta_disparado: boolean
           atualizado_em: string

@@ -48,14 +48,26 @@ export type ClientePrefill = {
   telefone: string | null;
 };
 
+export type SolicitacaoInicial = {
+  id: number;
+  origem: AddressValue;
+  destino: AddressValue;
+  paradas: Array<{ text?: string; endereco?: string; lat?: number | null; lng?: number | null }>;
+  solicitacoesEspeciais: string[];
+  observacoes: string;
+  distanciaKm: number | null;
+};
+
 type Props = {
   onCriada?: () => void;
   open?: boolean;
   onOpenChange?: (v: boolean) => void;
   clientePrefill?: ClientePrefill | null;
+  solicitacaoInicial?: SolicitacaoInicial | null;
   /** Quando `open` não é controlado externamente, esconde o trigger padrão. */
   hideDefaultTrigger?: boolean;
 };
+
 
 const newId = () => Math.random().toString(36).slice(2, 9);
 
@@ -78,8 +90,10 @@ export function NovaCorridaDialog({
   open: openProp,
   onOpenChange,
   clientePrefill,
+  solicitacaoInicial,
   hideDefaultTrigger,
 }: Props) {
+
   const controlled = openProp !== undefined;
   const [openInternal, setOpenInternal] = useState(false);
   const open = controlled ? !!openProp : openInternal;
@@ -158,6 +172,28 @@ export function NovaCorridaDialog({
       setCodigoBusca(clientePrefill.codigo);
     }
   }, [open, clientePrefill]);
+
+  // Aplicar prefill de solicitação de cliente (endereços, paradas, especiais, obs)
+  useEffect(() => {
+    if (!open || !solicitacaoInicial) return;
+    setOrigem(solicitacaoInicial.origem ?? { text: "" });
+    setDestino(solicitacaoInicial.destino ?? { text: "" });
+    setParadas(
+      (solicitacaoInicial.paradas ?? []).map((p) => ({
+        id: newId(),
+        endereco: (p as any).endereco ?? (p as any).text ?? "",
+        lat: p.lat ?? undefined,
+        lng: p.lng ?? undefined,
+      })),
+    );
+    setSolicitacoesEspeciais(solicitacaoInicial.solicitacoesEspeciais ?? []);
+    setObs(solicitacaoInicial.observacoes ?? "");
+    if (solicitacaoInicial.distanciaKm != null) {
+      setDistancia(solicitacaoInicial.distanciaKm.toFixed(1).replace(".", ","));
+    }
+  }, [open, solicitacaoInicial]);
+
+
 
   // Monta opções de tarifa a partir de tabelasFixas + híbrida
   useEffect(() => {

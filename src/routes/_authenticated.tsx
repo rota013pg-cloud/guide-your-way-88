@@ -112,6 +112,8 @@ function AuthenticatedLayout() {
             <ChatNotifier />
             <ChatClienteNotifier />
             <AlertaNotifier />
+            <NovaSolicitacaoNotifier />
+
 
             {email && !email.endsWith("@painel.local") && (
               <span className="text-xs text-muted-foreground truncate max-w-[40ch]">{email}</span>

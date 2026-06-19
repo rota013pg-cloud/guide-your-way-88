@@ -438,6 +438,7 @@ function CorridaAtivaCard({
                       : corrida.status}
               </p>
               <p className="font-semibold truncate">{motorista?.nome ?? corrida.motorista ?? "—"}</p>
+            </div>
           </div>
 
           {corrida.eta_chegada_em && (corrida.status === "Aceita" || corrida.status === "A caminho") && (

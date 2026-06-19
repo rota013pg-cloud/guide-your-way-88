@@ -175,9 +175,9 @@ function ClienteAppLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-16">
+    <div className="min-h-screen bg-background text-foreground pb-28">
       {/* Header */}
-      <header className="app-header-safe sticky top-0 z-30 flex items-end justify-between border-b border-border bg-background/95 backdrop-blur px-4 pb-3">
+      <header className="app-header-safe sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 backdrop-blur px-4 py-3">
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Abrir menu">

@@ -362,6 +362,31 @@ function CorridaAtivaCard({
           <XCircle className="h-3.5 w-3.5" />
         </Button>
       </div>
+
+      {podeEta && (
+        <div className="pt-2 border-t border-border space-y-1.5">
+          {hpc && (
+            <div className="text-[11px] text-success font-medium">
+              ✓ Cliente avisado: chegada às {hpc.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+            </div>
+          )}
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number" min={1} max={120} placeholder="ETA min"
+              value={etaInput} onChange={(e) => setEtaInput(e.target.value)}
+              className="h-8 w-20 rounded-md border border-border bg-background px-2 text-xs"
+            />
+            <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={enviarEta}>
+              Enviar ETA
+            </Button>
+            {hpc && (
+              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => onDefinirEta(null)}>
+                Limpar
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

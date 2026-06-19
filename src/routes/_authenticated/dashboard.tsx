@@ -119,8 +119,8 @@ function DashboardPage() {
 
   const finalizar = async (id: number) => {
     const { error } = await supabase.from("corridas").update({
-      status: "Finalizada", finalizada_em: new Date().toISOString(),
-    }).eq("id", id);
+      status: "Finalizada", finalizada_em: new Date().toISOString(), eta_chegada_em: null,
+    } as any).eq("id", id);
     if (error) toast.error(error.message); else toast.success("Corrida finalizada");
   };
 

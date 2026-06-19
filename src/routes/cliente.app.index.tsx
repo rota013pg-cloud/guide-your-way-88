@@ -92,6 +92,7 @@ function ClienteAppHome() {
               origem: ativa.origem,
               destino: ativa.destino,
               valor_final: ativa.valor_final,
+              eta_chegada_em: ativa.eta_chegada_em ?? null,
             }
           : null,
       );

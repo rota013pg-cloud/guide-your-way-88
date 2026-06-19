@@ -765,7 +765,12 @@ export function NovaCorridaDialog({
               );
             })}
           </div>
-          <p className="text-[11px] text-muted-foreground">Exibidas para o motociclista na hora da oferta.</p>
+          {solicitacoesEspeciais.length > 0 && (
+            <p className="text-[11px] rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2 py-1.5">
+              ⚠️ Confirme com o cliente antes de repassar essas solicitações ao motociclista.
+            </p>
+          )}
+
         </div>
 
 

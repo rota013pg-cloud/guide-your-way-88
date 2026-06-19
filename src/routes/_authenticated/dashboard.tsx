@@ -26,7 +26,7 @@ type Motorista = { codigo: string; nome: string; moto: string | null; placa: str
 type Corrida = {
   id: number; cliente: string | null; origem: string; destino: string | null;
   status: string; valor_final: number; motorista: string | null; motorista_codigo: string | null;
-  criado_em: string; eta_coleta_segundos: number | null;
+  criado_em: string; eta_coleta_segundos: number | null; eta_chegada_em: string | null;
 };
 type Gps = { motorista_codigo: string; lat: number; lng: number; criado_em: string };
 

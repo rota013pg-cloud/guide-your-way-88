@@ -1247,6 +1247,7 @@ export type Database = {
           _origem_lat: number
           _origem_lng: number
           _paradas: Json
+          _solicitacoes_especiais?: string[]
           _token: string
           _valor: number
         }

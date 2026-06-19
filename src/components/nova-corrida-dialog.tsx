@@ -741,9 +741,8 @@ export function NovaCorridaDialog({
             {[
               { v: "animal", t: "🐾 Animal" },
               { v: "bagagem", t: "🎒 Bagagem volumosa" },
-              { v: "3passageiro", t: "👥 3º passageiro" },
               { v: "capa_chuva", t: "☔ Capa de chuva" },
-              { v: "capacete_extra", t: "🪖 Capacete extra" },
+
             ].map((o) => {
               const ativo = solicitacoesEspeciais.includes(o.v);
               return (

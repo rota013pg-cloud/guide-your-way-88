@@ -85,20 +85,29 @@ function ClienteAppHome() {
       if (!alive) return;
       const lista = (data ?? []) as any[];
       const ativa = lista.find((c) => STATUS_ATIVO.has(c.status));
-      setCorridaAtiva(
-        ativa
-          ? {
-              id: ativa.id,
-              status: ativa.status,
-              motorista: ativa.motorista,
-              motorista_codigo: ativa.motorista_codigo,
-              origem: ativa.origem,
-              destino: ativa.destino,
-              valor_final: ativa.valor_final,
-              eta_chegada_em: ativa.eta_chegada_em ?? null,
-            }
-          : null,
-      );
+      const nova: CorridaAtiva | null = ativa
+        ? {
+            id: ativa.id,
+            status: ativa.status,
+            motorista: ativa.motorista,
+            motorista_codigo: ativa.motorista_codigo,
+            origem: ativa.origem,
+            destino: ativa.destino,
+            valor_final: ativa.valor_final,
+            eta_chegada_em: ativa.eta_chegada_em ?? null,
+          }
+        : null;
+
+      // Detectar transição: corrida ativa anterior agora aparece como Finalizada → abrir avaliação
+      const anterior = ultimaAtivaRef.current;
+      if (anterior && (!nova || nova.id !== anterior.id)) {
+        const finalizada = lista.find(
+          (c) => c.id === anterior.id && c.status === "Finalizada" && c.avaliada_em == null,
+        );
+        if (finalizada) setAvaliarCorridaId(anterior.id);
+      }
+      ultimaAtivaRef.current = nova;
+      setCorridaAtiva(nova);
     };
     void tick();
     const id = setInterval(tick, 5000);

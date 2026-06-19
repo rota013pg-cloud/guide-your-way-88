@@ -125,8 +125,17 @@ function DashboardPage() {
   };
 
   const cancelar = async (id: number) => {
-    const { error } = await supabase.from("corridas").update({ status: "Cancelada" }).eq("id", id);
+    const { error } = await supabase.from("corridas").update({ status: "Cancelada", eta_chegada_em: null }).eq("id", id);
     if (error) toast.error(error.message); else toast("Corrida cancelada");
+  };
+
+  const definirEta = async (id: number, minutos: number | null) => {
+    const payload = minutos == null
+      ? { eta_chegada_em: null }
+      : { eta_chegada_em: new Date(Date.now() + minutos * 60_000).toISOString() };
+    const { error } = await supabase.from("corridas").update(payload as any).eq("id", id);
+    if (error) toast.error(error.message);
+    else toast.success(minutos == null ? "ETA removido" : `ETA de ${minutos} min enviado ao cliente`);
   };
 
   const ofertasFn = useServerFn(dispararOfertas);

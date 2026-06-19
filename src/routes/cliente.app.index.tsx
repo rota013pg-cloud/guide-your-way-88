@@ -414,6 +414,7 @@ function ClienteAppHome() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {avaliacaoDialog}
     </div>
   );
 }

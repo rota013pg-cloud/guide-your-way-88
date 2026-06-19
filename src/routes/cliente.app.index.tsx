@@ -242,11 +242,20 @@ function ClienteAppHome() {
 
   const especiaisLabels = especiais.map((v) => ESPECIAIS.find((e) => e.v === v)?.t ?? v);
 
+  const avaliacaoDialog = avaliarCorridaId != null ? (
+    <AvaliacaoCorridaDialog
+      corridaId={avaliarCorridaId}
+      open={true}
+      onClose={() => setAvaliarCorridaId(null)}
+    />
+  ) : null;
+
   // ─── Renderização condicional: corrida ativa ────────────────────
   if (corridaAtiva) {
     return (
       <div className="px-4 py-4 space-y-4">
         <CorridaAtivaCard corrida={corridaAtiva} motorista={motoristaInfo} />
+        {avaliacaoDialog}
       </div>
     );
   }

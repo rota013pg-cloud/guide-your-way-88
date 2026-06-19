@@ -226,6 +226,8 @@ function ClienteAppHome() {
     }
   };
 
+  const especiaisLabels = especiais.map((v) => ESPECIAIS.find((e) => e.v === v)?.t ?? v);
+
   // ─── Renderização condicional: corrida ativa ────────────────────
   if (corridaAtiva) {
     return (
@@ -235,10 +237,7 @@ function ClienteAppHome() {
     );
   }
 
-  const especiaisLabels = useMemoSafe(
-    () => especiais.map((v) => ESPECIAIS.find((e) => e.v === v)?.t ?? v),
-    [especiais],
-  );
+
 
   return (
     <div className="px-4 py-4 space-y-4">

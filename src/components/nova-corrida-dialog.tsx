@@ -173,6 +173,28 @@ export function NovaCorridaDialog({
     }
   }, [open, clientePrefill]);
 
+  // Aplicar prefill de solicitação de cliente (endereços, paradas, especiais, obs)
+  useEffect(() => {
+    if (!open || !solicitacaoInicial) return;
+    setOrigem(solicitacaoInicial.origem ?? { text: "" });
+    setDestino(solicitacaoInicial.destino ?? { text: "" });
+    setParadas(
+      (solicitacaoInicial.paradas ?? []).map((p) => ({
+        id: newId(),
+        endereco: (p as any).endereco ?? (p as any).text ?? "",
+        lat: p.lat ?? undefined,
+        lng: p.lng ?? undefined,
+      })),
+    );
+    setSolicitacoesEspeciais(solicitacaoInicial.solicitacoesEspeciais ?? []);
+    setObs(solicitacaoInicial.observacoes ?? "");
+    if (solicitacaoInicial.distanciaKm != null) {
+      setDistancia(solicitacaoInicial.distanciaKm.toFixed(1).replace(".", ","));
+    }
+  }, [open, solicitacaoInicial]);
+
+
+
   // Monta opções de tarifa a partir de tabelasFixas + híbrida
   useEffect(() => {
     if (!tarifasData?.tarifas) return;

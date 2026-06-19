@@ -226,6 +226,7 @@ function DashboardPage() {
                   onCancelar={() => cancelar(c.id)}
                   onReofertar={() => reofertar(c.id)}
                   onLancarAgora={() => lancarAgora(c.id)}
+                  onDefinirEta={(min) => definirEta(c.id, min)}
                   corStatus={corStatus(c.status)}
                 />
               ))}

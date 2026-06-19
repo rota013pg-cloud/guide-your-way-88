@@ -326,6 +326,10 @@ export type Database = {
           alerta_antes_min: number
           alerta_disparado: boolean
           atualizado_em: string
+          avaliacao_comentario: string | null
+          avaliacao_corrida: number | null
+          avaliacao_motorista: number | null
+          avaliada_em: string | null
           cliente: string | null
           cliente_codigo: string | null
           criado_em: string
@@ -364,6 +368,10 @@ export type Database = {
           alerta_antes_min?: number
           alerta_disparado?: boolean
           atualizado_em?: string
+          avaliacao_comentario?: string | null
+          avaliacao_corrida?: number | null
+          avaliacao_motorista?: number | null
+          avaliada_em?: string | null
           cliente?: string | null
           cliente_codigo?: string | null
           criado_em?: string
@@ -402,6 +410,10 @@ export type Database = {
           alerta_antes_min?: number
           alerta_disparado?: boolean
           atualizado_em?: string
+          avaliacao_comentario?: string | null
+          avaliacao_corrida?: number | null
+          avaliacao_motorista?: number | null
+          avaliada_em?: string | null
           cliente?: string | null
           cliente_codigo?: string | null
           criado_em?: string
@@ -1133,6 +1145,16 @@ export type Database = {
         }
         Returns: Json
       }
+      cliente_avaliar_corrida: {
+        Args: {
+          _comentario: string
+          _corrida_id: number
+          _nota_corrida: number
+          _nota_motorista: number
+          _token: string
+        }
+        Returns: Json
+      }
       cliente_cadastrar: {
         Args: {
           _bairro: string
@@ -1162,6 +1184,10 @@ export type Database = {
           alerta_antes_min: number
           alerta_disparado: boolean
           atualizado_em: string
+          avaliacao_comentario: string | null
+          avaliacao_corrida: number | null
+          avaliacao_motorista: number | null
+          avaliada_em: string | null
           cliente: string | null
           cliente_codigo: string | null
           criado_em: string

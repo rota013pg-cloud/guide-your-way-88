@@ -174,10 +174,20 @@ export function NovaSolicitacaoNotifier() {
           onEscapeKeyDown={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 flex-wrap">
               <Bike className="size-5 text-primary animate-pulse" />
               Nova solicitação de corrida
+              {pendentes.length > 1 && (
+                <span className="ml-auto text-[11px] font-medium rounded-full bg-primary/15 text-primary px-2 py-0.5">
+                  +{pendentes.length - 1} na fila
+                </span>
+              )}
             </DialogTitle>
+            {pendentes.length > 1 && (
+              <p className="text-[11px] text-muted-foreground">
+                Atendendo 1 de {pendentes.length} solicitações pendentes (ordem de chegada).
+              </p>
+            )}
           </DialogHeader>
           {atual && (
             <div className="space-y-2 text-sm">

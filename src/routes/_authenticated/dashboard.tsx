@@ -283,12 +283,26 @@ function DashboardPage() {
 }
 
 function CorridaAtivaCard({
-  c, motoristasOnline, onAtribuir, onFinalizar, onCancelar, onReofertar, onLancarAgora, corStatus,
+  c, motoristasOnline, onAtribuir, onFinalizar, onCancelar, onReofertar, onLancarAgora, onDefinirEta, corStatus,
 }: {
   c: Corrida; motoristasOnline: Motorista[]; onAtribuir: (cod: string) => void;
   onFinalizar: () => void; onCancelar: () => void;
-  onReofertar: () => void; onLancarAgora: () => void; corStatus: string;
+  onReofertar: () => void; onLancarAgora: () => void;
+  onDefinirEta: (min: number | null) => void; corStatus: string;
 }) {
+  const [etaInput, setEtaInput] = useState("");
+  const podeEta = !!c.motorista_codigo && (c.status === "Aceita" || c.status === "A caminho");
+  const hpc = c.eta_chegada_em ? new Date(c.eta_chegada_em) : null;
+  const enviarEta = () => {
+    const n = parseInt(etaInput, 10);
+    if (!Number.isFinite(n) || n < 1 || n > 120) {
+      toast.error("Informe um ETA válido entre 1 e 120 minutos.");
+      return;
+    }
+    if (!window.confirm(`Enviar ao cliente: chegada prevista em ${n} min?`)) return;
+    onDefinirEta(n);
+    setEtaInput("");
+  };
   return (
     <div className="rounded-lg border border-border p-3 space-y-2 hover:border-primary/40 transition-colors">
       <div className="flex items-start justify-between gap-2">

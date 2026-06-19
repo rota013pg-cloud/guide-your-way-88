@@ -39,6 +39,7 @@ type CorridaAtiva = {
   origem: string | null;
   destino: string | null;
   valor_final: number | null;
+  eta_chegada_em: string | null;
 };
 
 type MotoristaInfo = {

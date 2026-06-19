@@ -49,7 +49,7 @@ function DashboardPage() {
     const dia = hojeOp.toISOString().slice(0, 10);
     const [m, c, g, cob] = await Promise.all([
       supabase.from("motoristas").select("codigo,nome,moto,placa,status").order("nome"),
-      supabase.from("corridas").select("id,cliente,origem,destino,status,valor_final,motorista,motorista_codigo,criado_em,eta_coleta_segundos").order("criado_em", { ascending: false }).limit(50),
+      supabase.from("corridas").select("id,cliente,origem,destino,status,valor_final,motorista,motorista_codigo,criado_em,eta_coleta_segundos,eta_chegada_em").order("criado_em", { ascending: false }).limit(50),
       supabase.from("motorista_gps").select("motorista_codigo,lat,lng,criado_em").order("criado_em", { ascending: false }).limit(200),
       supabase.from("motorista_cobranca").select("status").eq("dia_op", dia).in("status", ["Pendente", "Aguardando", "Bloqueado"]),
     ]);

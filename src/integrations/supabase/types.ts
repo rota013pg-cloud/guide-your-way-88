@@ -334,6 +334,7 @@ export type Database = {
           destino_lat: number | null
           destino_lng: number | null
           distancia_km: number | null
+          eta_chegada_em: string | null
           eta_coleta_atualizado_em: string | null
           eta_coleta_segundos: number | null
           finalizada_em: string | null
@@ -371,6 +372,7 @@ export type Database = {
           destino_lat?: number | null
           destino_lng?: number | null
           distancia_km?: number | null
+          eta_chegada_em?: string | null
           eta_coleta_atualizado_em?: string | null
           eta_coleta_segundos?: number | null
           finalizada_em?: string | null
@@ -408,6 +410,7 @@ export type Database = {
           destino_lat?: number | null
           destino_lng?: number | null
           distancia_km?: number | null
+          eta_chegada_em?: string | null
           eta_coleta_atualizado_em?: string | null
           eta_coleta_segundos?: number | null
           finalizada_em?: string | null
@@ -1167,6 +1170,7 @@ export type Database = {
           destino_lat: number | null
           destino_lng: number | null
           distancia_km: number | null
+          eta_chegada_em: string | null
           eta_coleta_atualizado_em: string | null
           eta_coleta_segundos: number | null
           finalizada_em: string | null

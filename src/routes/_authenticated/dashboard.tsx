@@ -125,6 +125,7 @@ function DashboardPage() {
   };
 
   const cancelar = async (id: number) => {
+    if (typeof window !== "undefined" && !window.confirm("Tem certeza que deseja cancelar esta corrida?")) return;
     const { error } = await supabase.from("corridas").update({ status: "Cancelada", eta_chegada_em: null }).eq("id", id);
     if (error) toast.error(error.message); else toast("Corrida cancelada");
   };

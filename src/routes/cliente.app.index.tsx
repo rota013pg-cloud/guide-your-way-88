@@ -499,10 +499,8 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-// useMemo wrapper (avoid import churn)
-function useMemoSafe<T>(fn: () => T, deps: any[]): T {
-  return useMemo(fn, deps);
-}
+
+
 
 function haversine(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const R = 6371;

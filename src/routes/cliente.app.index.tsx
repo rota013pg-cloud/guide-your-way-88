@@ -72,6 +72,8 @@ function ClienteAppHome() {
   const [cotacao, setCotacao] = useState<{ distancia: number; valor: number } | null>(null);
   const [corridaAtiva, setCorridaAtiva] = useState<CorridaAtiva | null>(null);
   const [motoristaInfo, setMotoristaInfo] = useState<MotoristaInfo | null>(null);
+  const [avaliarCorridaId, setAvaliarCorridaId] = useState<number | null>(null);
+  const ultimaAtivaRef = useRef<CorridaAtiva | null>(null);
 
   // Polling da corrida ativa do cliente
   useEffect(() => {

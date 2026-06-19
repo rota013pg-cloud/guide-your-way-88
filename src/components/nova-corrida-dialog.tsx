@@ -90,8 +90,10 @@ export function NovaCorridaDialog({
   open: openProp,
   onOpenChange,
   clientePrefill,
+  solicitacaoInicial,
   hideDefaultTrigger,
 }: Props) {
+
   const controlled = openProp !== undefined;
   const [openInternal, setOpenInternal] = useState(false);
   const open = controlled ? !!openProp : openInternal;

@@ -604,8 +604,14 @@ function MotoristaApp() {
   };
 
 
-  const irWaze = (lugar: string) =>
-    window.open(`https://waze.com/ul?q=${encodeURIComponent(lugar)}`, "_blank");
+  const irWaze = (lugar: string) => {
+    // Usar location.href (não window.open) evita que o Android abra uma nova
+    // aba do navegador — assim o Waze é aberto pelo handler do sistema e, ao
+    // voltar, retornamos direto ao app GMD em vez de uma tela em branco com
+    // barra de endereço.
+    window.location.href = `https://waze.com/ul?q=${encodeURIComponent(lugar)}`;
+  };
+
 
   // ─── Cálculos ───────────────────────────────────────
   const finalizadasHoje = corridasHoje.filter((c) => c.status === "Finalizada");

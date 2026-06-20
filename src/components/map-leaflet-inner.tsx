@@ -3,14 +3,14 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import type { MapMotorista } from "./map-leaflet";
 
-// Pin de moto com ID acima
-const buildIcon = (codigo: string, status: string) => {
+// Pin de moto com ID acima (opcionalmente sem rótulo)
+const buildIcon = (codigo: string, status: string, hideLabel: boolean) => {
   const cor =
     status === "Em corrida" ? "#f59e0b" :
     status === "Online" ? "#22c55e" : "#94a3b8";
   const html = `
     <div class="moto-marker">
-      <div class="moto-id" style="background:${cor}">${codigo}</div>
+      ${hideLabel ? "" : `<div class="moto-id" style="background:${cor}">${codigo}</div>`}
       <div class="moto-pin" style="background:${cor}">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="18.5" cy="17.5" r="3.5"/>

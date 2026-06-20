@@ -72,7 +72,7 @@ function ClienteAppHome() {
   const [especiais, setEspeciais] = useState<string[]>([]);
   const [observacao, setObservacao] = useState("");
   const [pagamento, setPagamento] = useState<"Pix" | "Dinheiro" | "Cartão">("Pix");
-  const ofertasFn = useServerFn(dispararOfertas);
+  const ofertasFn = useServerFn(dispararOfertasCliente);
   const [motoristas, setMotoristas] = useState<MapMotorista[]>([]);
   const [solicitando, setSolicitando] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -225,7 +225,7 @@ function ClienteAppHome() {
       if (resp.auto_aceita && resp.corrida_id) {
         // Modo automático: dispara ofertas para motoristas imediatamente
         try {
-          await ofertasFn({ data: { corridaId: resp.corrida_id } });
+          await ofertasFn({ data: { corridaId: resp.corrida_id, clienteToken: token } });
         } catch (e) {
           console.warn("dispararOfertas auto falhou", e);
         }

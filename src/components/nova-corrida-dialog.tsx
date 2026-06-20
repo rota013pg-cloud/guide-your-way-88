@@ -604,8 +604,8 @@ export function NovaCorridaDialog({
             <Select value={pagamento} onValueChange={(v) => setPagamento(v as Pagamento)}>
               <SelectTrigger className="min-w-0"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="Dinheiro">Dinheiro</SelectItem>
                 <SelectItem value="Pix">Pix</SelectItem>
+                <SelectItem value="Dinheiro">Dinheiro</SelectItem>
                 <SelectItem value="Cartão">Cartão</SelectItem>
               </SelectContent>
             </Select>

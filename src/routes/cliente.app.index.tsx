@@ -16,6 +16,8 @@ import { MapPin, Plus, X, Bike, Loader2, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { dispararOfertas } from "@/lib/corridas.functions";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
 import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 
@@ -69,6 +71,8 @@ function ClienteAppHome() {
   const [paradas, setParadas] = useState<AddressValue[]>([]);
   const [especiais, setEspeciais] = useState<string[]>([]);
   const [observacao, setObservacao] = useState("");
+  const [pagamento, setPagamento] = useState<"Pix" | "Dinheiro" | "Cartão">("Pix");
+  const ofertasFn = useServerFn(dispararOfertas);
   const [motoristas, setMotoristas] = useState<MapMotorista[]>([]);
   const [solicitando, setSolicitando] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -201,7 +205,7 @@ function ClienteAppHome() {
     if (!token || !cotacao) return;
     setSolicitando(true);
     try {
-      const { error } = await supabase.rpc("cliente_solicitar_corrida", {
+      const { data, error } = await supabase.rpc("cliente_solicitar_corrida", {
         _token: token,
         _origem: origem.text,
         _origem_lat: origem.lat!,
@@ -214,14 +218,25 @@ function ClienteAppHome() {
         _valor: cotacao.valor,
         _observacoes: observacao,
         _solicitacoes_especiais: especiais,
+        _forma_pagamento: pagamento,
       } as any);
       if (error) throw error;
+      const resp = (data ?? {}) as { corrida_id?: number; auto_aceita?: boolean };
+      if (resp.auto_aceita && resp.corrida_id) {
+        // Modo automático: dispara ofertas para motoristas imediatamente
+        try {
+          await ofertasFn({ data: { corridaId: resp.corrida_id } });
+        } catch (e) {
+          console.warn("dispararOfertas auto falhou", e);
+        }
+      }
       toast.success("Corrida solicitada! Procurando motociclista...");
       setModalOpen(false);
       setParadas([]);
       setDestino(PRACO);
       setEspeciais([]);
       setObservacao("");
+      setPagamento("Pix");
       setCotacao(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao solicitar corrida");
@@ -412,6 +427,30 @@ function ClienteAppHome() {
               </div>
             </div>
           )}
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Forma de pagamento
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {(["Pix", "Dinheiro", "Cartão"] as const).map((opt) => {
+                const ativo = pagamento === opt;
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setPagamento(opt)}
+                    className={`px-3 py-2.5 rounded-xl text-sm font-bold border transition-all duration-200 active:scale-[0.96] ${
+                      ativo
+                        ? "bg-[color:var(--gold)] text-[color:var(--noir)] border-[color:var(--gold)] shadow-[var(--shadow-gold)]"
+                        : "bg-background text-muted-foreground border-[color:var(--border)] hover:border-[color:var(--gold)]/40 hover:text-[color:var(--gold-soft)]"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="outline"

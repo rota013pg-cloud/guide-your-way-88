@@ -16,20 +16,16 @@ export const Route = createFileRoute("/cliente/esqueci-senha")({
 function EsqueciSenhaPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [linkReset, setLinkReset] = useState<string | null>(null);
+  const [enviado, setEnviado] = useState(false);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("cliente_solicitar_reset", { _email: email });
+      const { error } = await supabase.rpc("cliente_solicitar_reset", { _email: email });
       if (error) throw error;
-      const payload = data as unknown as { ok: boolean; reset_token?: string };
-      toast.success("Se a conta existir, geramos um link de redefinição.");
-      if (payload.reset_token) {
-        const origin = typeof window !== "undefined" ? window.location.origin : "";
-        setLinkReset(`${origin}/cliente/redefinir-senha?token=${payload.reset_token}`);
-      }
+      setEnviado(true);
+      toast.success("Se a conta existir, um link de redefinição foi enviado por e-mail.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao solicitar");
     } finally {
@@ -42,7 +38,7 @@ function EsqueciSenhaPage() {
       <Card className="w-full max-w-md p-6 rounded-2xl">
         <h1 className="text-xl font-semibold mb-1">Esqueci minha senha</h1>
         <p className="text-sm text-muted-foreground mb-5">
-          Informe seu e-mail. Vamos gerar um link de redefinição.
+          Informe seu e-mail. Se a conta existir, enviaremos um link de redefinição.
         </p>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
@@ -56,14 +52,14 @@ function EsqueciSenhaPage() {
               className="rounded-xl"
             />
           </div>
-          <Button type="submit" className="w-full rounded-xl" disabled={loading}>
-            {loading ? "Enviando..." : "Gerar link"}
+          <Button type="submit" className="w-full rounded-xl" disabled={loading || enviado}>
+            {loading ? "Enviando..." : enviado ? "Solicitação enviada" : "Enviar link"}
           </Button>
         </form>
-        {linkReset && (
-          <div className="mt-4 rounded-xl border border-border bg-muted p-3 text-xs break-all">
-            <p className="font-semibold mb-1">Link de redefinição (envio por e-mail ainda não configurado):</p>
-            <a href={linkReset} className="text-primary underline">{linkReset}</a>
+        {enviado && (
+          <div className="mt-4 rounded-xl border border-border bg-muted p-3 text-xs">
+            Se houver uma conta com esse e-mail, o link de redefinição será enviado em instantes.
+            Caso não receba, fale com o suporte.
           </div>
         )}
         <p className="mt-5 text-sm text-center text-muted-foreground">

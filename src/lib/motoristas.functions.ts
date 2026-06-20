@@ -392,3 +392,41 @@ export const marcarStaleOffline = createServerFn({ method: "POST" })
 
     return { atualizados: paraOffline.length, codigos: paraOffline };
   });
+
+// ─── HISTÓRICO DE CORRIDAS DO MOTORISTA ─────────────────
+export const listarCorridasMotorista = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ codigo: z.string() }).parse(d))
+  .handler(async ({ data }) => {
+    const { data: rows, error } = await supabaseAdmin
+      .from("corridas")
+      .select(
+        "id, cliente, origem, destino, valor_final, status, criado_em, finalizada_em, distancia_km, avaliacao_corrida, avaliacao_motorista, avaliacao_comentario, avaliada_em",
+      )
+      .eq("motorista_codigo", data.codigo)
+      .order("criado_em", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+// ─── RESET DE DADOS PARA TESTES (ADMIN) ─────────────────
+// Apaga TODAS as corridas e dependências para iniciar testes do zero.
+export const zerarHistoricoCorridas = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await exigirAdmin(context.userId);
+    await supabaseAdmin.from("corrida_ofertas").delete().gte("id", 0);
+    await supabaseAdmin.from("corrida_status_log").delete().gte("id", 0);
+    await supabaseAdmin
+      .from("motorista_alertas")
+      .delete()
+      .not("corrida_id", "is", null);
+    await supabaseAdmin
+      .from("ocorrencias_pessoa")
+      .delete()
+      .not("corrida_id", "is", null);
+    const { error } = await supabaseAdmin.from("corridas").delete().gte("id", 0);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

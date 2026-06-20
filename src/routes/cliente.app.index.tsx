@@ -71,6 +71,8 @@ function ClienteAppHome() {
   const [paradas, setParadas] = useState<AddressValue[]>([]);
   const [especiais, setEspeciais] = useState<string[]>([]);
   const [observacao, setObservacao] = useState("");
+  const [pagamento, setPagamento] = useState<"Pix" | "Dinheiro" | "Cartão">("Pix");
+  const ofertasFn = useServerFn(dispararOfertas);
   const [motoristas, setMotoristas] = useState<MapMotorista[]>([]);
   const [solicitando, setSolicitando] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);

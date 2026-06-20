@@ -76,7 +76,24 @@ export const fixarRecado = createServerFn({ method: "POST" })
 export const excluirRecado = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.number().int().positive() }).parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const userId = context.userId as string;
+    const { data: recado } = await supabaseAdmin
+      .from("mural_recados")
+      .select("autor_user_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (!recado) throw new Error("Recado não encontrado.");
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    const isAdmin = !!roleRow;
+    if (recado.autor_user_id !== userId && !isAdmin) {
+      throw new Error("Sem permissão para excluir este recado.");
+    }
     const { error } = await supabaseAdmin.from("mural_recados").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };

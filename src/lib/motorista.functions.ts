@@ -504,6 +504,7 @@ export const motoristaCarregarCorrida = createServerFn({ method: "POST" })
       .from("corridas")
       .select("*")
       .eq("id", data.corridaId)
+      .eq("motorista_codigo", data.codigo)
       .maybeSingle();
     return { corrida };
   });

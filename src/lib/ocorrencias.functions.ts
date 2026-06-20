@@ -29,6 +29,16 @@ async function exigirOperador(userId: string) {
   if (!data) throw new Error("Acesso restrito a operadores.");
 }
 
+async function exigirAdmin(userId: string) {
+  const { data } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (!data) throw new Error("Acesso restrito a administradores.");
+}
+
 export const listarOcorrencias = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
@@ -97,7 +107,7 @@ export const excluirOcorrencia = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    await exigirOperador(context.userId);
+    await exigirAdmin(context.userId);
     const { error } = await supabaseAdmin
       .from("ocorrencias_pessoa")
       .delete()

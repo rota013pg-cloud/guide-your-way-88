@@ -32,7 +32,7 @@ const buildIcon = (codigo: string, status: string, hideLabel: boolean) => {
 // Praia Grande / Baixada Santista
 const CENTRO: [number, number] = [-24.0122, -46.4097];
 
-export default function MapInner({ motoristas }: { motoristas: MapMotorista[] }) {
+export default function MapInner({ motoristas, hideLabels }: { motoristas: MapMotorista[]; hideLabels?: boolean }) {
   const center: [number, number] =
     motoristas.length > 0 ? [Number(motoristas[0].lat), Number(motoristas[0].lng)] : CENTRO;
 
@@ -48,16 +48,18 @@ export default function MapInner({ motoristas }: { motoristas: MapMotorista[] })
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
       {motoristas.map((m) => (
-        <Marker key={m.codigo} position={[Number(m.lat), Number(m.lng)]} icon={buildIcon(m.codigo, m.status)}>
-          <Popup>
-            <div style={{ minWidth: 140 }}>
-              <strong>{m.nome}</strong>
-              <br />
-              <small>{m.codigo}</small>
-              <br />
-              <span style={{ color: m.status === "Em corrida" ? "#f59e0b" : "#22c55e" }}>● {m.status}</span>
-            </div>
-          </Popup>
+        <Marker key={m.codigo} position={[Number(m.lat), Number(m.lng)]} icon={buildIcon(m.codigo, m.status, !!hideLabels)}>
+          {!hideLabels && (
+            <Popup>
+              <div style={{ minWidth: 140 }}>
+                <strong>{m.nome}</strong>
+                <br />
+                <small>{m.codigo}</small>
+                <br />
+                <span style={{ color: m.status === "Em corrida" ? "#f59e0b" : "#22c55e" }}>● {m.status}</span>
+              </div>
+            </Popup>
+          )}
         </Marker>
       ))}
     </MapContainer>

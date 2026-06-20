@@ -41,14 +41,17 @@ type CorridaAtiva = {
   destino: string | null;
   valor_final: number | null;
   eta_chegada_em: string | null;
+  eta_coleta_segundos: number | null;
 };
 
 type MotoristaInfo = {
   nome: string | null;
   placa: string | null;
   moto: string | null;
+  cor: string | null;
   telefone: string | null;
 };
+
 
 const STATUS_ATIVO = new Set([
   "Pendente",
@@ -95,8 +98,10 @@ function ClienteAppHome() {
             destino: ativa.destino,
             valor_final: ativa.valor_final,
             eta_chegada_em: ativa.eta_chegada_em ?? null,
+            eta_coleta_segundos: ativa.eta_coleta_segundos ?? null,
           }
         : null;
+
 
       // Detectar transição: corrida ativa anterior agora aparece como Finalizada → abrir avaliação
       const anterior = ultimaAtivaRef.current;
@@ -127,7 +132,7 @@ function ClienteAppHome() {
     let alive = true;
     supabase
       .from("motoristas")
-      .select("nome,placa,moto,telefone")
+      .select("nome,placa,moto,cor,telefone")
       .eq("codigo", cod)
       .maybeSingle()
       .then(({ data }) => {
@@ -475,12 +480,18 @@ function CorridaAtivaCard({
             </div>
           </div>
 
-          {corrida.eta_chegada_em && (corrida.status === "Aceita" || corrida.status === "A caminho") && (
+          {(corrida.status === "Aceita" || corrida.status === "A caminho") && (corrida.eta_coleta_segundos || corrida.eta_chegada_em) && (
             <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-center">
               <p className="text-sm text-foreground">
-                Seu motociclista está a caminho e deve chegar por volta das{" "}
+                Chegada em{" "}
                 <span className="font-bold text-primary">
-                  {new Date(corrida.eta_chegada_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  aproximadamente {(() => {
+                    if (corrida.eta_coleta_segundos && corrida.eta_coleta_segundos > 0) {
+                      return Math.max(1, Math.round(corrida.eta_coleta_segundos / 60));
+                    }
+                    const ms = new Date(corrida.eta_chegada_em!).getTime() - Date.now();
+                    return Math.max(1, Math.round(ms / 60000));
+                  })()} min
                 </span>
                 .
               </p>
@@ -496,12 +507,19 @@ function CorridaAtivaCard({
                 <span className="font-medium text-right">{motorista.moto}</span>
               </div>
             )}
+            {motorista?.cor && (
+              <div className="flex justify-between gap-3">
+                <span className="text-muted-foreground">Cor</span>
+                <span className="font-medium text-right">{motorista.cor}</span>
+              </div>
+            )}
             {motorista?.placa && (
               <div className="flex justify-between gap-3">
                 <span className="text-muted-foreground">Placa</span>
                 <span className="font-medium font-mono">{motorista.placa}</span>
               </div>
             )}
+
             <div className="flex justify-between gap-3">
               <span className="text-muted-foreground">Origem</span>
               <span className="font-medium text-right line-clamp-2">{corrida.origem ?? "—"}</span>

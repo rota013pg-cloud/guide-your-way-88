@@ -71,6 +71,15 @@ function MotoristasPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const zerarMut = useMutation({
+    mutationFn: () => zerarFn(),
+    onSuccess: () => {
+      toast.success("Histórico de corridas zerado");
+      qc.invalidateQueries();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const filtrados = motoristas.filter((m: any) => {
     const q = filtro.toLowerCase();
     return !q || m.codigo?.toLowerCase().includes(q) || m.nome?.toLowerCase().includes(q) || m.telefone?.toLowerCase().includes(q);

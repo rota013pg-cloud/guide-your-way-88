@@ -248,80 +248,94 @@ function ClienteAppHome() {
 
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <div className="px-4 py-5 space-y-5 animate-fade-in">
       <PWAInstallBanner />
-      <div>
-        <h2 className="text-2xl font-bold">Para onde vamos?</h2>
-        <p className="text-sm text-muted-foreground flex items-center gap-1">
-          <Bike className="size-4" /> {motoristas.length} motociclista{motoristas.length === 1 ? "" : "s"} por perto
+
+      <div className="space-y-1.5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--gold)]">Rota 013</p>
+        <h2 className="font-display text-3xl font-bold text-[color:var(--gold-soft)] tracking-tight">
+          Para onde vamos?
+        </h2>
+        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+          <Bike className="size-4 text-[color:var(--gold)]" />
+          {motoristas.length} motociclista{motoristas.length === 1 ? "" : "s"} por perto
         </p>
       </div>
 
-      <Card className="rounded-2xl overflow-hidden">
-        <div className="h-64 w-full">
+      <Card className="rounded-3xl overflow-hidden border hairline bg-card shadow-[var(--shadow-elegant)]">
+        <div className="h-60 w-full relative">
           <MapLeaflet motoristas={motoristas} hideLabels />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[color:var(--noir)] to-transparent" />
         </div>
       </Card>
 
-
-
-      <Card className="rounded-2xl p-4 space-y-3">
-        <div className="flex items-start gap-2">
-          <MapPin className="size-5 text-primary mt-2.5 shrink-0" />
-          <div className="flex-1">
-            <AddressAutocomplete
-              value={origem.text}
-              onChange={setOrigem}
-              placeholder="Endereço de origem *"
-            />
-          </div>
-        </div>
-
-        {paradas.map((p, i) => (
-          <div key={i} className="flex items-start gap-2">
-            <MapPin className="size-5 text-amber-500 mt-2.5 shrink-0" />
-            <div className="flex-1">
-              <AddressAutocomplete
-                value={p.text}
-                onChange={(v) => setParada(i, v)}
-                placeholder={`Parada ${i + 1}`}
-              />
+      <Card className="rounded-3xl p-5 space-y-5 border hairline bg-card shadow-[var(--shadow-elegant)]">
+        {/* Endereços com conector vertical */}
+        <div className="relative">
+          <div className="route-connector absolute left-[10px] top-6 bottom-6 w-px" aria-hidden="true" />
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="mt-3 size-5 shrink-0 rounded-full border-2 border-[color:var(--gold)] bg-background flex items-center justify-center z-10">
+                <span className="size-1.5 rounded-full bg-[color:var(--gold)]" />
+              </span>
+              <div className="flex-1">
+                <AddressAutocomplete
+                  value={origem.text}
+                  onChange={setOrigem}
+                  placeholder="Endereço de origem *"
+                />
+              </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => removerParada(i)}
-              aria-label="Remover parada"
-              className="mt-1"
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
-        ))}
 
-        <div className="flex items-start gap-2">
-          <MapPin className="size-5 text-destructive mt-2.5 shrink-0" />
-          <div className="flex-1">
-            <AddressAutocomplete
-              value={destino.text}
-              onChange={setDestino}
-              placeholder="Endereço de destino (opcional)"
-            />
+            {paradas.map((p, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <span className="mt-3 size-5 shrink-0 rotate-45 bg-[color:var(--muted-foreground)] z-10" />
+                <div className="flex-1">
+                  <AddressAutocomplete
+                    value={p.text}
+                    onChange={(v) => setParada(i, v)}
+                    placeholder={`Parada ${i + 1}`}
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removerParada(i)}
+                  aria-label="Remover parada"
+                  className="mt-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+            ))}
+
+            <div className="flex items-start gap-3">
+              <MapPin className="mt-2.5 size-5 shrink-0 text-[color:var(--gold-soft)] z-10" fill="currentColor" />
+              <div className="flex-1">
+                <AddressAutocomplete
+                  value={destino.text}
+                  onChange={setDestino}
+                  placeholder="Endereço de destino (opcional)"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         <button
           type="button"
           onClick={adicionarParada}
-          className="flex items-center gap-2 text-xs text-primary font-medium hover:underline"
+          className="flex items-center gap-2 text-xs font-semibold text-[color:var(--gold)] hover:text-[color:var(--gold-soft)] transition-colors"
         >
           <Plus className="size-4" />
           Adicionar parada
         </button>
 
-        <div className="pt-1">
-          <p className="text-xs font-medium text-muted-foreground mb-2">Solicitações especiais (opcional)</p>
-          <div className="flex flex-wrap gap-2">
+        <div className="border-t hairline -mx-5 px-5 pt-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3">
+            Solicitações especiais
+          </p>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {ESPECIAIS.map((o) => {
               const ativo = especiais.includes(o.v);
               return (
@@ -329,10 +343,10 @@ function ClienteAppHome() {
                   key={o.v}
                   type="button"
                   onClick={() => toggleEspecial(o.v)}
-                  className={`px-3 py-1.5 rounded-full text-xs border transition ${
+                  className={`flex-none px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border transition-all duration-200 active:scale-[0.96] ${
                     ativo
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted/30 hover:bg-muted border-border"
+                      ? "bg-[color:var(--gold)] text-[color:var(--noir)] border-[color:var(--gold)] shadow-[var(--shadow-gold)]"
+                      : "bg-background text-muted-foreground border-[color:var(--border)] hover:border-[color:var(--gold)]/40 hover:text-[color:var(--gold-soft)]"
                   }`}
                 >
                   {o.t}
@@ -343,25 +357,32 @@ function ClienteAppHome() {
         </div>
 
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">Observação (opcional)</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2">
+            Observação
+          </p>
           <Textarea
             rows={2}
             value={observacao}
             onChange={(e) => setObservacao(e.target.value)}
             placeholder="Ex.: aguardar na portaria"
             maxLength={300}
+            className="rounded-xl bg-background border-[color:var(--border)] focus-visible:border-[color:var(--gold)]/60 focus-visible:ring-[color:var(--gold)]/20"
           />
         </div>
 
-        <Button onClick={cotar} className="w-full rounded-xl" size="lg">
+        <Button
+          onClick={cotar}
+          size="lg"
+          className="btn-gold w-full rounded-2xl font-display text-base h-12 hover:bg-transparent"
+        >
           Solicitar corrida
         </Button>
       </Card>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="rounded-2xl">
+        <DialogContent className="theme-cliente rounded-3xl bg-card border hairline">
           <DialogHeader>
-            <DialogTitle>Confirmar corrida</DialogTitle>
+            <DialogTitle className="font-display text-[color:var(--gold-soft)]">Confirmar corrida</DialogTitle>
           </DialogHeader>
           {cotacao && (
             <div className="space-y-3 py-2">
@@ -374,14 +395,14 @@ function ClienteAppHome() {
                 <Row label="Solicitações especiais" value={especiaisLabels.join(" · ")} />
               )}
               {observacao && <Row label="Observação" value={observacao} />}
-              <div className="border-t border-border pt-3 flex items-center justify-between">
+              <div className="border-t hairline pt-3 flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">Distância estimada</p>
-                  <p className="font-semibold">{cotacao.distancia.toFixed(1)} km</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Distância estimada</p>
+                  <p className="font-display font-semibold text-lg">{cotacao.distancia.toFixed(1)} km</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Valor estimado</p>
-                  <p className="text-2xl font-bold text-primary">R$ {cotacao.valor.toFixed(2)}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Valor estimado</p>
+                  <p className="font-display text-3xl font-bold text-[color:var(--gold)]">R$ {cotacao.valor.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -389,13 +410,17 @@ function ClienteAppHome() {
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
-              className="rounded-xl flex-1"
+              className="rounded-xl flex-1 border-[color:var(--border)] hover:bg-muted hover:text-foreground"
               onClick={() => setModalOpen(false)}
               disabled={solicitando}
             >
               Descartar
             </Button>
-            <Button className="rounded-xl flex-1" onClick={confirmar} disabled={solicitando}>
+            <Button
+              className="btn-gold rounded-xl flex-1 hover:bg-transparent"
+              onClick={confirmar}
+              disabled={solicitando}
+            >
               {solicitando ? <Loader2 className="size-4 animate-spin" /> : "Confirmar"}
             </Button>
           </DialogFooter>

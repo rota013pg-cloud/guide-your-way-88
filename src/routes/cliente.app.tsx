@@ -155,7 +155,7 @@ function ClienteAppLayout() {
 
   if (loading || !cliente) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="theme-cliente flex min-h-screen items-center justify-center bg-background">
         <p className="text-sm text-muted-foreground">Carregando...</p>
       </div>
     );
@@ -175,17 +175,17 @@ function ClienteAppLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-28">
+    <div className="theme-cliente min-h-screen bg-background text-foreground pb-28">
       {/* Header */}
-      <header className="app-header-safe sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 backdrop-blur px-4 py-3">
+      <header className="app-header-safe sticky top-0 z-30 flex items-center justify-between border-b hairline bg-background/85 backdrop-blur-xl px-4 py-3">
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Abrir menu">
+            <Button variant="ghost" size="icon" aria-label="Abrir menu" className="text-foreground hover:bg-card hover:text-[color:var(--gold-soft)]">
               <Menu className="size-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-72 p-0 flex flex-col">
-            <SheetHeader className="border-b border-border p-4 text-left">
+          <SheetContent side="left" className="theme-cliente w-72 p-0 flex flex-col bg-card border-r hairline">
+            <SheetHeader className="border-b hairline p-4 text-left">
               <Link
                 to="/cliente/app"
                 onClick={() => setDrawerOpen(false)}
@@ -194,7 +194,7 @@ function ClienteAppLayout() {
               >
                 <LogoRota013 className="text-3xl" />
               </Link>
-              <SheetTitle className="truncate mt-2">{cliente.nome}</SheetTitle>
+              <SheetTitle className="truncate mt-2 font-display tracking-tight">{cliente.nome}</SheetTitle>
               <p className="text-xs text-muted-foreground truncate">{cliente.email ?? cliente.telefone ?? cliente.codigo}</p>
             </SheetHeader>
             <nav className="flex-1 p-2">
@@ -206,11 +206,13 @@ function ClienteAppLayout() {
                     key={item.to}
                     to={item.to}
                     onClick={() => setDrawerOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
-                      active ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-muted"
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
+                      active
+                        ? "bg-[color:var(--accent)] text-[color:var(--gold-soft)] font-semibold"
+                        : "text-foreground/85 hover:bg-[color:var(--muted)] hover:text-foreground"
                     }`}
                   >
-                    <Icon className="size-5" />
+                    <Icon className={`size-5 ${active ? "text-[color:var(--gold)]" : ""}`} />
                     {item.label}
                   </Link>
                 );
@@ -226,10 +228,10 @@ function ClienteAppLayout() {
         <p className="text-base font-medium">Gire o aparelho para o modo retrato</p>
         <p className="text-sm text-muted-foreground">Este app funciona apenas em pé.</p>
       </div>
-            <div className="border-t border-border p-2">
+            <div className="border-t hairline p-2">
               <button
                 onClick={sair}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-destructive hover:bg-destructive/10"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="size-5" />
                 Sair
@@ -242,7 +244,7 @@ function ClienteAppLayout() {
           <LogoRota013 className="text-2xl" />
         </Link>
 
-        <Button variant="ghost" size="icon" aria-label="Falar com a central" asChild>
+        <Button variant="ghost" size="icon" aria-label="Falar com a central" asChild className="text-foreground hover:bg-card hover:text-[color:var(--gold-soft)]">
           <Link to="/cliente/app/chat">
             <MessageCircle className="size-5" />
           </Link>
@@ -254,7 +256,7 @@ function ClienteAppLayout() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="app-bottom-nav-safe fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur">
+      <nav className="app-bottom-nav-safe fixed bottom-0 left-0 right-0 z-30 border-t hairline bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-md items-center justify-around">
           <BottomTab to="/cliente/app" icon={Home} label="Início" active={pathname === "/cliente/app"} />
           <BottomTab
@@ -289,8 +291,8 @@ function BottomTab({
   return (
     <Link
       to={to}
-      className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs ${
-        active ? "text-primary" : "text-muted-foreground"
+      className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+        active ? "text-[color:var(--gold)]" : "text-muted-foreground hover:text-foreground"
       }`}
     >
       <Icon className="size-5" />

@@ -24,7 +24,7 @@ export const listarHistorico = createServerFn({ method: "POST" })
 
     let q = supabaseAdmin
       .from("corridas")
-      .select("id, cliente, cliente_codigo, telefone_cliente, motorista, motorista_codigo, origem, destino, valor_final, status, pagamento, criado_em, finalizada_em, distancia_km, tipo, observacoes")
+      .select("id, cliente, cliente_codigo, telefone_cliente, motorista, motorista_codigo, origem, destino, valor_final, status, pagamento, criado_em, finalizada_em, distancia_km, tipo, observacoes, avaliacao_corrida, avaliacao_motorista, avaliacao_comentario, avaliada_em")
       .gte("criado_em", inicio)
       .lte("criado_em", fim)
       .order("criado_em", { ascending: false })

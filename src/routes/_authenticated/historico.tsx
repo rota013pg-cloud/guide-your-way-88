@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { listarHistorico } from "@/lib/historico.functions";
 import { gerarPdfHistorico, baixarPdf } from "@/lib/historico-pdf";
+import { AvaliacaoStars } from "@/components/avaliacao-stars";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   ssr: false,
@@ -216,20 +217,21 @@ function HistoricoPage() {
                 <TableHead>Motociclista</TableHead>
                 <TableHead>Trajeto</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Avaliação</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10">
+                  <TableCell colSpan={8} className="text-center py-10">
                     <Loader2 className="h-5 w-5 animate-spin inline" />
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && (data?.lista.length ?? 0) === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
                     Sem registros no período/filtro selecionado.
                   </TableCell>
                 </TableRow>
@@ -253,6 +255,12 @@ function HistoricoPage() {
                     <Badge variant={STATUS_VARIANT[r.status] ?? "outline"} className="text-[10px]">
                       {r.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <AvaliacaoStars
+                      value={(r as any).avaliacao_motorista ?? (r as any).avaliacao_corrida}
+                      comentario={(r as any).avaliacao_comentario}
+                    />
                   </TableCell>
                   <TableCell className="text-right font-medium">
                     {brl(Number(r.valor_final))}

@@ -1289,6 +1289,7 @@ export type Database = {
       }
       cliente_solicitar_reset: { Args: { _email: string }; Returns: Json }
       dia_operacional: { Args: { _ts?: string }; Returns: string }
+      eh_modo_automatico: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -9,6 +9,7 @@ import { ChatClienteNotifier } from "@/components/chat-cliente-notifier";
 import { CobrancaNotifier } from "@/components/cobranca-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
 import { NovaSolicitacaoNotifier } from "@/components/nova-solicitacao-notifier";
+import { ModoAutomaticoToggle } from "@/components/modo-automatico-toggle";
 
 import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
 import {
@@ -108,6 +109,7 @@ function AuthenticatedLayout() {
           <header className="app-header-safe flex items-center gap-2 border-b border-border bg-card px-3 sticky top-0 z-30">
             <SidebarTrigger />
             <div className="flex-1" />
+            <ModoAutomaticoToggle />
             <CobrancaNotifier />
             <ChatNotifier />
             <ChatClienteNotifier />

@@ -159,22 +159,7 @@ function ClienteAppHome() {
     };
   }, [corridaAtiva]);
 
-  // Preenche origem com geolocalização atual (uma vez)
-  useEffect(() => {
-    if (origem.text || !navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setOrigem({
-          text: "Minha localização atual",
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
-      },
-      () => {},
-      { timeout: 5000 },
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Origem inicia vazia — cliente preenche manualmente.
 
   const adicionarParada = () => setParadas((p) => [...p, { text: "" }]);
   const removerParada = (i: number) => setParadas((p) => p.filter((_, idx) => idx !== i));
@@ -274,9 +259,11 @@ function ClienteAppHome() {
 
       <Card className="rounded-2xl overflow-hidden">
         <div className="h-64 w-full">
-          <MapLeaflet motoristas={motoristas} />
+          <MapLeaflet motoristas={motoristas} hideLabels />
         </div>
       </Card>
+
+
 
       <Card className="rounded-2xl p-4 space-y-3">
         <div className="flex items-start gap-2">

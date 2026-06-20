@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useGoogleMaps } from "@/hooks/use-google-maps";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, X } from "lucide-react";
 
 export type AddressValue = {
   text: string;
@@ -140,7 +140,22 @@ export function AddressAutocomplete({
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         placeholder={placeholder}
         autoComplete="off"
+        className={value ? "pr-9" : undefined}
       />
+      {value && (
+        <button
+          type="button"
+          onClick={() => {
+            onChange({ text: "" });
+            setSuggestions([]);
+            setOpen(false);
+          }}
+          aria-label="Limpar endereço"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
       {open && (
         <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-72 overflow-auto">
           {loading && (

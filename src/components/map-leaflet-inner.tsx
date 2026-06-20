@@ -3,14 +3,14 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import type { MapMotorista } from "./map-leaflet";
 
-// Pin de moto com ID acima
-const buildIcon = (codigo: string, status: string) => {
+// Pin de moto com ID acima (opcionalmente sem rótulo)
+const buildIcon = (codigo: string, status: string, hideLabel: boolean) => {
   const cor =
     status === "Em corrida" ? "#f59e0b" :
     status === "Online" ? "#22c55e" : "#94a3b8";
   const html = `
     <div class="moto-marker">
-      <div class="moto-id" style="background:${cor}">${codigo}</div>
+      ${hideLabel ? "" : `<div class="moto-id" style="background:${cor}">${codigo}</div>`}
       <div class="moto-pin" style="background:${cor}">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="18.5" cy="17.5" r="3.5"/>
@@ -32,7 +32,7 @@ const buildIcon = (codigo: string, status: string) => {
 // Praia Grande / Baixada Santista
 const CENTRO: [number, number] = [-24.0122, -46.4097];
 
-export default function MapInner({ motoristas }: { motoristas: MapMotorista[] }) {
+export default function MapInner({ motoristas, hideLabels }: { motoristas: MapMotorista[]; hideLabels?: boolean }) {
   const center: [number, number] =
     motoristas.length > 0 ? [Number(motoristas[0].lat), Number(motoristas[0].lng)] : CENTRO;
 
@@ -48,16 +48,18 @@ export default function MapInner({ motoristas }: { motoristas: MapMotorista[] })
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
       {motoristas.map((m) => (
-        <Marker key={m.codigo} position={[Number(m.lat), Number(m.lng)]} icon={buildIcon(m.codigo, m.status)}>
-          <Popup>
-            <div style={{ minWidth: 140 }}>
-              <strong>{m.nome}</strong>
-              <br />
-              <small>{m.codigo}</small>
-              <br />
-              <span style={{ color: m.status === "Em corrida" ? "#f59e0b" : "#22c55e" }}>● {m.status}</span>
-            </div>
-          </Popup>
+        <Marker key={m.codigo} position={[Number(m.lat), Number(m.lng)]} icon={buildIcon(m.codigo, m.status, !!hideLabels)}>
+          {!hideLabels && (
+            <Popup>
+              <div style={{ minWidth: 140 }}>
+                <strong>{m.nome}</strong>
+                <br />
+                <small>{m.codigo}</small>
+                <br />
+                <span style={{ color: m.status === "Em corrida" ? "#f59e0b" : "#22c55e" }}>● {m.status}</span>
+              </div>
+            </Popup>
+          )}
         </Marker>
       ))}
     </MapContainer>

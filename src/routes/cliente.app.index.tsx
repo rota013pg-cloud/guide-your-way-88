@@ -253,7 +253,7 @@ function ClienteAppHome() {
       <div>
         <h2 className="text-2xl font-bold">Para onde vamos?</h2>
         <p className="text-sm text-muted-foreground flex items-center gap-1">
-          <Bike className="size-4" /> {motoristas.length} mototaxista{motoristas.length === 1 ? "" : "s"} por perto
+          <Bike className="size-4" /> {motoristas.length} motociclista{motoristas.length === 1 ? "" : "s"} por perto
         </p>
       </div>
 

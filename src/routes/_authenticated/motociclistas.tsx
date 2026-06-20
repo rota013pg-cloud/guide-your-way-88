@@ -256,6 +256,13 @@ function MotoristasPage() {
           pessoaCodigo={historicoAlvo.codigo}
           pessoaNome={historicoAlvo.nome}
         />
+      {corridasAlvo && (
+        <MotoristaCorridasDialog
+          open={!!corridasAlvo}
+          onOpenChange={(v) => { if (!v) setCorridasAlvo(null); }}
+          codigo={corridasAlvo.codigo}
+          nome={corridasAlvo.nome}
+        />
       )}
     </div>
   );

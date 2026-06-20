@@ -12,6 +12,7 @@ import { listarMotoristas, excluirMotorista, pausarMotorista, retomarMotorista, 
 import { MotoristaDialog } from "@/components/motorista-dialog";
 import { MotoristaAdminPanel } from "@/components/motorista-admin-panel";
 import { OcorrenciasDialog } from "@/components/ocorrencias-dialog";
+import { MotoristaCorridasDialog } from "@/components/motorista-corridas-dialog";
 import { useRole } from "@/hooks/use-role";
 import { toast } from "sonner";
 import { AvaliacaoMedia } from "@/components/avaliacao-stars";

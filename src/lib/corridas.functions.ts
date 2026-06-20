@@ -268,9 +268,31 @@ export const expirarOferta = createServerFn({ method: "POST" })
     z.object({
       ofertaId: z.number().int().positive(),
       corridaId: z.number().int().positive(),
+      codigo: z.string().min(1),
+      token: z.string().min(10),
     }).parse(d),
   )
   .handler(async ({ data }) => {
+    // Valida sessão do motorista
+    const { data: sess } = await supabaseAdmin
+      .from("motorista_sessoes")
+      .select("motorista_codigo")
+      .eq("token", data.token)
+      .eq("motorista_codigo", data.codigo)
+      .eq("status", "ativa")
+      .maybeSingle();
+    if (!sess) throw new Error("Sessão inválida");
+
+    // Garante que a oferta a expirar é do motorista chamador
+    const { data: ofertaRow } = await supabaseAdmin
+      .from("corrida_ofertas")
+      .select("id, motorista_codigo, corrida_id")
+      .eq("id", data.ofertaId)
+      .maybeSingle();
+    if (!ofertaRow || ofertaRow.motorista_codigo !== data.codigo || ofertaRow.corrida_id !== data.corridaId) {
+      throw new Error("Oferta não pertence ao motorista");
+    }
+
     await supabaseAdmin
       .from("corrida_ofertas")
       .update({ status: "expirada" })
@@ -309,11 +331,8 @@ export const expirarOferta = createServerFn({ method: "POST" })
         `Nenhum motorista aceitou — iniciando rodada ${novaRodada}`,
       );
 
-      // Rodada 2 em diante: amplia o raio para até 10 motoristas mais próximos
       const quantidade = novaRodada >= 2 ? 10 : QTD_MOT;
-      await (dispararOfertas as any)({
-        data: { corridaId: data.corridaId, reofertar: true, quantidade },
-      });
+      await _executarDispararOfertas(data.corridaId, quantidade, true);
       return { ok: true, reofertou: true, rodada: novaRodada };
     } catch (e) {
       await registrarLog(data.corridaId, "Falha reoferta", null, String((e as Error)?.message ?? e));

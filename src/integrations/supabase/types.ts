@@ -1276,6 +1276,7 @@ export type Database = {
           _destino_lat: number
           _destino_lng: number
           _distancia_km: number
+          _forma_pagamento?: string
           _observacoes: string
           _origem: string
           _origem_lat: number

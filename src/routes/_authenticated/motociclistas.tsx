@@ -221,6 +221,9 @@ function MotoristasPage() {
                   {isAdmin ? <Shield className="h-3 w-3 mr-1" /> : <Smartphone className="h-3 w-3 mr-1" />}
                   {isAdmin ? "Acesso" : "Resetar"}
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => setCorridasAlvo({ codigo: m.codigo, nome: m.nome })}>
+                  <Star className="h-3 w-3 mr-1" /> Corridas
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => setHistoricoAlvo({ codigo: m.codigo, nome: m.nome })}>
                   <History className="h-3 w-3 mr-1" /> Histórico
                 </Button>

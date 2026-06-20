@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,8 +43,13 @@ export function AvaliacaoCorridaDialog({ corridaId, open, onClose }: Props) {
   const [notaMotorista, setNotaMotorista] = useState(0);
   const [comentario, setComentario] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const enviadoRef = useRef(false);
 
   const enviar = async (pular = false) => {
+    if (enviadoRef.current) {
+      onClose();
+      return;
+    }
     const token = getClienteToken();
     if (!token) {
       onClose();
@@ -60,6 +65,7 @@ export function AvaliacaoCorridaDialog({ corridaId, open, onClose }: Props) {
         _comentario: pular ? "" : comentario,
       } as any);
       if (error) throw error;
+      enviadoRef.current = true;
       if (!pular && (notaCorrida || notaMotorista || comentario.trim())) {
         toast.success("Obrigado pela sua avaliação!");
       }
@@ -72,7 +78,7 @@ export function AvaliacaoCorridaDialog({ corridaId, open, onClose }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) void enviar(true); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !enviadoRef.current) void enviar(true); }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Como foi sua corrida?</DialogTitle>

@@ -43,12 +43,35 @@ export const listarMotoristas = createServerFn({ method: "GET" })
       .from("motorista_auth")
       .select("motorista_codigo, status, motivo_bloqueio, ultimo_acesso");
     const mapAuth = new Map((auths ?? []).map((a) => [a.motorista_codigo, a]));
-    return (motoristas ?? []).map((m) => ({
-      ...m,
-      auth_status: mapAuth.get(m.codigo)?.status ?? "Ativo",
-      motivo_bloqueio: mapAuth.get(m.codigo)?.motivo_bloqueio ?? null,
-      ultimo_acesso: mapAuth.get(m.codigo)?.ultimo_acesso ?? null,
-    }));
+
+    // Agrega avaliações por motorista
+    const { data: aval } = await supabaseAdmin
+      .from("corridas")
+      .select("motorista_codigo, avaliacao_motorista")
+      .not("motorista_codigo", "is", null)
+      .not("avaliacao_motorista", "is", null);
+    const mapAval = new Map<string, { soma: number; qtd: number }>();
+    for (const r of aval ?? []) {
+      const cod = r.motorista_codigo as string;
+      const nota = Number(r.avaliacao_motorista);
+      if (!cod || !Number.isFinite(nota)) continue;
+      const cur = mapAval.get(cod) ?? { soma: 0, qtd: 0 };
+      cur.soma += nota;
+      cur.qtd += 1;
+      mapAval.set(cod, cur);
+    }
+
+    return (motoristas ?? []).map((m) => {
+      const a = mapAval.get(m.codigo as string);
+      return {
+        ...m,
+        auth_status: mapAuth.get(m.codigo)?.status ?? "Ativo",
+        motivo_bloqueio: mapAuth.get(m.codigo)?.motivo_bloqueio ?? null,
+        ultimo_acesso: mapAuth.get(m.codigo)?.ultimo_acesso ?? null,
+        avaliacao_media: a ? a.soma / a.qtd : null,
+        avaliacao_qtd: a?.qtd ?? 0,
+      };
+    });
   });
 
 export const previewProximoCodigoMotorista = createServerFn({ method: "GET" })

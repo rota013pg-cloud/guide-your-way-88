@@ -175,9 +175,9 @@ function ClienteAppLayout() {
   ];
 
   return (
-    <div className="theme-cliente min-h-screen bg-background text-foreground pb-28">
+    <div className="theme-cliente flex h-[100dvh] flex-col bg-background text-foreground overflow-hidden">
       {/* Header */}
-      <header className="app-header-safe sticky top-0 z-30 flex items-center justify-between border-b hairline bg-background/85 backdrop-blur-xl px-4 py-3">
+      <header className="app-header-safe shrink-0 z-30 flex items-center justify-between border-b hairline bg-background/85 backdrop-blur-xl px-4 py-3">
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Abrir menu" className="text-foreground hover:bg-card hover:text-[color:var(--gold-soft)]">

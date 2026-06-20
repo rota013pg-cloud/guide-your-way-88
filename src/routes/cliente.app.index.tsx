@@ -16,6 +16,8 @@ import { MapPin, Plus, X, Bike, Loader2, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { dispararOfertas } from "@/lib/corridas.functions";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
 import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 

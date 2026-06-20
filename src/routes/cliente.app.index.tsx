@@ -259,9 +259,8 @@ function ClienteAppHome() {
 
       <Card className="rounded-2xl overflow-hidden">
         <div className="h-64 w-full">
-          <MapLeaflet motoristas={motoristas} />
-        </div>
-      </Card>
+          <MapLeaflet motoristas={motoristas} hideLabels />
+
 
       <Card className="rounded-2xl p-4 space-y-3">
         <div className="flex items-start gap-2">

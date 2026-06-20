@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { listarHistorico } from "@/lib/historico.functions";
 import { gerarPdfHistorico, baixarPdf } from "@/lib/historico-pdf";
+import { AvaliacaoStars } from "@/components/avaliacao-stars";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   ssr: false,

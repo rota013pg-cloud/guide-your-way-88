@@ -205,7 +205,7 @@ function ClienteAppHome() {
     if (!token || !cotacao) return;
     setSolicitando(true);
     try {
-      const { error } = await supabase.rpc("cliente_solicitar_corrida", {
+      const { data, error } = await supabase.rpc("cliente_solicitar_corrida", {
         _token: token,
         _origem: origem.text,
         _origem_lat: origem.lat!,
@@ -218,14 +218,25 @@ function ClienteAppHome() {
         _valor: cotacao.valor,
         _observacoes: observacao,
         _solicitacoes_especiais: especiais,
+        _forma_pagamento: pagamento,
       } as any);
       if (error) throw error;
+      const resp = (data ?? {}) as { corrida_id?: number; auto_aceita?: boolean };
+      if (resp.auto_aceita && resp.corrida_id) {
+        // Modo automático: dispara ofertas para motoristas imediatamente
+        try {
+          await ofertasFn({ data: { corridaId: resp.corrida_id } });
+        } catch (e) {
+          console.warn("dispararOfertas auto falhou", e);
+        }
+      }
       toast.success("Corrida solicitada! Procurando motociclista...");
       setModalOpen(false);
       setParadas([]);
       setDestino(PRACO);
       setEspeciais([]);
       setObservacao("");
+      setPagamento("Pix");
       setCotacao(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao solicitar corrida");

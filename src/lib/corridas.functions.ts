@@ -216,6 +216,48 @@ async function _executarDispararOfertas(
     await registrarLog(corridaId, `Ofertada (${corrida.despacho})`);
 
     return { ok: true, ofertados: rows.length, modo: corrida.despacho };
+}
+
+export const dispararOfertas = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({
+      corridaId: z.number().int().positive(),
+      quantidade: z.number().int().min(1).max(50).optional(),
+      reofertar: z.boolean().optional(),
+    }).parse(input),
+  )
+  .handler(async ({ data }) =>
+    _executarDispararOfertas(data.corridaId, data.quantidade ?? QTD_MOT, data.reofertar ?? false),
+  );
+
+// Variante para o app do cliente: valida o cliente_token e exige que a
+// corrida pertença ao cliente antes de disparar (usado no fluxo de
+// modo automático após cliente_solicitar_corrida).
+export const dispararOfertasCliente = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z.object({
+      clienteToken: z.string().min(10),
+      corridaId: z.number().int().positive(),
+    }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { data: sess } = await supabaseAdmin
+      .from("cliente_sessoes")
+      .select("cliente_codigo")
+      .eq("token", data.clienteToken)
+      .eq("status", "ativa")
+      .maybeSingle();
+    if (!sess) throw new Error("Sessão inválida");
+    const { data: c } = await supabaseAdmin
+      .from("corridas")
+      .select("cliente_codigo")
+      .eq("id", data.corridaId)
+      .maybeSingle();
+    if (!c || c.cliente_codigo !== sess.cliente_codigo) {
+      throw new Error("Corrida não pertence ao cliente");
+    }
+    return _executarDispararOfertas(data.corridaId, QTD_MOT, false);
   });
 
 // ─── Expirar oferta (chamado pelo app do motorista após 30s) ──────

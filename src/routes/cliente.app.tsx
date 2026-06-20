@@ -251,12 +251,12 @@ function ClienteAppLayout() {
         </Button>
       </header>
 
-      <main className="flex-1">
+      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         <Outlet />
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="app-bottom-nav-safe fixed bottom-0 left-0 right-0 z-30 border-t hairline bg-background/90 backdrop-blur-xl">
+      <nav className="app-bottom-nav-safe shrink-0 z-30 border-t hairline bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-md items-center justify-around">
           <BottomTab to="/cliente/app" icon={Home} label="Início" active={pathname === "/cliente/app"} />
           <BottomTab

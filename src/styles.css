@@ -142,6 +142,79 @@ html, body {
   --sidebar-ring: oklch(0.78 0.18 92);
 }
 
+/* ─── Tema Noir & Gold — escopo App do Cliente ─── */
+.theme-cliente {
+  color-scheme: dark;
+  --radius: 1.25rem;
+  --background: oklch(0.145 0 0);          /* #0d0d0d */
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.19 0 0);                 /* #1a1a1a */
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.19 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.78 0.12 84);          /* #c9a84c */
+  --primary-foreground: oklch(0.145 0 0);
+  --primary-glow: oklch(0.88 0.10 88);     /* #f0d78c */
+  --secondary: oklch(0.235 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.68 0.01 90);
+  --accent: oklch(0.78 0.12 84 / 12%);
+  --accent-foreground: oklch(0.88 0.10 88);
+  --destructive: oklch(0.62 0.22 28);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.30 0 0);               /* hairline */
+  --input: oklch(0.235 0 0);
+  --ring: oklch(0.78 0.12 84);
+  --gold: #c9a84c;
+  --gold-soft: #f0d78c;
+  --noir: #0d0d0d;
+  --surface: #1a1a1a;
+  --hairline: rgba(201, 168, 76, 0.18);
+  --gradient-gold: linear-gradient(135deg, #c9a84c 0%, #f0d78c 100%);
+  --shadow-gold: 0 10px 24px -10px rgba(201, 168, 76, 0.45);
+  --shadow-elegant: 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+
+  font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--noir);
+  color: var(--foreground);
+}
+.theme-cliente h1,
+.theme-cliente h2,
+.theme-cliente h3,
+.theme-cliente h4,
+.theme-cliente .font-display {
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Botão primário "ouro" usado no app do cliente */
+.theme-cliente .btn-gold {
+  background-image: var(--gradient-gold);
+  color: var(--noir);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-gold);
+  transition: transform 180ms ease-out, box-shadow 180ms ease-out, filter 180ms ease-out;
+}
+.theme-cliente .btn-gold:hover { filter: brightness(1.05); }
+.theme-cliente .btn-gold:active { transform: scale(0.98); }
+.theme-cliente .btn-gold:disabled { filter: grayscale(0.3) brightness(0.7); cursor: not-allowed; }
+
+/* Conector vertical entre origem→paradas→destino */
+.theme-cliente .route-connector {
+  background-image: linear-gradient(to bottom, var(--gold) 0%, rgba(255,255,255,0.18) 50%, var(--gold-soft) 100%);
+  opacity: 0.45;
+}
+
+/* Hairline divider em ouro */
+.theme-cliente .hairline { border-color: var(--hairline); }
+
+/* Scrollbar discreta nos chips */
+.theme-cliente .no-scrollbar::-webkit-scrollbar { display: none; }
+.theme-cliente .no-scrollbar { scrollbar-width: none; }
+
+
 @layer base {
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); }

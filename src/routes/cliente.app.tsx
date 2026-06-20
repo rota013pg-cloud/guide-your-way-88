@@ -291,8 +291,8 @@ function BottomTab({
   return (
     <Link
       to={to}
-      className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs ${
-        active ? "text-primary" : "text-muted-foreground"
+      className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+        active ? "text-[color:var(--gold)]" : "text-muted-foreground hover:text-foreground"
       }`}
     >
       <Icon className="size-5" />

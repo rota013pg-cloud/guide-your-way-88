@@ -33,7 +33,7 @@ export const definirModoAutomatico = createServerFn({ method: "POST" })
     cfg.modoAutomatico = data.ativo;
     const { error } = await supabaseAdmin
       .from("app_config")
-      .upsert({ id: 1, config_json: cfg, atualizado_em: new Date().toISOString() });
+      .upsert({ id: 1, config_json: cfg as never, atualizado_em: new Date().toISOString() });
     if (error) throw new Error(error.message);
     return { ok: true, ativo: data.ativo };
   });

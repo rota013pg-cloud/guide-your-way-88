@@ -14,6 +14,7 @@ import { MotoristaAdminPanel } from "@/components/motorista-admin-panel";
 import { OcorrenciasDialog } from "@/components/ocorrencias-dialog";
 import { useRole } from "@/hooks/use-role";
 import { toast } from "sonner";
+import { AvaliacaoMedia } from "@/components/avaliacao-stars";
 
 export const Route = createFileRoute("/_authenticated/motociclistas")({
   ssr: false,
@@ -141,6 +142,9 @@ function MotoristasPage() {
                   <p className="text-xs text-muted-foreground">
                     {m.moto || "—"} {m.placa ? `· ${m.placa}` : ""}
                   </p>
+                  <div className="mt-1">
+                    <AvaliacaoMedia media={m.avaliacao_media} qtd={m.avaliacao_qtd ?? 0} />
+                  </div>
                 </div>
               </div>
 

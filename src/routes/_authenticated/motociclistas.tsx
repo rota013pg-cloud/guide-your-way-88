@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Search, Shield, Lock, Pause, Play, Smartphone, History } from "lucide-react";
-import { listarMotoristas, excluirMotorista, pausarMotorista, retomarMotorista } from "@/lib/motoristas.functions";
+import { Plus, Pencil, Trash2, Search, Shield, Lock, Pause, Play, Smartphone, History, Star, RotateCcw } from "lucide-react";
+import { listarMotoristas, excluirMotorista, pausarMotorista, retomarMotorista, zerarHistoricoCorridas } from "@/lib/motoristas.functions";
 import { MotoristaDialog } from "@/components/motorista-dialog";
 import { MotoristaAdminPanel } from "@/components/motorista-admin-panel";
 import { OcorrenciasDialog } from "@/components/ocorrencias-dialog";
+import { MotoristaCorridasDialog } from "@/components/motorista-corridas-dialog";
 import { useRole } from "@/hooks/use-role";
 import { toast } from "sonner";
 import { AvaliacaoMedia } from "@/components/avaliacao-stars";
@@ -29,11 +30,13 @@ function MotoristasPage() {
   const excluir = useServerFn(excluirMotorista);
   const pausarFn = useServerFn(pausarMotorista);
   const retomarFn = useServerFn(retomarMotorista);
+  const zerarFn = useServerFn(zerarHistoricoCorridas);
   const [filtro, setFiltro] = useState("");
   const [open, setOpen] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [adminAlvo, setAdminAlvo] = useState<any>(null);
   const [historicoAlvo, setHistoricoAlvo] = useState<{ codigo: string; nome: string } | null>(null);
+  const [corridasAlvo, setCorridasAlvo] = useState<{ codigo: string; nome: string } | null>(null);
 
   const { data: motoristas = [], isLoading } = useQuery({
     queryKey: ["motoristas"],
@@ -68,6 +71,15 @@ function MotoristasPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const zerarMut = useMutation({
+    mutationFn: () => zerarFn(),
+    onSuccess: () => {
+      toast.success("Histórico de corridas zerado");
+      qc.invalidateQueries();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const filtrados = motoristas.filter((m: any) => {
     const q = filtro.toLowerCase();
     return !q || m.codigo?.toLowerCase().includes(q) || m.nome?.toLowerCase().includes(q) || m.telefone?.toLowerCase().includes(q);
@@ -80,9 +92,25 @@ function MotoristasPage() {
           <h1 className="text-2xl font-bold">Motociclistas</h1>
           <p className="text-sm text-muted-foreground">{motoristas.length} cadastrados</p>
         </div>
-        <Button onClick={() => { setEditando(null); setOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Novo motociclista
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {isAdmin && (
+            <Button
+              variant="outline"
+              className="text-destructive border-destructive/40 hover:bg-destructive/10"
+              onClick={() => {
+                if (confirm("ATENÇÃO: Isso vai APAGAR TODAS as corridas de TODOS os motociclistas (modo de teste). Continuar?")) {
+                  zerarMut.mutate();
+                }
+              }}
+              disabled={zerarMut.isPending}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" /> Zerar histórico (teste)
+            </Button>
+          )}
+          <Button onClick={() => { setEditando(null); setOpen(true); }}>
+            <Plus className="h-4 w-4 mr-2" /> Novo motociclista
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-md">
@@ -193,6 +221,9 @@ function MotoristasPage() {
                   {isAdmin ? <Shield className="h-3 w-3 mr-1" /> : <Smartphone className="h-3 w-3 mr-1" />}
                   {isAdmin ? "Acesso" : "Resetar"}
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => setCorridasAlvo({ codigo: m.codigo, nome: m.nome })}>
+                  <Star className="h-3 w-3 mr-1" /> Corridas
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => setHistoricoAlvo({ codigo: m.codigo, nome: m.nome })}>
                   <History className="h-3 w-3 mr-1" /> Histórico
                 </Button>
@@ -224,6 +255,14 @@ function MotoristasPage() {
           tipoPessoa="motorista"
           pessoaCodigo={historicoAlvo.codigo}
           pessoaNome={historicoAlvo.nome}
+        />
+      )}
+      {corridasAlvo && (
+        <MotoristaCorridasDialog
+          open={!!corridasAlvo}
+          onOpenChange={(v) => { if (!v) setCorridasAlvo(null); }}
+          codigo={corridasAlvo.codigo}
+          nome={corridasAlvo.nome}
         />
       )}
     </div>

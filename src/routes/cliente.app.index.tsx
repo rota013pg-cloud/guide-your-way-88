@@ -427,6 +427,30 @@ function ClienteAppHome() {
               </div>
             </div>
           )}
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Forma de pagamento
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {(["Pix", "Dinheiro", "Cartão"] as const).map((opt) => {
+                const ativo = pagamento === opt;
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setPagamento(opt)}
+                    className={`px-3 py-2.5 rounded-xl text-sm font-bold border transition-all duration-200 active:scale-[0.96] ${
+                      ativo
+                        ? "bg-[color:var(--gold)] text-[color:var(--noir)] border-[color:var(--gold)] shadow-[var(--shadow-gold)]"
+                        : "bg-background text-muted-foreground border-[color:var(--border)] hover:border-[color:var(--gold)]/40 hover:text-[color:var(--gold-soft)]"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="outline"

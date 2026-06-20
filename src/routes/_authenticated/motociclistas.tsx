@@ -92,9 +92,25 @@ function MotoristasPage() {
           <h1 className="text-2xl font-bold">Motociclistas</h1>
           <p className="text-sm text-muted-foreground">{motoristas.length} cadastrados</p>
         </div>
-        <Button onClick={() => { setEditando(null); setOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Novo motociclista
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {isAdmin && (
+            <Button
+              variant="outline"
+              className="text-destructive border-destructive/40 hover:bg-destructive/10"
+              onClick={() => {
+                if (confirm("ATENÇÃO: Isso vai APAGAR TODAS as corridas de TODOS os motociclistas (modo de teste). Continuar?")) {
+                  zerarMut.mutate();
+                }
+              }}
+              disabled={zerarMut.isPending}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" /> Zerar histórico (teste)
+            </Button>
+          )}
+          <Button onClick={() => { setEditando(null); setOpen(true); }}>
+            <Plus className="h-4 w-4 mr-2" /> Novo motociclista
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-md">

@@ -256,6 +256,7 @@ function MotoristasPage() {
           pessoaCodigo={historicoAlvo.codigo}
           pessoaNome={historicoAlvo.nome}
         />
+      )}
       {corridasAlvo && (
         <MotoristaCorridasDialog
           open={!!corridasAlvo}

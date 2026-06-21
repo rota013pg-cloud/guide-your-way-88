@@ -10,6 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { calcularValorComParadas } from "@/lib/tarifas-calc";
 
 const SALT = "rota013salt";
 function hashSenha(senha: string) {
@@ -66,6 +67,35 @@ async function calcularEtaSegundos(
   const dur = json.routes?.[0]?.duration;
   if (!dur) return 0;
   return parseInt(String(dur).replace(/s$/, ""), 10) || 0;
+}
+
+async function calcularKmRotaDrive(
+  origem: { lat: number; lng: number },
+  destino: { lat: number; lng: number },
+): Promise<number> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const connKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!lovableKey || !connKey) return 0;
+  const res = await fetch("https://connector-gateway.lovable.dev/google_maps/routes/directions/v2:computeRoutes", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${lovableKey}`,
+      "X-Connection-Api-Key": connKey,
+      "Content-Type": "application/json",
+      "X-Goog-FieldMask": "routes.distanceMeters",
+    },
+    body: JSON.stringify({
+      origin: { location: { latLng: { latitude: origem.lat, longitude: origem.lng } } },
+      destination: { location: { latLng: { latitude: destino.lat, longitude: destino.lng } } },
+      travelMode: "DRIVE",
+      routingPreference: "TRAFFIC_AWARE",
+      languageCode: "pt-BR",
+      regionCode: "BR",
+    }),
+  });
+  if (!res.ok) return 0;
+  const json = (await res.json()) as { routes?: Array<{ distanceMeters?: number }> };
+  return (json.routes?.[0]?.distanceMeters ?? 0) / 1000;
 }
 
 // ─── LOGIN ──────────────────────────────────────────────

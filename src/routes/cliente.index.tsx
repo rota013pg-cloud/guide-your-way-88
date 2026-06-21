@@ -67,12 +67,12 @@ function ClienteLanding() {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-3">
+        <section className="grid grid-cols-3 gap-3">
           <FeatureCard icon={<Bike className="size-6" />} title="Mobilidade Urbana" desc="Mais rápido no trânsito" />
-          <FeatureCard icon={<Car className="size-6" />} title="Táxi" desc="Conforto pra família" />
           <FeatureCard icon={<MapPin className="size-6" />} title="Praia Grande" desc="Cobertura total" />
           <FeatureCard icon={<Clock className="size-6" />} title="24h" desc="A qualquer hora" />
         </section>
+
 
         <section className="mt-8 rounded-2xl border border-border bg-card p-5">
           <div className="flex items-start gap-3">

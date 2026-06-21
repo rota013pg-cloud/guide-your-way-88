@@ -48,7 +48,9 @@ type CorridaAtiva = {
 };
 
 type MotoristaInfo = {
+  codigo: string | null;
   nome: string | null;
+  foto: string | null;
   placa: string | null;
   moto: string | null;
   cor: string | null;

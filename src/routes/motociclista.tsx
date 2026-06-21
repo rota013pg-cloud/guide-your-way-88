@@ -636,6 +636,7 @@ function MotoristaApp() {
   return (
     <div className="moto-app">
       <style>{cssMotorista}</style>
+      <LandscapeBlock />
 
       {tela === "login" && (
         <LoginTela

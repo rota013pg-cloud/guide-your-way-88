@@ -35,16 +35,15 @@ function ComoFuncionaPage() {
         <section className="px-5 pt-12 pb-14 md:pt-20">
           <div className="mx-auto max-w-4xl text-center">
             <div className="inline-block text-xs uppercase tracking-widest text-primary mb-4">
-              Transporte por motos no Litoral Sul de SP
+              TRANSPORTE POR MOTOCICLETAS
             </div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-              Corridas de moto, agora{" "}
+              Solicite corridas com motocicletas,{" "}
               <span className="italic text-primary">direto pelo site.</span>
             </h1>
             <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-              A Rota013 evoluiu! Agora você solicita sua corrida diretamente pela
-              plataforma web — sem precisar de WhatsApp. Acompanhe o motorista em
-              tempo real, com a mesma central humana cuidando da operação.
+              Na Rota013 você solicita corridas direto pelo site ou pode
+              solicitar via WhatsApp direto pela central.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/cliente/cadastro">
@@ -61,9 +60,9 @@ function ComoFuncionaPage() {
           </div>
 
           <div className="mx-auto max-w-3xl mt-12 grid grid-cols-3 gap-3">
-            <Stat top="100%" label="atendimento humano" />
-            <Stat top="0" label="cancelamentos" />
-            <Stat top="0" label="atrasos" />
+            <Stat label="Atendimento humanizado" />
+            <Stat label="Menos cancelamentos" />
+            <Stat label="Menos atrasos" />
           </div>
         </section>
 

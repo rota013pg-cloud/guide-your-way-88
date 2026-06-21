@@ -1172,6 +1172,10 @@ export type Database = {
         }
         Returns: Json
       }
+      cliente_cotar: {
+        Args: { _distancia_km: number; _qtd_paradas?: number }
+        Returns: Json
+      }
       cliente_enviar_mensagem: {
         Args: { _texto: string; _token: string }
         Returns: Json

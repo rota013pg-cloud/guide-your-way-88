@@ -18,6 +18,7 @@ import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { dispararOfertasCliente } from "@/lib/corridas.functions";
+import { cotarCorridaCliente } from "@/lib/cliente-cotacao.functions";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
 import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 
@@ -81,6 +82,7 @@ function ClienteAppHome() {
   const [motoristaInfo, setMotoristaInfo] = useState<MotoristaInfo | null>(null);
   const [avaliarCorridaId, setAvaliarCorridaId] = useState<number | null>(null);
   const ultimaAtivaRef = useRef<CorridaAtiva | null>(null);
+  const cotarCorridaFn = useServerFn(cotarCorridaCliente);
 
   // Polling da corrida ativa do cliente
   useEffect(() => {
@@ -179,31 +181,30 @@ function ClienteAppHome() {
     setEspeciais((arr) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]));
 
   const cotar = async () => {
+    const token = getClienteToken();
+    if (!token) return toast.error("Sessão inválida — faça login novamente.");
     if (!origem.lat || !origem.lng) return toast.error("Selecione um endereço de origem válido.");
+    if (!destino.lat || !destino.lng) return toast.error("Selecione um endereço de destino válido.");
     for (const p of paradas) {
       if (!p.lat || !p.lng) return toast.error("Selecione um endereço válido para todas as paradas.");
     }
-    // Destino é opcional
-    const pontos = [
-      { lat: origem.lat, lng: origem.lng },
-      ...paradas.map((p) => ({ lat: p.lat!, lng: p.lng! })),
-      ...(destino.lat && destino.lng ? [{ lat: destino.lat, lng: destino.lng }] : []),
-    ];
-    let dist = 0;
-    for (let i = 1; i < pontos.length; i++) dist += haversine(pontos[i - 1], pontos[i]);
-    // Usa a MESMA tarifa configurada pelo operador (tabelasFixas por cidade origem/destino, com fallback híbrido)
-    const { data, error } = await supabase.rpc("cliente_cotar", {
-      _distancia_km: Number(dist.toFixed(2)),
-      _qtd_paradas: paradas.length,
-      _origem: origem.text || "",
-      _destino: destino.text || "",
-    } as any);
-    if (error) {
-      toast.error("Falha ao calcular tarifa: " + error.message);
+    const data = await cotarCorridaFn({
+      data: {
+        token,
+        origem: { lat: origem.lat, lng: origem.lng },
+        destino: { lat: destino.lat, lng: destino.lng },
+        paradas: paradas.map((p) => ({ lat: p.lat!, lng: p.lng! })),
+      },
+    }).catch((error) => {
+      toast.error(error instanceof Error ? error.message : "Falha ao calcular tarifa.");
+      return null;
+    });
+    if (!data) return;
+    if (data.valor <= 0 || data.distancia <= 0) {
+      toast.error("Não foi possível calcular a rota para esses endereços.");
       return;
     }
-    const valor = Number((data as { valor?: number } | null)?.valor ?? 0);
-    setCotacao({ distancia: dist, valor });
+    setCotacao({ distancia: data.distancia, valor: data.valor });
     setModalOpen(true);
   };
 

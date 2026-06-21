@@ -77,7 +77,7 @@ export function SiteFooter() {
         <div className="flex flex-col gap-2">
           <LogoRota013 className="text-xl" />
           <div className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Rota013 — Mobilidade no Litoral Sul de SP
+            © {new Date().getFullYear()} Rota013 — CNPJ: 67.507.908/0001-67
           </div>
           <a
             href="mailto:contato@rota013.com.br"

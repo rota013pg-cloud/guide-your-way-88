@@ -79,7 +79,7 @@ export function CobrancaNotifier() {
               <button
                 onClick={() => {
                   toast.dismiss(id);
-                  navigate({ to: "/motociclistas" });
+                  navigate({ to: isAguardando ? "/financeiro" : "/motociclistas" });
                 }}
                 className={`flex items-start gap-3 w-[360px] max-w-[88vw] rounded-lg border ${
                   isAguardando ? "border-primary bg-primary/10" : "border-border bg-card"

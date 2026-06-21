@@ -131,26 +131,26 @@ function ClienteAppHome() {
     };
   }, []);
 
-  // Buscar dados do motociclista (placa/moto/telefone) quando aceitar
+  // Buscar dados do motociclista (foto/codigo/placa/moto/cor/telefone) quando aceitar
   useEffect(() => {
     const cod = corridaAtiva?.motorista_codigo;
-    if (!cod) {
+    const corridaId = corridaAtiva?.id;
+    if (!cod || !corridaId) {
       setMotoristaInfo(null);
       return;
     }
+    const token = getClienteToken();
+    if (!token) return;
     let alive = true;
-    supabase
-      .from("motoristas")
-      .select("nome,placa,moto,cor,telefone")
-      .eq("codigo", cod)
-      .maybeSingle()
-      .then(({ data }) => {
+    clienteMotoristaCorridaInfo({ data: { token, corridaId } })
+      .then((data) => {
         if (alive && data) setMotoristaInfo(data as MotoristaInfo);
-      });
+      })
+      .catch(() => {});
     return () => {
       alive = false;
     };
-  }, [corridaAtiva?.motorista_codigo]);
+  }, [corridaAtiva?.motorista_codigo, corridaAtiva?.id]);
 
   // Mapa de motoristas online (apenas quando não há corrida ativa)
   useEffect(() => {

@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { dispararOfertasCliente } from "@/lib/corridas.functions";
 import { cotarCorridaCliente } from "@/lib/cliente-cotacao.functions";
+import { clienteMotoristaCorridaInfo } from "@/lib/cliente-motorista.functions";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
 import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 

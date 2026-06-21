@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { AddressAutocomplete, type AddressValue } from "@/components/address-autocomplete";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
-import { MapPin, Plus, X, Bike, Loader2, Phone } from "lucide-react";
+import { MapPin, Plus, X, Bike, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";

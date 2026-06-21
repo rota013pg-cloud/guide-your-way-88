@@ -22,6 +22,8 @@ export function MotoristaCorridasDialog({
     queryKey: ["motorista-corridas", codigo],
     queryFn: () => listar({ data: { codigo } }),
     enabled: open,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
 
   const avaliadas = corridas.filter((c: any) => c.avaliacao_motorista != null);

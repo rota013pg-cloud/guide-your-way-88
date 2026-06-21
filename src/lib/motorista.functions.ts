@@ -525,6 +525,10 @@ export const motoristaCarregarContexto = createServerFn({ method: "POST" })
               Number(primeiraTarifa.tarifaMinima ?? 4.5),
             );
             valorOferta = calcularValorComParadas(valorBase, paradas.length, Number(cfgJson.valorParadaExtra ?? 3)).total;
+            await supabaseAdmin
+              .from("corridas")
+              .update({ distancia_km: distanciaOferta, valor_final: valorOferta })
+              .eq("id", corridaOferta.id);
           }
         }
 

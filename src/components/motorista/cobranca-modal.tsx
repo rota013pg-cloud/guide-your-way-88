@@ -88,6 +88,8 @@ export function CobrancaModal({
         alignItems: bloqueado ? "stretch" : "flex-end",
         justifyContent: "center",
         padding: bloqueado ? 0 : "16px",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       <div
@@ -95,9 +97,15 @@ export function CobrancaModal({
         style={{
           background: "#fff", width: "100%",
           maxWidth: bloqueado ? "none" : 460,
-          borderRadius: bloqueado ? 0 : 16, padding: 20,
+          borderRadius: bloqueado ? 0 : 16,
+          padding: bloqueado
+            ? "calc(env(safe-area-inset-top, 0px) + 20px) 20px calc(env(safe-area-inset-bottom, 0px) + 20px)"
+            : "20px",
           boxShadow: "0 -8px 32px rgba(0,0,0,0.4)",
-          maxHeight: "100vh", overflowY: "auto", position: "relative",
+          minHeight: bloqueado ? "100dvh" : undefined,
+          maxHeight: bloqueado ? "none" : "100dvh",
+          overflowY: bloqueado ? "visible" : "auto",
+          position: "relative",
         }}
       >
         {podeFechar && (

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useCliente, getClienteToken } from "@/lib/cliente-auth";
 import { LogoRota013 } from "@/components/logo-rota013";
+import { LandscapeBlock } from "@/components/landscape-block";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureAudioUnlock, playChatBeep } from "@/lib/notification-sound";
 import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";

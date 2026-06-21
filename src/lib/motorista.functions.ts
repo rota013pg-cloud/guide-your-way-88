@@ -469,8 +469,9 @@ export const motoristaCarregarContexto = createServerFn({ method: "POST" })
         .select("id, cliente, origem, destino, valor_final, distancia_km, status")
         .eq("id", ofertaPendente.corrida_id)
         .maybeSingle();
-      // Só mostra se a corrida ainda está Pendente (não foi atribuída a outro)
-      if (corridaOferta && corridaOferta.status === "Pendente") {
+      // Só mostra se a corrida ainda está Pendente ou Ofertada (não foi atribuída a outro)
+      if (corridaOferta && (corridaOferta.status === "Pendente" || corridaOferta.status === "Ofertada")) {
+
         oferta = {
           ofertaId: ofertaPendente.id,
           corridaId: corridaOferta.id,
@@ -500,14 +501,24 @@ export const motoristaCarregarCorrida = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     await validarToken(data.codigo, data.token);
-    const { data: corrida } = await supabaseAdmin
-      .from("corridas")
-      .select("*")
-      .eq("id", data.corridaId)
+    // Verifica vínculo: ou a corrida já está atribuída ao motorista,
+    // ou existe uma oferta para ele nessa corrida (Pendente/Ofertada).
+    const { data: oferta } = await supabaseAdmin
+      .from("corrida_ofertas")
+      .select("id")
+      .eq("corrida_id", data.corridaId)
       .eq("motorista_codigo", data.codigo)
       .maybeSingle();
+    const query = supabaseAdmin
+      .from("corridas")
+      .select("*")
+      .eq("id", data.corridaId);
+    const { data: corrida } = oferta
+      ? await query.maybeSingle()
+      : await query.eq("motorista_codigo", data.codigo).maybeSingle();
     return { corrida };
   });
+
 
 // ─── LISTAR CORRIDAS DO MOTORISTA (HISTÓRICO / EXTRATO) ─
 export const motoristaListarCorridas = createServerFn({ method: "POST" })

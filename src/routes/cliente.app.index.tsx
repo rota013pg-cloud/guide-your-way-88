@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { dispararOfertasCliente } from "@/lib/corridas.functions";
 import { cotarCorridaCliente } from "@/lib/cliente-cotacao.functions";
+import { clienteMotoristaCorridaInfo } from "@/lib/cliente-motorista.functions";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
 import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 
@@ -48,7 +49,9 @@ type CorridaAtiva = {
 };
 
 type MotoristaInfo = {
+  codigo: string | null;
   nome: string | null;
+  foto: string | null;
   placa: string | null;
   moto: string | null;
   cor: string | null;
@@ -128,26 +131,26 @@ function ClienteAppHome() {
     };
   }, []);
 
-  // Buscar dados do motociclista (placa/moto/telefone) quando aceitar
+  // Buscar dados do motociclista (foto/codigo/placa/moto/cor/telefone) quando aceitar
   useEffect(() => {
     const cod = corridaAtiva?.motorista_codigo;
-    if (!cod) {
+    const corridaId = corridaAtiva?.id;
+    if (!cod || !corridaId) {
       setMotoristaInfo(null);
       return;
     }
+    const token = getClienteToken();
+    if (!token) return;
     let alive = true;
-    supabase
-      .from("motoristas")
-      .select("nome,placa,moto,cor,telefone")
-      .eq("codigo", cod)
-      .maybeSingle()
-      .then(({ data }) => {
+    clienteMotoristaCorridaInfo({ data: { token, corridaId } })
+      .then((data) => {
         if (alive && data) setMotoristaInfo(data as MotoristaInfo);
-      });
+      })
+      .catch(() => {});
     return () => {
       alive = false;
     };
-  }, [corridaAtiva?.motorista_codigo]);
+  }, [corridaAtiva?.motorista_codigo, corridaAtiva?.id]);
 
   // Mapa de motoristas online (apenas quando não há corrida ativa)
   useEffect(() => {
@@ -511,8 +514,12 @@ function CorridaAtivaCard({
       {aceita && (
         <>
           <div className="flex items-center gap-3">
-            <div className="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-              <Bike className="size-6" />
+            <div className="size-14 rounded-full bg-primary/10 text-primary flex items-center justify-center overflow-hidden shrink-0">
+              {motorista?.foto ? (
+                <img src={motorista.foto} alt={motorista.nome ?? "Motociclista"} className="size-full object-cover" />
+              ) : (
+                <Bike className="size-6" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -525,6 +532,9 @@ function CorridaAtivaCard({
                       : corrida.status}
               </p>
               <p className="font-semibold truncate">{motorista?.nome ?? corrida.motorista ?? "—"}</p>
+              {motorista?.codigo && (
+                <p className="text-xs text-muted-foreground font-mono">ID {motorista.codigo}</p>
+              )}
             </div>
           </div>
 

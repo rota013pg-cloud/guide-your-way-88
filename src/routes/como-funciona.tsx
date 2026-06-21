@@ -61,7 +61,7 @@ function ComoFuncionaPage() {
 
           <div className="mx-auto max-w-3xl mt-12 grid grid-cols-3 gap-3">
             <Stat label="Atendimento humanizado" />
-            <Stat label="Menos cancelamentos" />
+            <Stat label={<>Cliente<br/>Satisfeito</>} />
             <Stat label="Menos atrasos" />
           </div>
         </section>
@@ -96,7 +96,7 @@ function ComoFuncionaPage() {
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
               <ValueCard icon={<MessageSquare className="size-5" />} title="Atendimento humanizado" desc="Central de verdade acompanhando do início ao fim da corrida." />
-              <ValueCard icon={<ShieldCheck className="size-5" />} title="Zero cancelamento" desc="A central intermedia para reduzir falhas e desencontros." />
+              <ValueCard icon={<ShieldCheck className="size-5" />} title="Menos cancelamentos" desc="A central intermedia para reduzir falhas e desencontros." />
               <ValueCard icon={<Clock className="size-5" />} title="Corridas agendadas" desc="Ideal para trabalho, consultas, rodoviária e eventos." />
               <ValueCard icon={<MapPinned className="size-5" />} title="Acompanhamento em tempo real" desc="Veja o motociclista chegando até você pela plataforma." />
               <ValueCard icon={<BadgeCheck className="size-5" />} title="Motociclistas verificados" desc="Documentação em dia e dados enviados antes da corrida." />
@@ -135,7 +135,7 @@ function ComoFuncionaPage() {
   );
 }
 
-function Stat({ label }: { label: string }) {
+function Stat({ label }: { label: string | React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4 text-center">
       <div className="text-sm font-semibold text-primary">{label}</div>

@@ -24,6 +24,7 @@ import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { PanicButton } from "@/components/motorista/panic-button";
 import { playChatBeep } from "@/lib/notification-sound";
 import { LogoRota013 } from "@/components/logo-rota013";
+import { LandscapeBlock } from "@/components/landscape-block";
 
 export const Route = createFileRoute("/motociclista")({
   ssr: false,
@@ -140,6 +141,26 @@ function MotoristaApp() {
   // restaurar status ao voltar do background (visibilitychange/pagehide).
   const intencaoOnlineRef = useRef<boolean>(false);
   const forcadoOfflineBgRef = useRef<boolean>(false);
+
+  // Trava orientação em retrato (funciona em Android Chrome / PWA).
+  // iOS Safari ignora — o <LandscapeBlock /> exibe overlay nesse caso.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const lockPortrait = () => {
+      const orientation = window.screen?.orientation as ScreenOrientation | undefined;
+      if (!orientation || typeof orientation.lock !== "function") return;
+      void orientation.lock("portrait-primary").catch(() => undefined);
+    };
+    lockPortrait();
+    window.addEventListener("touchend", lockPortrait, { passive: true });
+    window.addEventListener("click", lockPortrait);
+    document.addEventListener("visibilitychange", lockPortrait);
+    return () => {
+      window.removeEventListener("touchend", lockPortrait);
+      window.removeEventListener("click", lockPortrait);
+      document.removeEventListener("visibilitychange", lockPortrait);
+    };
+  }, []);
 
   // Notifica (toast) quando entra em Pendente — sem abrir modal bloqueante
   useEffect(() => {
@@ -635,6 +656,7 @@ function MotoristaApp() {
   return (
     <div className="moto-app">
       <style>{cssMotorista}</style>
+      <LandscapeBlock />
 
       {tela === "login" && (
         <LoginTela

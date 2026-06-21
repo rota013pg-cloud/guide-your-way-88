@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useCliente, getClienteToken } from "@/lib/cliente-auth";
 import { LogoRota013 } from "@/components/logo-rota013";
+import { LandscapeBlock } from "@/components/landscape-block";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureAudioUnlock, playChatBeep } from "@/lib/notification-sound";
 import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";
@@ -176,6 +177,7 @@ function ClienteAppLayout() {
 
   return (
     <div className="theme-cliente flex h-[100dvh] flex-col bg-background text-foreground overflow-hidden">
+      <LandscapeBlock />
       {/* Header */}
       <header className="app-header-safe shrink-0 z-30 flex items-center justify-between border-b hairline bg-background/85 backdrop-blur-xl px-4 py-3">
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>

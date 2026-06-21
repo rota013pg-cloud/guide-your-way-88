@@ -98,9 +98,9 @@ function ComoFuncionaPage() {
               <ValueCard icon={<MessageSquare className="size-5" />} title="Atendimento humanizado" desc="Central de verdade acompanhando do início ao fim da corrida." />
               <ValueCard icon={<ShieldCheck className="size-5" />} title="Menos cancelamentos" desc="A central intermedia para reduzir falhas e desencontros." />
               <ValueCard icon={<Clock className="size-5" />} title="Corridas agendadas" desc="Ideal para trabalho, consultas, rodoviária e eventos." />
-              <ValueCard icon={<MapPinned className="size-5" />} title="Acompanhamento em tempo real" desc="Veja o motociclista chegando até você pela plataforma." />
+              <ValueCard icon={<MapPinned className="size-5" />} title="Acompanhamento em tempo real" desc="Informação atualizada do tempo de chegada do motociclista" />
               <ValueCard icon={<BadgeCheck className="size-5" />} title="Motociclistas verificados" desc="Documentação em dia e dados enviados antes da corrida." />
-              <ValueCard icon={<Bike className="size-5" />} title="Motos revisadas" desc="Motociclistas parceiros com motos cuidadas e adequadas." />
+              <ValueCard icon={<Bike className="size-5" />} title="Motos revisadas" desc="Motociclistas parceiros com motos revisadas e adequadas." />
             </div>
           </div>
         </section>

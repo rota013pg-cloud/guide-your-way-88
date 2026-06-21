@@ -178,7 +178,7 @@ function ClienteAppHome() {
   const toggleEspecial = (v: string) =>
     setEspeciais((arr) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]));
 
-  const cotar = () => {
+  const cotar = async () => {
     if (!origem.lat || !origem.lng) return toast.error("Selecione um endereço de origem válido.");
     for (const p of paradas) {
       if (!p.lat || !p.lng) return toast.error("Selecione um endereço válido para todas as paradas.");
@@ -191,14 +191,20 @@ function ClienteAppHome() {
     ];
     let dist = 0;
     for (let i = 1; i < pontos.length; i++) dist += haversine(pontos[i - 1], pontos[i]);
-    const BANDEIRADA = 5;
-    const POR_KM = 2.5;
-    const MINIMO = 7;
-    const PARADA_EXTRA = 2;
-    const valor = Math.max(MINIMO, BANDEIRADA + dist * POR_KM + paradas.length * PARADA_EXTRA);
-    setCotacao({ distancia: dist, valor: Math.ceil(valor) });
+    // Usa a MESMA tarifa configurada pelo operador (app_config.tarifas.tabelaHibrida + valorParadaExtra)
+    const { data, error } = await supabase.rpc("cliente_cotar", {
+      _distancia_km: Number(dist.toFixed(2)),
+      _qtd_paradas: paradas.length,
+    } as any);
+    if (error) {
+      toast.error("Falha ao calcular tarifa: " + error.message);
+      return;
+    }
+    const valor = Number((data as { valor?: number } | null)?.valor ?? 0);
+    setCotacao({ distancia: dist, valor });
     setModalOpen(true);
   };
+
 
   const confirmar = async () => {
     const token = getClienteToken();

@@ -514,8 +514,12 @@ function CorridaAtivaCard({
       {aceita && (
         <>
           <div className="flex items-center gap-3">
-            <div className="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-              <Bike className="size-6" />
+            <div className="size-14 rounded-full bg-primary/10 text-primary flex items-center justify-center overflow-hidden shrink-0">
+              {motorista?.foto ? (
+                <img src={motorista.foto} alt={motorista.nome ?? "Motociclista"} className="size-full object-cover" />
+              ) : (
+                <Bike className="size-6" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -528,6 +532,9 @@ function CorridaAtivaCard({
                       : corrida.status}
               </p>
               <p className="font-semibold truncate">{motorista?.nome ?? corrida.motorista ?? "—"}</p>
+              {motorista?.codigo && (
+                <p className="text-xs text-muted-foreground font-mono">ID {motorista.codigo}</p>
+              )}
             </div>
           </div>
 

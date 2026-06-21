@@ -294,10 +294,17 @@ function MotoristaApp() {
       .then((r) => { setCobranca(r.cobranca as typeof cobranca); setCobrancaCfg(r.config); })
       .catch(() => {});
 
+    // Fallback: recarrega contexto a cada 8s, caso o realtime falhe (rede instável, sleep, proxy).
+    // Garante que ofertas pendentes sejam apresentadas mesmo sem evento INSERT.
+    const pollInterval = setInterval(() => {
+      recarregarContexto();
+    }, 8000);
+
     return () => {
+      clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
-  }, [sessao, carregarCorridaFn, recarregarContexto]);
+  }, [sessao, carregarCorridaFn, recarregarContexto, minhaCobrancaFn]);
 
   // ─── Countdown da oferta ────────────────────────────
   useEffect(() => {

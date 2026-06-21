@@ -24,6 +24,7 @@ import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { PanicButton } from "@/components/motorista/panic-button";
 import { playChatBeep } from "@/lib/notification-sound";
 import { LogoRota013 } from "@/components/logo-rota013";
+import { LandscapeBlock } from "@/components/landscape-block";
 
 export const Route = createFileRoute("/motociclista")({
   ssr: false,

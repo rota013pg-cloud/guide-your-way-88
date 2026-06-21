@@ -191,10 +191,12 @@ function ClienteAppHome() {
     ];
     let dist = 0;
     for (let i = 1; i < pontos.length; i++) dist += haversine(pontos[i - 1], pontos[i]);
-    // Usa a MESMA tarifa configurada pelo operador (app_config.tarifas.tabelaHibrida + valorParadaExtra)
+    // Usa a MESMA tarifa configurada pelo operador (tabelasFixas por cidade origem/destino, com fallback híbrido)
     const { data, error } = await supabase.rpc("cliente_cotar", {
       _distancia_km: Number(dist.toFixed(2)),
       _qtd_paradas: paradas.length,
+      _origem: origem.text || "",
+      _destino: destino.text || "",
     } as any);
     if (error) {
       toast.error("Falha ao calcular tarifa: " + error.message);

@@ -51,7 +51,7 @@ function ClienteLanding() {
             segundos.
           </h1>
           <p className="mt-3 text-muted-foreground">
-            Peça mobilidade urbana ou táxi com motoristas cadastrados pelo Rota 013.
+            Solicite corridas com motocicletas a qualquer momento. Rápido, Fácil e mais barato.
           </p>
           <div className="mt-6 flex flex-col gap-3">
             <Link to="/cliente/cadastro">

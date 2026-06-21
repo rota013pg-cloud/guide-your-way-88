@@ -469,8 +469,9 @@ export const motoristaCarregarContexto = createServerFn({ method: "POST" })
         .select("id, cliente, origem, destino, valor_final, distancia_km, status")
         .eq("id", ofertaPendente.corrida_id)
         .maybeSingle();
-      // Só mostra se a corrida ainda está Pendente (não foi atribuída a outro)
-      if (corridaOferta && corridaOferta.status === "Pendente") {
+      // Só mostra se a corrida ainda está Pendente ou Ofertada (não foi atribuída a outro)
+      if (corridaOferta && (corridaOferta.status === "Pendente" || corridaOferta.status === "Ofertada")) {
+
         oferta = {
           ofertaId: ofertaPendente.id,
           corridaId: corridaOferta.id,

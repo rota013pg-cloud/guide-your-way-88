@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { AddressAutocomplete, type AddressValue } from "@/components/address-autocomplete";
 import { MapLeaflet, type MapMotorista } from "@/components/map-leaflet";
-import { MapPin, Plus, X, Bike, Loader2, Phone } from "lucide-react";
+import { MapPin, Plus, X, Bike, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
@@ -598,17 +598,8 @@ function CorridaAtivaCard({
             )}
           </div>
 
-          {motorista?.telefone && (
-            <Button asChild variant="outline" className="w-full rounded-xl">
-              <a href={`tel:${motorista.telefone}`}>
-                <Phone className="size-4 mr-2" />
-                Ligar para o motociclista
-              </a>
-            </Button>
-          )}
-
           <p className="text-xs text-center text-muted-foreground">
-            Acompanhe o status pelo aplicativo. O mapa em tempo real está temporariamente desativado.
+            Em caso de necessidade, entre em contato com a central.
           </p>
         </>
       )}

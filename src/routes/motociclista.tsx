@@ -1138,7 +1138,10 @@ function CorridaTela({
               <button
                 className="btn-acao caminho"
                 style={{ background: "#444", marginBottom: 10 }}
-                onClick={() => setChegouEm(Date.now())}
+                onClick={() => {
+                  setChegouEm(Date.now());
+                  onMudarStatus("Chegou");
+                }}
               >
                 📍 Cheguei no local — iniciar tolerância
               </button>

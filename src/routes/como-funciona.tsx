@@ -135,11 +135,10 @@ function ComoFuncionaPage() {
   );
 }
 
-function Stat({ top, label }: { top: string; label: string }) {
+function Stat({ label }: { label: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4 text-center">
-      <div className="text-2xl font-bold text-primary">{top}</div>
-      <div className="text-xs text-muted-foreground mt-1">{label}</div>
+      <div className="text-sm font-semibold text-primary">{label}</div>
     </div>
   );
 }

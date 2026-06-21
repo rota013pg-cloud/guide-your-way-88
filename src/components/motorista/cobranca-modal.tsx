@@ -198,7 +198,6 @@ export function CobrancaModal({
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              capture="environment"
               onChange={(e) => onArquivo(e.target.files?.[0] ?? null)}
               style={{ fontSize: 13, width: "100%" }}
             />

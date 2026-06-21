@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Bike, Car, MapPin, Clock, ShieldCheck } from "lucide-react";
+import { Bike, MapPin, Clock, ShieldCheck } from "lucide-react";
 import { LogoRota013 } from "@/components/logo-rota013";
 
 export const Route = createFileRoute("/cliente/")({

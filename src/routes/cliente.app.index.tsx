@@ -598,17 +598,8 @@ function CorridaAtivaCard({
             )}
           </div>
 
-          {motorista?.telefone && (
-            <Button asChild variant="outline" className="w-full rounded-xl">
-              <a href={`tel:${motorista.telefone}`}>
-                <Phone className="size-4 mr-2" />
-                Ligar para o motociclista
-              </a>
-            </Button>
-          )}
-
           <p className="text-xs text-center text-muted-foreground">
-            Acompanhe o status pelo aplicativo. O mapa em tempo real está temporariamente desativado.
+            Em caso de necessidade, entre em contato com a central.
           </p>
         </>
       )}

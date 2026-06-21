@@ -177,6 +177,7 @@ function ClienteAppLayout() {
 
   return (
     <div className="theme-cliente flex h-[100dvh] flex-col bg-background text-foreground overflow-hidden">
+      <LandscapeBlock />
       {/* Header */}
       <header className="app-header-safe shrink-0 z-30 flex items-center justify-between border-b hairline bg-background/85 backdrop-blur-xl px-4 py-3">
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>

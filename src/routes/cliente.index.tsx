@@ -26,7 +26,15 @@ export const Route = createFileRoute("/cliente/")({
 
 function ClienteLanding() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div
+      className="min-h-[100dvh] bg-background text-foreground"
+      style={{
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        paddingLeft: "env(safe-area-inset-left, 0px)",
+        paddingRight: "env(safe-area-inset-right, 0px)",
+      }}
+    >
       <header className="flex items-center justify-between px-5 py-4">
         <LogoRota013 className="text-3xl" />
         <Link to="/cliente/login">

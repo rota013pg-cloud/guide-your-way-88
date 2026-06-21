@@ -10,6 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { calcularValorComParadas } from "@/lib/tarifas-calc";
 
 const SALT = "rota013salt";
 function hashSenha(senha: string) {
@@ -66,6 +67,35 @@ async function calcularEtaSegundos(
   const dur = json.routes?.[0]?.duration;
   if (!dur) return 0;
   return parseInt(String(dur).replace(/s$/, ""), 10) || 0;
+}
+
+async function calcularKmRotaDrive(
+  origem: { lat: number; lng: number },
+  destino: { lat: number; lng: number },
+): Promise<number> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const connKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!lovableKey || !connKey) return 0;
+  const res = await fetch("https://connector-gateway.lovable.dev/google_maps/routes/directions/v2:computeRoutes", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${lovableKey}`,
+      "X-Connection-Api-Key": connKey,
+      "Content-Type": "application/json",
+      "X-Goog-FieldMask": "routes.distanceMeters",
+    },
+    body: JSON.stringify({
+      origin: { location: { latLng: { latitude: origem.lat, longitude: origem.lng } } },
+      destination: { location: { latLng: { latitude: destino.lat, longitude: destino.lng } } },
+      travelMode: "DRIVE",
+      routingPreference: "TRAFFIC_AWARE",
+      languageCode: "pt-BR",
+      regionCode: "BR",
+    }),
+  });
+  if (!res.ok) return 0;
+  const json = (await res.json()) as { routes?: Array<{ distanceMeters?: number }> };
+  return (json.routes?.[0]?.distanceMeters ?? 0) / 1000;
 }
 
 // ─── LOGIN ──────────────────────────────────────────────
@@ -466,11 +496,41 @@ export const motoristaCarregarContexto = createServerFn({ method: "POST" })
     if (ofertaPendente) {
       const { data: corridaOferta } = await supabaseAdmin
         .from("corridas")
-        .select("id, cliente, origem, destino, valor_final, distancia_km, status")
+        .select("id, cliente, origem, destino, origem_lat, origem_lng, destino_lat, destino_lng, paradas, valor_final, distancia_km, status")
         .eq("id", ofertaPendente.corrida_id)
         .maybeSingle();
       // Só mostra se a corrida ainda está Pendente ou Ofertada (não foi atribuída a outro)
       if (corridaOferta && (corridaOferta.status === "Pendente" || corridaOferta.status === "Ofertada")) {
+        let valorOferta = Number(corridaOferta.valor_final ?? 0);
+        let distanciaOferta = corridaOferta.distancia_km as number | null;
+        const cfgJson = (cfg?.config_json ?? {}) as any;
+        const primeiraTarifa = cfgJson.tarifas?.tabelasFixas?.[0] ?? { tarifaMinima: 4.5, valorKm: 1.2 };
+        const paradas = Array.isArray(corridaOferta.paradas) ? corridaOferta.paradas : [];
+        const origemOk = corridaOferta.origem_lat != null && corridaOferta.origem_lng != null;
+        const destinoOk = corridaOferta.destino_lat != null && corridaOferta.destino_lng != null;
+        if (origemOk && destinoOk) {
+          const origem = { lat: Number(corridaOferta.origem_lat), lng: Number(corridaOferta.origem_lng) };
+          const destinos = [
+            { lat: Number(corridaOferta.destino_lat), lng: Number(corridaOferta.destino_lng) },
+            ...paradas
+              .filter((p: any) => p?.lat != null && p?.lng != null)
+              .map((p: any) => ({ lat: Number(p.lat), lng: Number(p.lng) })),
+          ];
+          const rotas = await Promise.all(destinos.map((destino) => calcularKmRotaDrive(origem, destino).catch(() => 0)));
+          const maiorKm = rotas.reduce((acc, km) => (km > acc ? km : acc), 0);
+          if (maiorKm > 0) {
+            distanciaOferta = Number(maiorKm.toFixed(1));
+            const valorBase = Math.max(
+              distanciaOferta * Number(primeiraTarifa.valorKm ?? 1.2),
+              Number(primeiraTarifa.tarifaMinima ?? 4.5),
+            );
+            valorOferta = calcularValorComParadas(valorBase, paradas.length, Number(cfgJson.valorParadaExtra ?? 3)).total;
+            await supabaseAdmin
+              .from("corridas")
+              .update({ distancia_km: distanciaOferta, valor_final: valorOferta })
+              .eq("id", corridaOferta.id);
+          }
+        }
 
         oferta = {
           ofertaId: ofertaPendente.id,
@@ -478,8 +538,8 @@ export const motoristaCarregarContexto = createServerFn({ method: "POST" })
           cliente: corridaOferta.cliente,
           origem: corridaOferta.origem,
           destino: corridaOferta.destino,
-          valor: Number(corridaOferta.valor_final ?? 0),
-          distancia: corridaOferta.distancia_km,
+          valor: valorOferta,
+          distancia: distanciaOferta,
           criadoEm: ofertaPendente.criado_em,
         };
       }

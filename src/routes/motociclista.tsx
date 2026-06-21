@@ -142,6 +142,26 @@ function MotoristaApp() {
   const intencaoOnlineRef = useRef<boolean>(false);
   const forcadoOfflineBgRef = useRef<boolean>(false);
 
+  // Trava orientação em retrato (funciona em Android Chrome / PWA).
+  // iOS Safari ignora — o <LandscapeBlock /> exibe overlay nesse caso.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const lockPortrait = () => {
+      const orientation = window.screen?.orientation as ScreenOrientation | undefined;
+      if (!orientation || typeof orientation.lock !== "function") return;
+      void orientation.lock("portrait-primary").catch(() => undefined);
+    };
+    lockPortrait();
+    window.addEventListener("touchend", lockPortrait, { passive: true });
+    window.addEventListener("click", lockPortrait);
+    document.addEventListener("visibilitychange", lockPortrait);
+    return () => {
+      window.removeEventListener("touchend", lockPortrait);
+      window.removeEventListener("click", lockPortrait);
+      document.removeEventListener("visibilitychange", lockPortrait);
+    };
+  }, []);
+
   // Notifica (toast) quando entra em Pendente — sem abrir modal bloqueante
   useEffect(() => {
     if (!cobranca) return;

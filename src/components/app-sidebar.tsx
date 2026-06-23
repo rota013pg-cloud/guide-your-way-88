@@ -16,6 +16,7 @@ import {
   UserCog,
   StickyNote,
   BookOpen,
+  ScrollText,
 } from "lucide-react";
 import {
   Sidebar,

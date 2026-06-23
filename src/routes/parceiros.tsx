@@ -17,7 +17,7 @@ export const Route = createFileRoute("/parceiros")({
       {
         property: "og:description",
         content:
-          "100% dos ganhos para o motorista. Sem comissão, sem fidelidade. Cadastre-se agora.",
+          "100% dos ganhos para o motociclista. Sem comissão, sem fidelidade. Cadastre-se agora.",
       },
     ],
     links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],

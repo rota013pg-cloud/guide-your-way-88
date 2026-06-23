@@ -21,6 +21,9 @@ import { lerTermosPublico } from "@/lib/config.functions";
 
 export const Route = createFileRoute("/cliente/cadastro")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    ref: typeof s.ref === "string" ? s.ref.toUpperCase().trim().slice(0, 20) : "",
+  }),
   head: () => ({ meta: [{ title: "Criar conta — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
   component: ClienteCadastroPage,
 });

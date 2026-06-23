@@ -190,6 +190,7 @@ function tituloTab(t: Exclude<Tab, null>): string {
     historico: "Histórico de corridas",
     faturamento: "Meus ganhos",
     pagamentos: "Pagamento de taxas",
+    indicar: "Indicar cliente",
   } as Record<string, string>)[t];
 }
 

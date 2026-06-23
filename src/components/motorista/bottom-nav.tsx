@@ -160,8 +160,9 @@ export function MotoristaBottomNav({
 
       {tab && (
         <SheetWrap titulo={tituloTab(tab)} onClose={fechar}>
-          {tab === "perfil" && <PerfilTab motorista={motorista} online={online} emCorrida={emCorrida} onAlterarSenha={() => setTab("senha")} onSair={onSair} />}
+          {tab === "perfil" && <PerfilTab motorista={motorista} online={online} emCorrida={emCorrida} onAlterarSenha={() => setTab("senha")} onIndicar={() => setTab("indicar")} onSair={onSair} />}
           {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
+          {tab === "indicar" && <IndicarTab motorista={motorista} />}
           {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
           {tab === "historico" && <HistoricoTab codigo={motorista.codigo} token={token} />}
           {tab === "faturamento" && <FaturamentoTab codigo={motorista.codigo} token={token} cobranca={cobranca} />}

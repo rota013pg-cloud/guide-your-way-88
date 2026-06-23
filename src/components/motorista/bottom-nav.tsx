@@ -50,6 +50,8 @@ export function MotoristaBottomNav({
   cobranca,
   onAbrirCobranca,
   onSair,
+  online,
+  emCorrida,
 }: {
   motorista: Motorista;
   token: string;
@@ -57,6 +59,8 @@ export function MotoristaBottomNav({
   cobranca: Cobranca;
   onAbrirCobranca: () => void;
   onSair: () => void;
+  online: boolean;
+  emCorrida: boolean;
 }) {
   const [tab, setTab] = useState<Tab>(null);
   const [unread, setUnread] = useState(0);

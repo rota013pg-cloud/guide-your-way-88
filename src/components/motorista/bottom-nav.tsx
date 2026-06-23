@@ -50,6 +50,8 @@ export function MotoristaBottomNav({
   cobranca,
   onAbrirCobranca,
   onSair,
+  online,
+  emCorrida,
 }: {
   motorista: Motorista;
   token: string;
@@ -57,6 +59,8 @@ export function MotoristaBottomNav({
   cobranca: Cobranca;
   onAbrirCobranca: () => void;
   onSair: () => void;
+  online: boolean;
+  emCorrida: boolean;
 }) {
   const [tab, setTab] = useState<Tab>(null);
   const [unread, setUnread] = useState(0);
@@ -155,7 +159,7 @@ export function MotoristaBottomNav({
 
       {tab && (
         <SheetWrap titulo={tituloTab(tab)} onClose={fechar}>
-          {tab === "perfil" && <PerfilTab motorista={motorista} onAlterarSenha={() => setTab("senha")} onSair={onSair} />}
+          {tab === "perfil" && <PerfilTab motorista={motorista} online={online} emCorrida={emCorrida} onAlterarSenha={() => setTab("senha")} onSair={onSair} />}
           {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
           {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
           {tab === "historico" && <HistoricoTab codigo={motorista.codigo} token={token} />}
@@ -244,7 +248,8 @@ function SheetWrap({ titulo, onClose, children }: { titulo: string; onClose: () 
 }
 
 // ─── PERFIL ─────────────────────────────────────────────
-function PerfilTab({ motorista, onAlterarSenha, onSair }: { motorista: Motorista; onAlterarSenha: () => void; onSair: () => void }) {
+function PerfilTab({ motorista, online, emCorrida, onAlterarSenha, onSair }: { motorista: Motorista; online: boolean; emCorrida: boolean; onAlterarSenha: () => void; onSair: () => void }) {
+  const statusAtual = emCorrida ? "Em corrida" : online ? "Online" : "Offline";
   const linhas: [string, string | null][] = [
     ["Código", motorista.codigo],
     ["Nome", motorista.nome],
@@ -253,7 +258,7 @@ function PerfilTab({ motorista, onAlterarSenha, onSair }: { motorista: Motorista
     ["Cor", motorista.cor],
     ["Telefone", motorista.telefone],
     ["Cidade", motorista.cidade],
-    ["Status", motorista.status],
+    ["Status", statusAtual],
   ];
   return (
     <div className="moto-perfil">

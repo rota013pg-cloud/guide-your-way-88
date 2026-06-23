@@ -739,6 +739,8 @@ function MotoristaApp() {
           cobranca={cobranca}
           onAbrirCobranca={() => setForcarCobranca(true)}
           onSair={sair}
+          online={online}
+          emCorrida={!!corridaAtual}
         />
       )}
 

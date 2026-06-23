@@ -124,7 +124,7 @@ function ParceirosPage() {
             </div>
             <div className="grid md:grid-cols-5 sm:grid-cols-2 gap-4">
               <Step n="1" title="Cadastro" desc="Entre em contato com a central pelo WhatsApp e faça seu cadastro como parceiro." />
-              <Step n="2" title="Corrida disponível" desc="Surgindo uma corrida no seu bairro, a central te chama com todas as infos." />
+              <Step n="2" title="Corrida disponível" desc="Instale o aplicativo e faça o login. Quando estiver on-line e surgirem corridas próximas a você, estas serão ofertadas no seu aplicativo." />
               <Step n="3" title="Você decide" desc="Aceita ou não. Sem punição, sem nota negativa, sem pressão." />
               <Step n="4" title="Realiza a corrida" desc="Pega o passageiro, faz o trajeto e recebe o valor na entrega." />
               <Step n="5" title="Avisa a central" desc="Ao finalizar, comunica a central. Pronto — próxima corrida." />

@@ -66,7 +66,7 @@ function ParceirosPage() {
             <Stat top="100%" label="dos ganhos para você" />
             <Stat top="0%" label="de comissão" />
             <Stat top="Livre" label="para escolher horários" />
-            <Stat top="R$ 20" label="diária fixa única" />
+            <Stat top="R$ 20,00" label="diária fixa única" />
           </div>
         </section>
 

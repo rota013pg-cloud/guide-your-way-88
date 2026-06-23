@@ -41,6 +41,7 @@ import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authen
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedChatMotociclistasRouteImport } from './routes/_authenticated/chat-motociclistas'
 import { Route as AuthenticatedChatClientesRouteImport } from './routes/_authenticated/chat-clientes'
+import { Route as AuthenticatedAuditLogRouteImport } from './routes/_authenticated/audit-log'
 import { Route as ClienteAppIndexRouteImport } from './routes/cliente.app.index'
 import { Route as ClienteAppSenhaRouteImport } from './routes/cliente.app.senha'
 import { Route as ClienteAppPerfilRouteImport } from './routes/cliente.app.perfil'
@@ -211,6 +212,11 @@ const AuthenticatedChatClientesRoute =
     path: '/chat-clientes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAuditLogRoute = AuthenticatedAuditLogRouteImport.update({
+  id: '/audit-log',
+  path: '/audit-log',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const ClienteAppIndexRoute = ClienteAppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -248,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/audit-log': typeof AuthenticatedAuditLogRoute
   '/chat-clientes': typeof AuthenticatedChatClientesRoute
   '/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/clientes': typeof AuthenticatedClientesRoute
@@ -286,6 +293,7 @@ export interface FileRoutesByTo {
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/audit-log': typeof AuthenticatedAuditLogRoute
   '/chat-clientes': typeof AuthenticatedChatClientesRoute
   '/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/clientes': typeof AuthenticatedClientesRoute
@@ -325,6 +333,7 @@ export interface FileRoutesById {
   '/quem-somos': typeof QuemSomosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/termos': typeof TermosRoute
+  '/_authenticated/audit-log': typeof AuthenticatedAuditLogRoute
   '/_authenticated/chat-clientes': typeof AuthenticatedChatClientesRoute
   '/_authenticated/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
@@ -365,6 +374,7 @@ export interface FileRouteTypes {
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
+    | '/audit-log'
     | '/chat-clientes'
     | '/chat-motociclistas'
     | '/clientes'
@@ -403,6 +413,7 @@ export interface FileRouteTypes {
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
+    | '/audit-log'
     | '/chat-clientes'
     | '/chat-motociclistas'
     | '/clientes'
@@ -441,6 +452,7 @@ export interface FileRouteTypes {
     | '/quem-somos'
     | '/reset-password'
     | '/termos'
+    | '/_authenticated/audit-log'
     | '/_authenticated/chat-clientes'
     | '/_authenticated/chat-motociclistas'
     | '/_authenticated/clientes'
@@ -716,6 +728,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatClientesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/audit-log': {
+      id: '/_authenticated/audit-log'
+      path: '/audit-log'
+      fullPath: '/audit-log'
+      preLoaderRoute: typeof AuthenticatedAuditLogRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/cliente/app/': {
       id: '/cliente/app/'
       path: '/'
@@ -755,6 +774,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAuditLogRoute: typeof AuthenticatedAuditLogRoute
   AuthenticatedChatClientesRoute: typeof AuthenticatedChatClientesRoute
   AuthenticatedChatMotociclistasRoute: typeof AuthenticatedChatMotociclistasRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
@@ -772,6 +792,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAuditLogRoute: AuthenticatedAuditLogRoute,
   AuthenticatedChatClientesRoute: AuthenticatedChatClientesRoute,
   AuthenticatedChatMotociclistasRoute: AuthenticatedChatMotociclistasRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,

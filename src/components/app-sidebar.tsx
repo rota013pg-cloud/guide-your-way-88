@@ -58,6 +58,7 @@ const gestao: Item[] = [
   { title: "Usuários", url: "/usuarios", icon: UserCog, adminOnly: true },
   { title: "Configurações", url: "/configuracoes", icon: Settings, adminOnly: true },
   { title: "Instruções", url: "/instrucoes", icon: BookOpen },
+  { title: "Log de Auditoria", url: "/audit-log", icon: ScrollText, adminOnly: true },
 ];
 
 export function AppSidebar() {

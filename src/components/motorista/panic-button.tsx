@@ -22,8 +22,11 @@ export function PanicButton({
 }) {
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
-  const [progresso, setProgresso] = useState(0);
-  const holdTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [dragX, setDragX] = useState(0);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const draggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const maxXRef = useRef(0);
   const enviar = useServerFn(motoristaEnviarAlerta);
 
   const obterPosicao = (): Promise<{ lat: number | null; lng: number | null }> =>
@@ -57,29 +60,48 @@ export function PanicButton({
       onToast(e instanceof Error ? e.message : "Erro ao enviar alerta");
     } finally {
       setEnviando(false);
-      setProgresso(0);
+      setDragX(0);
     }
   };
 
-  const iniciarHold = () => {
-    setProgresso(0);
-    const inicio = Date.now();
-    holdTimer.current = setInterval(() => {
-      const p = Math.min(100, ((Date.now() - inicio) / 2000) * 100);
-      setProgresso(p);
-      if (p >= 100) {
-        finalizarHold(true);
-      }
-    }, 50);
+  const KNOB = 48;
+
+  const computeMaxX = () => {
+    const w = trackRef.current?.clientWidth ?? 0;
+    maxXRef.current = Math.max(0, w - KNOB - 4);
   };
 
-  const finalizarHold = (disparar: boolean) => {
-    if (holdTimer.current) clearInterval(holdTimer.current);
-    holdTimer.current = null;
-    if (disparar) {
+  useEffect(() => {
+    if (confirmando) {
+      requestAnimationFrame(computeMaxX);
+    }
+  }, [confirmando]);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (enviando) return;
+    computeMaxX();
+    draggingRef.current = true;
+    startXRef.current = e.clientX;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    const dx = Math.max(0, Math.min(maxXRef.current, e.clientX - startXRef.current));
+    setDragX(dx);
+  };
+
+  const onPointerEnd = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+    if (dragX >= maxXRef.current - 2 && maxXRef.current > 0) {
+      setDragX(maxXRef.current);
       dispararPanico();
     } else {
-      setProgresso(0);
+      setDragX(0);
     }
   };
 

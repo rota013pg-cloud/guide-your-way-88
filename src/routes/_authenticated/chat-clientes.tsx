@@ -42,6 +42,10 @@ function ChatClientesPage() {
   const [busca, setBusca] = useState("");
   const [apagando, setApagando] = useState<number | null>(null);
   const [apagandoConversa, setApagandoConversa] = useState(false);
+  const [novaOpen, setNovaOpen] = useState(false);
+  const [clientes, setClientes] = useState<Array<{ codigo: string; nome: string; telefone?: string | null }>>([]);
+  const [carregandoClientes, setCarregandoClientes] = useState(false);
+  const [buscaNova, setBuscaNova] = useState("");
   const fimRef = useRef<HTMLDivElement>(null);
 
   const isAuthError = (e: unknown) =>

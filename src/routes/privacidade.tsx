@@ -36,12 +36,12 @@ function PrivacidadePage() {
             <div className="mt-10 space-y-6 text-muted-foreground leading-relaxed">
               <Section title="Dados que coletamos">
                 Nome, CPF, telefone, e-mail, endereço e localização durante o
-                uso do serviço. Para motoristas, também documentos de
+                uso do serviço. Para motociclistas, também documentos de
                 habilitação e do veículo.
               </Section>
               <Section title="Como usamos">
                 Para criar e manter sua conta, conectar passageiros e
-                motoristas, processar pagamentos, atender obrigações legais e
+                motociclistas, processar pagamentos, atender obrigações legais e
                 melhorar o serviço.
               </Section>
               <Section title="Compartilhamento">

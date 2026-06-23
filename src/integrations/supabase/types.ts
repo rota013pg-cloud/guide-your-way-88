@@ -1354,6 +1354,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_motorista_token_ativo: { Args: { _token: string }; Returns: boolean }
       is_operador: { Args: { _user_id: string }; Returns: boolean }
       preview_proximo_codigo_cliente: { Args: never; Returns: string }
       preview_proximo_codigo_motorista: { Args: never; Returns: string }

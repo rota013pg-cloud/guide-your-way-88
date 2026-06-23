@@ -201,7 +201,7 @@ function ParceirosPage() {
                 </Button>
               </Link>
             </div>
-            <div className="mt-4 text-sm text-muted-foreground">(13) 4042-3331</div>
+            <div className="mt-4 text-sm text-muted-foreground">(13) 40423331</div>
           </div>
         </section>
       </main>

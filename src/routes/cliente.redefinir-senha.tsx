@@ -62,9 +62,8 @@ function RedefinirSenhaPage() {
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <Label htmlFor="senha" className="mb-1.5 block">Nova senha</Label>
-            <Input
+            <PasswordInput
               id="senha"
-              type="password"
               required
               minLength={8}
               autoComplete="new-password"

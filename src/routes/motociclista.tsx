@@ -798,8 +798,7 @@ function LoginTela({
         </div>
         <div className="form-group">
           <label>Senha</label>
-          <input
-            type="password"
+          <RawPasswordInput
             value={senha}
             onChange={(e) => onSenha(e.target.value)}
             placeholder="Sua senha"

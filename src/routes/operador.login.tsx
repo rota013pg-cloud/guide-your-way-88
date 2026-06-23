@@ -134,7 +134,7 @@ function LoginPage() {
                 </button>
               )}
             </div>
-            <Input id="senha" type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} className="rounded-xl" />
+            <PasswordInput id="senha" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} className="rounded-xl" />
           </div>
           <Button type="submit" className="w-full rounded-xl" disabled={loading}>
             {loading ? "Aguarde..." : modo === "login" ? "Entrar" : "Criar conta"}

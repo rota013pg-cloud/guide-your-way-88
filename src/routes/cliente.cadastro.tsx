@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -210,17 +211,29 @@ function Field({
   return (
     <div>
       <Label htmlFor={id} className="mb-1.5 block">{label}</Label>
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        minLength={minLength}
-        autoComplete={autoComplete}
-        inputMode={inputMode}
-        className="rounded-xl"
-      />
+      {type === "password" ? (
+        <PasswordInput
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          minLength={minLength}
+          autoComplete={autoComplete}
+          className="rounded-xl"
+        />
+      ) : (
+        <Input
+          id={id}
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          minLength={minLength}
+          autoComplete={autoComplete}
+          inputMode={inputMode}
+          className="rounded-xl"
+        />
+      )}
     </div>
   );
 }

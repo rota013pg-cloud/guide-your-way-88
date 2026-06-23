@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { motoristaAlterarSenha, motoristaListarCorridas } from "@/lib/motorista.functions";
 import { motoristaListarChat, motoristaEnviarMensagem } from "@/lib/chat-motorista.functions";
+import { RawPasswordInput } from "@/components/ui/password-input";
 import { motoristaListarCobrancasExtras } from "@/lib/cobrancas-extras.functions";
 import { useQuery } from "@tanstack/react-query";
 import { playChatBeep } from "@/lib/notification-sound";
@@ -309,11 +310,11 @@ function SenhaTab({ codigo, token, onPronto }: { codigo: string; token: string; 
   return (
     <div className="moto-form">
       <label>Senha atual</label>
-      <input type="password" value={atual} onChange={(e) => setAtual(e.target.value)} />
+      <RawPasswordInput value={atual} onChange={(e) => setAtual(e.target.value)} />
       <label>Nova senha</label>
-      <input type="password" value={nova} onChange={(e) => setNova(e.target.value)} />
+      <RawPasswordInput value={nova} onChange={(e) => setNova(e.target.value)} />
       <label>Confirmar nova senha</label>
-      <input type="password" value={conf} onChange={(e) => setConf(e.target.value)} />
+      <RawPasswordInput value={conf} onChange={(e) => setConf(e.target.value)} />
       {erro && <div className="moto-erro">{erro}</div>}
       {ok && <div className="moto-ok">✓ Senha alterada!</div>}
       <button className="moto-btn-primary" disabled={carregando || !atual || !nova} onClick={salvar}>

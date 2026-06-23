@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
@@ -51,8 +51,7 @@ function AlterarSenhaPage() {
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <Label className="mb-1.5 block text-sm">Senha atual</Label>
-            <Input
-              type="password"
+            <PasswordInput
               value={atual}
               onChange={(e) => setAtual(e.target.value)}
               required
@@ -62,8 +61,7 @@ function AlterarSenhaPage() {
           </div>
           <div>
             <Label className="mb-1.5 block text-sm">Nova senha</Label>
-            <Input
-              type="password"
+            <PasswordInput
               value={nova}
               onChange={(e) => setNova(e.target.value)}
               required
@@ -74,8 +72,7 @@ function AlterarSenhaPage() {
           </div>
           <div>
             <Label className="mb-1.5 block text-sm">Confirme a nova senha</Label>
-            <Input
-              type="password"
+            <PasswordInput
               value={confirma}
               onChange={(e) => setConfirma(e.target.value)}
               required

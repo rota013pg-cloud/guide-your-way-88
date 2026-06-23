@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -77,11 +78,11 @@ function ResetPasswordPage() {
           <form onSubmit={salvar} className="space-y-4">
             <div>
               <Label htmlFor="nova">Nova senha</Label>
-              <Input id="nova" type="password" minLength={6} required value={senha} onChange={(e) => setSenha(e.target.value)} />
+              <PasswordInput id="nova" minLength={6} required value={senha} onChange={(e) => setSenha(e.target.value)} />
             </div>
             <div>
               <Label htmlFor="conf">Confirmar senha</Label>
-              <Input id="conf" type="password" minLength={6} required value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+              <PasswordInput id="conf" minLength={6} required value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
             </div>
             <Button type="submit" className="w-full" disabled={salvando}>
               {salvando ? "Salvando..." : "Salvar nova senha"}

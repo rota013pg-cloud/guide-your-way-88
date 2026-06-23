@@ -6,6 +6,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -133,7 +134,7 @@ function LoginPage() {
                 </button>
               )}
             </div>
-            <Input id="senha" type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} className="rounded-xl" />
+            <PasswordInput id="senha" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} className="rounded-xl" />
           </div>
           <Button type="submit" className="w-full rounded-xl" disabled={loading}>
             {loading ? "Aguarde..." : modo === "login" ? "Entrar" : "Criar conta"}

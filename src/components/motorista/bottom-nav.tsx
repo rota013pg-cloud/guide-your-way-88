@@ -40,7 +40,7 @@ type Cobranca = {
   comprovante_enviado_em: string | null;
 } | null;
 
-type Tab = "perfil" | "senha" | "chat" | "historico" | "faturamento" | "pagamentos" | null;
+type Tab = "perfil" | "senha" | "chat" | "historico" | "faturamento" | "pagamentos" | "indicar" | null;
 
 const brl = (v: number) => `R$ ${(Number(v) || 0).toFixed(2).replace(".", ",")}`;
 

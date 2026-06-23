@@ -100,6 +100,11 @@ function ClienteCadastroPage() {
             <LogoRota013 className="text-5xl" />
           </div>
           <h1 className="mt-2 text-xl font-semibold">Criar conta</h1>
+          {ref && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Indicado por motociclista <span className="font-semibold text-primary">{ref}</span>
+            </p>
+          )}
         </div>
         <form onSubmit={onSubmit} className="space-y-3">
           <Field label="Nome completo" id="nome" value={form.nome} onChange={(v) => set("nome", v.toUpperCase())} required minLength={3} />

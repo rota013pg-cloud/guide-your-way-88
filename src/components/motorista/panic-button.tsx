@@ -4,7 +4,7 @@
  * - Long press 2s ou duplo toque para confirmar (evita acidentes).
  * - Envia localização atual ao painel.
  */
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, X } from "lucide-react";
 import { motoristaEnviarAlerta } from "@/lib/motorista.functions";

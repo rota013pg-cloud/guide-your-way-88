@@ -51,7 +51,7 @@ function AlterarSenhaPage() {
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <Label className="mb-1.5 block text-sm">Senha atual</Label>
-            <Input
+            <PasswordInput
               type="password"
               value={atual}
               onChange={(e) => setAtual(e.target.value)}
@@ -62,7 +62,7 @@ function AlterarSenhaPage() {
           </div>
           <div>
             <Label className="mb-1.5 block text-sm">Nova senha</Label>
-            <Input
+            <PasswordInput
               type="password"
               value={nova}
               onChange={(e) => setNova(e.target.value)}
@@ -74,7 +74,7 @@ function AlterarSenhaPage() {
           </div>
           <div>
             <Label className="mb-1.5 block text-sm">Confirme a nova senha</Label>
-            <Input
+            <PasswordInput
               type="password"
               value={confirma}
               onChange={(e) => setConfirma(e.target.value)}

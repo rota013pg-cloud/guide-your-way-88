@@ -46,7 +46,7 @@ function PrivacidadePage() {
               </Section>
               <Section title="Compartilhamento">
                 Compartilhamos apenas o necessário para a execução da corrida
-                (passageiro ↔ motorista) e com provedores de tecnologia que
+                (passageiro ↔ motociclista) e com provedores de tecnologia que
                 operam para nós (hospedagem, mapas, mensagens), todos
                 obrigados ao sigilo.
               </Section>

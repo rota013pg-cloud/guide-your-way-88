@@ -156,8 +156,8 @@ export function PanicButton({
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerEnd}
                 onPointerCancel={onPointerEnd}
-                className="absolute top-1/2 -translate-y-1/2 left-1 h-12 w-12 rounded-full bg-red-600 text-white shadow-lg flex items-center justify-center touch-none disabled:opacity-60"
-                style={{ transform: `translate(${dragX}px, -50%)`, transition: draggingRef.current ? "none" : "transform 0.2s" }}
+                className="absolute top-1 bottom-1 left-1 aspect-square rounded-full bg-red-600 text-white shadow-lg flex items-center justify-center touch-none disabled:opacity-60"
+                style={{ transform: `translateX(${dragX}px)`, transition: draggingRef.current ? "none" : "transform 0.2s" }}
                 aria-label="Arraste para enviar alerta"
               >
                 <AlertTriangle className="h-5 w-5" />

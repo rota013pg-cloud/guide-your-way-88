@@ -52,7 +52,6 @@ function AlterarSenhaPage() {
           <div>
             <Label className="mb-1.5 block text-sm">Senha atual</Label>
             <PasswordInput
-              type="password"
               value={atual}
               onChange={(e) => setAtual(e.target.value)}
               required
@@ -63,7 +62,6 @@ function AlterarSenhaPage() {
           <div>
             <Label className="mb-1.5 block text-sm">Nova senha</Label>
             <PasswordInput
-              type="password"
               value={nova}
               onChange={(e) => setNova(e.target.value)}
               required
@@ -75,7 +73,6 @@ function AlterarSenhaPage() {
           <div>
             <Label className="mb-1.5 block text-sm">Confirme a nova senha</Label>
             <PasswordInput
-              type="password"
               value={confirma}
               onChange={(e) => setConfirma(e.target.value)}
               required

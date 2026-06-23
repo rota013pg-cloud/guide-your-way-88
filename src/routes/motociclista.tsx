@@ -32,7 +32,7 @@ export const Route = createFileRoute("/motociclista")({
     meta: [
       { title: "Rota 013 — Motociclista" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" },
-      { name: "theme-color", content: "#f7c600" },
+      { name: "theme-color", content: "#c9a84c" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "Rota 013" },
@@ -1416,12 +1416,22 @@ function badgeClass(s: string) {
 // ═══════════════════════════════════════════════════════
 const cssMotorista = `
 .moto-app {
-  --bg:#0f0f0f; --card:#1a1a1a; --card2:#222; --line:#2a2a2a;
-  --gold:#f7c600; --text:#f1f1f1; --muted:#888;
+  --bg:#0d0d0d; --card:#1a1a1a; --card2:#222; --line:rgba(201,168,76,0.18);
+  --gold:#c9a84c; --gold-soft:#f0d78c;
+  --text:#f1f1f1; --muted:#a89f8a;
   --green:#22c55e; --red:#ef4444; --orange:#f97316;
+  --gradient-gold:linear-gradient(135deg,#c9a84c 0%,#f0d78c 100%);
+  --shadow-gold:0 10px 24px -10px rgba(201,168,76,.45);
   position:fixed; inset:0; background:var(--bg); color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-family:"DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size:15px; overflow:hidden;
+}
+.moto-app h1, .moto-app h2, .moto-app h3, .moto-app h4,
+.moto-app .login-logo, .moto-app .header-titulo, .moto-app .header-nome,
+.moto-app .oferta-titulo, .moto-app .modal-titulo, .moto-app .card-num,
+.moto-app .cv.gold, .moto-app .oferta-valor.gold {
+  font-family:"Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing:-0.01em;
 }
 .moto-app *, .moto-app *::before, .moto-app *::after {
   box-sizing:border-box; margin:0; padding:0;
@@ -1449,10 +1459,13 @@ const cssMotorista = `
 }
 .moto-app .form-group input:focus { border-color:var(--gold); }
 .moto-app .btn-primary {
-  width:100%; background:var(--gold); color:#111; font-weight:700;
+  width:100%; background-image:var(--gradient-gold); color:#0d0d0d; font-weight:700;
+  letter-spacing:0.02em; box-shadow:var(--shadow-gold);
   font-size:15px; border:none; border-radius:16px; padding:16px; cursor:pointer;
-  margin-top:8px;
+  margin-top:8px; transition:transform 180ms ease-out, filter 180ms ease-out;
 }
+.moto-app .btn-primary:hover { filter:brightness(1.05); }
+.moto-app .btn-primary:active { transform:scale(0.98); }
 .moto-app .btn-primary:disabled { opacity:.6; }
 .moto-app .erro-msg { color:var(--red); font-size:13px; text-align:center; margin-top:12px; }
 
@@ -1469,7 +1482,7 @@ const cssMotorista = `
 .moto-app .header-titulo { font-weight:700; font-size:16px; flex:1; text-align:center; }
 .moto-app .avatar {
   width:38px; height:38px; border-radius:50%;
-  background:var(--gold); color:#111; font-weight:700;
+  background-image:var(--gradient-gold); color:#0d0d0d; font-weight:700;
   display:flex; align-items:center; justify-content:center;
   font-size:14px; background-size:cover; background-position:center; flex-shrink:0;
 }
@@ -1489,8 +1502,9 @@ const cssMotorista = `
 .moto-app .status-dot.offline { background:var(--muted); }
 .moto-app .status-texto { font-size:13px; color:var(--muted); flex:1; }
 .moto-app .btn-status {
-  background:var(--gold); color:#111; border:none; border-radius:12px;
+  background-image:var(--gradient-gold); color:#0d0d0d; border:none; border-radius:12px;
   padding:8px 16px; font-weight:700; font-size:13px; cursor:pointer; flex-shrink:0;
+  box-shadow:var(--shadow-gold);
 }
 .moto-app .btn-status.is-online {
   background:transparent; color:var(--red); border:1px solid var(--red);

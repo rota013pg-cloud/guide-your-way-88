@@ -77,14 +77,12 @@ function ResetPasswordPage() {
         ) : (
           <form onSubmit={salvar} className="space-y-4">
             <div>
-            <div>
               <Label htmlFor="nova">Nova senha</Label>
               <PasswordInput id="nova" minLength={6} required value={senha} onChange={(e) => setSenha(e.target.value)} />
             </div>
             <div>
               <Label htmlFor="conf">Confirmar senha</Label>
               <PasswordInput id="conf" minLength={6} required value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
-            </div>
             </div>
             <Button type="submit" className="w-full" disabled={salvando}>
               {salvando ? "Salvando..." : "Salvar nova senha"}

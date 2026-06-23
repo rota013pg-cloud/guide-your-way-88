@@ -32,6 +32,48 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          acao: string
+          criado_em: string
+          detalhes: Json | null
+          entidade_id: string | null
+          id: number
+          ip: string | null
+          modulo: string | null
+          user_agent: string | null
+          usuario_id: string | null
+          usuario_nome: string | null
+          usuario_tipo: string | null
+        }
+        Insert: {
+          acao: string
+          criado_em?: string
+          detalhes?: Json | null
+          entidade_id?: string | null
+          id?: number
+          ip?: string | null
+          modulo?: string | null
+          user_agent?: string | null
+          usuario_id?: string | null
+          usuario_nome?: string | null
+          usuario_tipo?: string | null
+        }
+        Update: {
+          acao?: string
+          criado_em?: string
+          detalhes?: Json | null
+          entidade_id?: string | null
+          id?: number
+          ip?: string | null
+          modulo?: string | null
+          user_agent?: string | null
+          usuario_id?: string | null
+          usuario_nome?: string | null
+          usuario_tipo?: string | null
+        }
+        Relationships: []
+      }
       chat_cliente: {
         Row: {
           autor: string
@@ -1320,6 +1362,20 @@ export type Database = {
       recomputa_cobranca_motorista: {
         Args: { _codigo: string }
         Returns: undefined
+      }
+      registrar_audit: {
+        Args: {
+          _acao: string
+          _detalhes: Json
+          _entidade_id: string
+          _ip: string
+          _modulo: string
+          _user_agent: string
+          _usuario_id: string
+          _usuario_nome: string
+          _usuario_tipo: string
+        }
+        Returns: number
       }
     }
     Enums: {

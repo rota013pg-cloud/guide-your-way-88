@@ -247,7 +247,7 @@ function MotoristaApp() {
 
     // Realtime: novas ofertas para este motorista
     const channel = supabase
-      .channel(`motorista-${sessao.motorista.codigo}`)
+      .channel(`motorista-${sessao.token}`)
       .on(
         "postgres_changes",
         {

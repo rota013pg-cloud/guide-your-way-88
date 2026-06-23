@@ -79,7 +79,7 @@ export function MotoristaBottomNav({
       .then(({ count }) => { if (active) setUnread(count ?? 0); });
 
     const ch = supabase
-      .channel(`chat-nav-${motorista.codigo}`)
+      .channel(`chat-nav-${token}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_motorista", filter: `motorista_codigo=eq.${motorista.codigo}` },
@@ -133,7 +133,7 @@ export function MotoristaBottomNav({
       )
       .subscribe();
     return () => { active = false; supabase.removeChannel(ch); };
-  }, [motorista.codigo]);
+  }, [motorista.codigo, token]);
 
   const fechar = () => setTab(null);
 
@@ -338,7 +338,7 @@ function ChatTab({ codigo, token }: { codigo: string; token: string }) {
       .then((r) => setMsgs(r.mensagens as Msg[]))
       .catch(() => {});
     const ch = supabase
-      .channel(`chat-tab-${codigo}`)
+      .channel(`chat-tab-${token}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_motorista", filter: `motorista_codigo=eq.${codigo}` },

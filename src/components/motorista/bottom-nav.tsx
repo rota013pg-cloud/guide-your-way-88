@@ -769,11 +769,20 @@ const cssNav = `
   flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-bottom:8px;
 }
 .moto-app .moto-msg {
-  max-width:80%; padding:8px 12px; border-radius:14px; font-size:14px;
+  max-width:80%; padding:10px 14px; border-radius:16px; font-size:14px;
+  line-height:1.35; box-shadow:0 2px 6px rgba(0,0,0,.25);
 }
-.moto-app .moto-msg.self { background:#f7c600; color:#111; align-self:flex-end; border-bottom-right-radius:4px; }
-.moto-app .moto-msg.op { background:#2a2a2a; color:#f1f1f1; align-self:flex-start; border-bottom-left-radius:4px; }
-.moto-app .moto-msg-autor { font-size:10px; opacity:.7; margin-bottom:2px; font-weight:700; }
+.moto-app .moto-msg.self {
+  background-image:linear-gradient(135deg,#c9a84c 0%,#f0d78c 100%);
+  color:#0d0d0d; align-self:flex-end; border-bottom-right-radius:4px;
+}
+.moto-app .moto-msg.op {
+  background:#222; color:#f1f1f1; align-self:flex-start;
+  border:1px solid rgba(201,168,76,.18); border-bottom-left-radius:4px;
+}
+.moto-app .moto-msg.self .moto-msg-autor { color:#0d0d0d; opacity:.65; text-align:right; }
+.moto-app .moto-msg.op .moto-msg-autor { color:#c9a84c; opacity:1; }
+.moto-app .moto-msg-autor { font-size:10px; margin-bottom:2px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
 .moto-app .moto-chat-input { display:flex; gap:8px; padding-top:8px; border-top:1px solid #2a2a2a; }
 .moto-app .moto-chat-input input {
   flex:1; background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:12px;

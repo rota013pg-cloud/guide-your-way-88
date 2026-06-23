@@ -49,12 +49,14 @@ export function MotoristaBottomNav({
   corridasHoje,
   cobranca,
   onAbrirCobranca,
+  onSair,
 }: {
   motorista: Motorista;
   token: string;
   corridasHoje: Corrida[];
   cobranca: Cobranca;
   onAbrirCobranca: () => void;
+  onSair: () => void;
 }) {
   const [tab, setTab] = useState<Tab>(null);
   const [unread, setUnread] = useState(0);
@@ -153,7 +155,7 @@ export function MotoristaBottomNav({
 
       {tab && (
         <SheetWrap titulo={tituloTab(tab)} onClose={fechar}>
-          {tab === "perfil" && <PerfilTab motorista={motorista} onAlterarSenha={() => setTab("senha")} />}
+          {tab === "perfil" && <PerfilTab motorista={motorista} onAlterarSenha={() => setTab("senha")} onSair={onSair} />}
           {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
           {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
           {tab === "historico" && <HistoricoTab codigo={motorista.codigo} token={token} />}
@@ -242,7 +244,7 @@ function SheetWrap({ titulo, onClose, children }: { titulo: string; onClose: () 
 }
 
 // ─── PERFIL ─────────────────────────────────────────────
-function PerfilTab({ motorista, onAlterarSenha }: { motorista: Motorista; onAlterarSenha: () => void }) {
+function PerfilTab({ motorista, onAlterarSenha, onSair }: { motorista: Motorista; onAlterarSenha: () => void; onSair: () => void }) {
   const linhas: [string, string | null][] = [
     ["Código", motorista.codigo],
     ["Nome", motorista.nome],
@@ -266,6 +268,9 @@ function PerfilTab({ motorista, onAlterarSenha }: { motorista: Motorista; onAlte
         ))}
       </ul>
       <button className="moto-btn-primary" onClick={onAlterarSenha}>🔑 Alterar senha</button>
+      <button className="btn-sair" onClick={onSair} style={{ marginTop: 10 }}>
+        Sair do app
+      </button>
     </div>
   );
 }

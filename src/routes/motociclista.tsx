@@ -738,6 +738,7 @@ function MotoristaApp() {
           corridasHoje={corridasHoje}
           cobranca={cobranca}
           onAbrirCobranca={() => setForcarCobranca(true)}
+          onSair={sair}
         />
       )}
 
@@ -907,9 +908,6 @@ function HomeTela({
           ))}
         </div>
 
-        <button className="btn-sair" onClick={onSair}>
-          Sair do app
-        </button>
       </div>
     </div>
   );

@@ -77,6 +77,7 @@ function ClienteCadastroPage() {
         _cidade: form.cidade,
         _termos_versao: versaoTermos,
         _user_agent: navigator.userAgent,
+        _indicacao: ref || null,
       });
       if (error) throw error;
       const payload = data as unknown as { token: string };

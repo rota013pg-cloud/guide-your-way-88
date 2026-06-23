@@ -126,7 +126,7 @@ function ParceirosPage() {
               <Step n="1" title="Cadastro" desc="Entre em contato com a central pelo WhatsApp e faça seu cadastro como parceiro." />
               <Step n="2" title="Corrida disponível" desc="Instale o aplicativo e faça o login. Quando estiver on-line e surgirem corridas próximas a você, estas serão ofertadas no seu aplicativo." />
               <Step n="3" title="Você decide" desc="Aceita ou não. Sem punição, sem nota negativa, sem pressão." />
-              <Step n="4" title="Realiza a corrida" desc="Pega o passageiro, faz o trajeto e recebe o valor na entrega." />
+              <Step n="4" title="Realiza a corrida" desc="Pega o passageiro, recebe o valor e faz o trajeto." />
               <Step n="5" title="Avisa a central" desc="Ao finalizar, comunica a central. Pronto — próxima corrida." />
             </div>
           </div>
@@ -201,7 +201,7 @@ function ParceirosPage() {
                 </Button>
               </Link>
             </div>
-            <div className="mt-4 text-sm text-muted-foreground">(13) 97812-0209</div>
+            <div className="mt-4 text-sm text-muted-foreground">(13) 4042-3331</div>
           </div>
         </section>
       </main>

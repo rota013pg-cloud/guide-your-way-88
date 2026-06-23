@@ -1197,23 +1197,42 @@ export type Database = {
         }
         Returns: Json
       }
-      cliente_cadastrar: {
-        Args: {
-          _bairro: string
-          _cidade: string
-          _cpf: string
-          _email: string
-          _ip?: string
-          _logradouro: string
-          _nome: string
-          _numero: string
-          _senha: string
-          _telefone: string
-          _termos_versao: string
-          _user_agent?: string
-        }
-        Returns: Json
-      }
+      cliente_cadastrar:
+        | {
+            Args: {
+              _bairro: string
+              _cidade: string
+              _cpf: string
+              _email: string
+              _ip?: string
+              _logradouro: string
+              _nome: string
+              _numero: string
+              _senha: string
+              _telefone: string
+              _termos_versao: string
+              _user_agent?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _bairro: string
+              _cidade: string
+              _cpf: string
+              _email: string
+              _indicacao?: string
+              _ip?: string
+              _logradouro: string
+              _nome: string
+              _numero: string
+              _senha: string
+              _telefone: string
+              _termos_versao: string
+              _user_agent?: string
+            }
+            Returns: Json
+          }
       cliente_cotar:
         | {
             Args: { _distancia_km: number; _qtd_paradas?: number }

@@ -21,12 +21,16 @@ import { lerTermosPublico } from "@/lib/config.functions";
 
 export const Route = createFileRoute("/cliente/cadastro")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    ref: typeof s.ref === "string" ? s.ref.toUpperCase().trim().slice(0, 20) : "",
+  }),
   head: () => ({ meta: [{ title: "Criar conta — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
   component: ClienteCadastroPage,
 });
 
 function ClienteCadastroPage() {
   const navigate = useNavigate();
+  const { ref } = Route.useSearch();
   const [form, setForm] = useState({
     nome: "",
     email: "",
@@ -73,6 +77,7 @@ function ClienteCadastroPage() {
         _cidade: form.cidade,
         _termos_versao: versaoTermos,
         _user_agent: navigator.userAgent,
+        _indicacao: ref || null,
       });
       if (error) throw error;
       const payload = data as unknown as { token: string };
@@ -95,6 +100,11 @@ function ClienteCadastroPage() {
             <LogoRota013 className="text-5xl" />
           </div>
           <h1 className="mt-2 text-xl font-semibold">Criar conta</h1>
+          {ref && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Indicado por motociclista <span className="font-semibold text-primary">{ref}</span>
+            </p>
+          )}
         </div>
         <form onSubmit={onSubmit} className="space-y-3">
           <Field label="Nome completo" id="nome" value={form.nome} onChange={(v) => set("nome", v.toUpperCase())} required minLength={3} />

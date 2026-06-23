@@ -40,7 +40,7 @@ type Cobranca = {
   comprovante_enviado_em: string | null;
 } | null;
 
-type Tab = "perfil" | "senha" | "chat" | "historico" | "faturamento" | "pagamentos" | null;
+type Tab = "perfil" | "senha" | "chat" | "historico" | "faturamento" | "pagamentos" | "indicar" | null;
 
 const brl = (v: number) => `R$ ${(Number(v) || 0).toFixed(2).replace(".", ",")}`;
 
@@ -160,8 +160,9 @@ export function MotoristaBottomNav({
 
       {tab && (
         <SheetWrap titulo={tituloTab(tab)} onClose={fechar}>
-          {tab === "perfil" && <PerfilTab motorista={motorista} online={online} emCorrida={emCorrida} onAlterarSenha={() => setTab("senha")} onSair={onSair} />}
+          {tab === "perfil" && <PerfilTab motorista={motorista} online={online} emCorrida={emCorrida} onAlterarSenha={() => setTab("senha")} onIndicar={() => setTab("indicar")} onSair={onSair} />}
           {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
+          {tab === "indicar" && <IndicarTab motorista={motorista} />}
           {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
           {tab === "historico" && <HistoricoTab codigo={motorista.codigo} token={token} />}
           {tab === "faturamento" && <FaturamentoTab codigo={motorista.codigo} token={token} cobranca={cobranca} />}
@@ -189,6 +190,7 @@ function tituloTab(t: Exclude<Tab, null>): string {
     historico: "Histórico de corridas",
     faturamento: "Meus ganhos",
     pagamentos: "Pagamento de taxas",
+    indicar: "Indicar cliente",
   } as Record<string, string>)[t];
 }
 
@@ -249,7 +251,7 @@ function SheetWrap({ titulo, onClose, children }: { titulo: string; onClose: () 
 }
 
 // ─── PERFIL ─────────────────────────────────────────────
-function PerfilTab({ motorista, online, emCorrida, onAlterarSenha, onSair }: { motorista: Motorista; online: boolean; emCorrida: boolean; onAlterarSenha: () => void; onSair: () => void }) {
+function PerfilTab({ motorista, online, emCorrida, onAlterarSenha, onIndicar, onSair }: { motorista: Motorista; online: boolean; emCorrida: boolean; onAlterarSenha: () => void; onIndicar: () => void; onSair: () => void }) {
   const statusAtual = emCorrida ? "Em corrida" : online ? "Online" : "Offline";
   const linhas: [string, string | null][] = [
     ["Código", motorista.codigo],
@@ -273,10 +275,87 @@ function PerfilTab({ motorista, online, emCorrida, onAlterarSenha, onSair }: { m
           <li key={k}><span>{k}</span><b>{v ?? "—"}</b></li>
         ))}
       </ul>
+      <button className="moto-btn-primary" onClick={onIndicar}>📲 Indicar cliente</button>
       <button className="moto-btn-primary" onClick={onAlterarSenha}>🔑 Alterar senha</button>
       <button className="btn-sair" onClick={onSair} style={{ marginTop: 10 }}>
         Sair do app
       </button>
+    </div>
+  );
+}
+
+// ─── INDICAR ────────────────────────────────────────────
+function IndicarTab({ motorista }: { motorista: Motorista }) {
+  const [qrUrl, setQrUrl] = useState<string>("");
+  const link = `${typeof window !== "undefined" ? window.location.origin : ""}/cliente/cadastro?ref=${encodeURIComponent(motorista.codigo)}`;
+
+  useEffect(() => {
+    let active = true;
+    import("qrcode").then((QR) => {
+      QR.toDataURL(link, { width: 512, margin: 1, color: { dark: "#111111", light: "#ffffff" } })
+        .then((url) => { if (active) setQrUrl(url); })
+        .catch(() => {});
+    });
+    return () => { active = false; };
+  }, [link]);
+
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success("Link copiado!");
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
+
+  const compartilhar = async () => {
+    const texto = `Faça seu cadastro na Rota 013 com minha indicação: ${link}`;
+    const nav = navigator as Navigator & { share?: (d: { title?: string; text?: string; url?: string }) => Promise<void> };
+    if (nav.share) {
+      try { await nav.share({ title: "Rota 013", text: texto, url: link }); } catch { /* cancelado */ }
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
+    }
+  };
+
+  const baixarQR = () => {
+    if (!qrUrl) return;
+    const a = document.createElement("a");
+    a.href = qrUrl;
+    a.download = `indicacao-${motorista.codigo}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <p style={{ color: "#aaa", fontSize: 13, marginBottom: 14, lineHeight: 1.5 }}>
+        Compartilhe este link ou QR Code. Ao abrir, o cliente vai direto para o cadastro
+        com seu código <b style={{ color: "#f7c600" }}>{motorista.codigo}</b> já preenchido.
+      </p>
+
+      <div style={{
+        background: "#fff", borderRadius: 16, padding: 16, margin: "0 auto 14px",
+        width: 240, height: 240, display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {qrUrl
+          ? <img src={qrUrl} alt="QR Code de indicação" style={{ width: "100%", height: "100%" }} />
+          : <span style={{ color: "#888", fontSize: 13 }}>Gerando QR Code…</span>}
+      </div>
+
+      <div style={{
+        background: "#0f0f0f", border: "1px solid #2a2a2a", borderRadius: 12,
+        padding: 12, fontSize: 12, color: "#f1f1f1", wordBreak: "break-all", textAlign: "left",
+      }}>
+        {link}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
+        <button className="moto-btn-primary" style={{ marginTop: 0 }} onClick={copiar}>📋 Copiar link</button>
+        <button className="moto-btn-primary" style={{ marginTop: 0 }} onClick={compartilhar}>↗ Compartilhar</button>
+      </div>
+      <button className="moto-btn-primary" onClick={baixarQR} disabled={!qrUrl}>⬇ Baixar QR Code</button>
     </div>
   );
 }

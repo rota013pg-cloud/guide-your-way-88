@@ -11,7 +11,7 @@ export const Route = createFileRoute("/parceiros")({
       {
         name: "description",
         content:
-          "Trabalhe como motorista parceiro Rota013 em Praia Grande. Você fica com 100% do valor de cada corrida. Diária fixa, horário livre.",
+          "Trabalhe como motociclista parceiro Rota013 em Praia Grande. Você fica com 100% do valor de cada corrida. Diária fixa, horário livre.",
       },
       { property: "og:title", content: "Seja parceiro Rota013" },
       {
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/parceiros")({
   component: ParceirosPage,
 });
 
-const WHATS_MOT = "https://wa.me/5513978120209?text=Ol%C3%A1!%20Tenho%20interesse%20em%20ser%20motorista%20parceiro%20da%20Rota013.";
+const WHATS_MOT = "https://wa.me/5513978120209?text=Ol%C3%A1!%20Tenho%20interesse%20em%20ser%20motociclista%20parceiro%20da%20Rota013.";
 
 function ParceirosPage() {
   return (
@@ -117,7 +117,7 @@ function ParceirosPage() {
         <section id="como-funciona" className="px-5 py-14 border-t border-border/60">
           <div className="mx-auto max-w-5xl">
             <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold">Como funciona para o motorista?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold">Como funciona para o motociclista?</h2>
               <p className="mt-3 text-muted-foreground">
                 Simples, direto e transparente. A central organiza, você trabalha.
               </p>
@@ -140,7 +140,7 @@ function ParceirosPage() {
                 Por que ser parceiro <span className="text-primary">Rota013</span>?
               </h2>
               <p className="mt-3 text-muted-foreground">
-                Tudo pensado para o motorista trabalhar bem e ganhar mais.
+                Tudo pensado para o motociclista trabalhar bem e ganhar mais.
               </p>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -192,7 +192,7 @@ function ParceirosPage() {
             <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
               <a href={WHATS_MOT} target="_blank" rel="noreferrer">
                 <Button size="lg" className="rounded-xl w-full sm:w-auto">
-                  📲 Quero ser motorista parceiro
+                  📲 Quero ser motociclista parceiro
                 </Button>
               </a>
               <Link to="/como-funciona">

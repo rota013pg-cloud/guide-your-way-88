@@ -80,8 +80,7 @@ function InstalarPage() {
             </div>
 
             <p className="mt-10 text-xs text-muted-foreground">
-              Dica: depois de instalado, abra pelo ícone — ele roda em tela
-              cheia, igual a um app nativo.
+              Dica: depois de instalado, abra pelo ícone
             </p>
           </div>
         </section>

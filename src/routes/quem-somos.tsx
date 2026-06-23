@@ -47,11 +47,11 @@ function QuemSomosPage() {
                 visita o Litoral Sul de SP.
               </Card>
               <Card title="Visão">
-                Ser a principal central de transporte por moto e táxi da
+                Ser a principal central de transporte por motocicletas da
                 região, referência em confiança e eficiência.
               </Card>
               <Card title="Propósito">
-                Gerar renda digna para motoristas locais e devolver tempo e
+                Gerar renda digna para motociclistas locais e devolver tempo e
                 tranquilidade ao passageiro.
               </Card>
             </div>

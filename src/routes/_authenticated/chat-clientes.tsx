@@ -8,12 +8,20 @@ import {
   adminApagarMensagemCliente,
   adminApagarConversaCliente,
 } from "@/lib/chat-cliente.functions";
+import { listarClientes } from "@/lib/clientes.functions";
 import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Send, MessageSquare, RefreshCw, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Send, MessageSquare, RefreshCw, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chat-clientes")({
@@ -34,6 +42,10 @@ function ChatClientesPage() {
   const [busca, setBusca] = useState("");
   const [apagando, setApagando] = useState<number | null>(null);
   const [apagandoConversa, setApagandoConversa] = useState(false);
+  const [novaOpen, setNovaOpen] = useState(false);
+  const [clientes, setClientes] = useState<Array<{ codigo: string; nome: string; telefone?: string | null }>>([]);
+  const [carregandoClientes, setCarregandoClientes] = useState(false);
+  const [buscaNova, setBuscaNova] = useState("");
   const fimRef = useRef<HTMLDivElement>(null);
 
   const isAuthError = (e: unknown) =>
@@ -128,7 +140,42 @@ function ChatClientesPage() {
     }
   };
 
-  const conversaAtual = conversas.find((c) => c.cliente_codigo === selecionado);
+  const conversaAtual =
+    conversas.find((c) => c.cliente_codigo === selecionado) ??
+    (selecionado
+      ? (() => {
+          const cli = clientes.find((c) => c.codigo === selecionado);
+          return cli ? { cliente_nome: cli.nome, telefone: cli.telefone ?? null } : undefined;
+        })()
+      : undefined);
+
+  const abrirNovaConversa = async () => {
+    setNovaOpen(true);
+    if (clientes.length > 0) return;
+    setCarregandoClientes(true);
+    try {
+      const data = await listarClientes();
+      setClientes(data.map((c: any) => ({ codigo: c.codigo, nome: c.nome, telefone: c.telefone })));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao listar clientes");
+    } finally {
+      setCarregandoClientes(false);
+    }
+  };
+
+  const iniciarConversa = (codigo: string) => {
+    setSelecionado(codigo);
+    setNovaOpen(false);
+    setBuscaNova("");
+  };
+
+  const clientesFiltrados = clientes.filter(
+    (c) =>
+      !buscaNova ||
+      c.nome.toLowerCase().includes(buscaNova.toLowerCase()) ||
+      c.codigo.toLowerCase().includes(buscaNova.toLowerCase()) ||
+      (c.telefone ?? "").toLowerCase().includes(buscaNova.toLowerCase()),
+  );
 
   return (
     <div className="p-4 lg:p-6">
@@ -136,10 +183,51 @@ function ChatClientesPage() {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <MessageSquare className="h-6 w-6" /> Chat com clientes
         </h1>
-        <Button variant="outline" size="sm" onClick={carregarConversas}>
-          <RefreshCw className="h-4 w-4 mr-1" /> Atualizar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Dialog open={novaOpen} onOpenChange={setNovaOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" onClick={abrirNovaConversa}>
+                <Plus className="h-4 w-4 mr-1" /> Nova conversa
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Iniciar nova conversa</DialogTitle>
+              </DialogHeader>
+              <Input
+                placeholder="Buscar por nome, código ou telefone..."
+                value={buscaNova}
+                onChange={(e) => setBuscaNova(e.target.value)}
+                autoFocus
+              />
+              <div className="max-h-[60vh] overflow-y-auto space-y-1 mt-2">
+                {carregandoClientes && (
+                  <p className="text-sm text-muted-foreground text-center py-6">Carregando...</p>
+                )}
+                {!carregandoClientes && clientesFiltrados.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-6">Nenhum cliente.</p>
+                )}
+                {clientesFiltrados.map((c) => (
+                  <button
+                    key={c.codigo}
+                    onClick={() => iniciarConversa(c.codigo)}
+                    className="w-full text-left rounded-md px-3 py-2 border border-border bg-background hover:bg-muted/50 transition"
+                  >
+                    <div className="font-semibold text-sm">{c.codigo} — {c.nome}</div>
+                    {c.telefone && (
+                      <div className="text-xs text-muted-foreground">{c.telefone}</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" size="sm" onClick={carregarConversas}>
+            <RefreshCw className="h-4 w-4 mr-1" /> Atualizar
+          </Button>
+        </div>
       </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 h-[calc(100vh-160px)]">
         <Card className="p-3 flex flex-col overflow-hidden">

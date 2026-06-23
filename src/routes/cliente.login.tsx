@@ -76,9 +76,8 @@ function ClienteLoginPage() {
                 Esqueceu?
               </Link>
             </div>
-            <Input
+            <PasswordInput
               id="senha"
-              type="password"
               required
               minLength={8}
               autoComplete="current-password"

@@ -211,17 +211,29 @@ function Field({
   return (
     <div>
       <Label htmlFor={id} className="mb-1.5 block">{label}</Label>
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        minLength={minLength}
-        autoComplete={autoComplete}
-        inputMode={inputMode}
-        className="rounded-xl"
-      />
+      {type === "password" ? (
+        <PasswordInput
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          minLength={minLength}
+          autoComplete={autoComplete}
+          className="rounded-xl"
+        />
+      ) : (
+        <Input
+          id={id}
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          minLength={minLength}
+          autoComplete={autoComplete}
+          inputMode={inputMode}
+          className="rounded-xl"
+        />
+      )}
     </div>
   );
 }

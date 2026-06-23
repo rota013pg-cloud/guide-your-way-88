@@ -4,7 +4,7 @@
  * - Long press 2s ou duplo toque para confirmar (evita acidentes).
  * - Envia localização atual ao painel.
  */
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, X } from "lucide-react";
 import { motoristaEnviarAlerta } from "@/lib/motorista.functions";
@@ -22,8 +22,11 @@ export function PanicButton({
 }) {
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
-  const [progresso, setProgresso] = useState(0);
-  const holdTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [dragX, setDragX] = useState(0);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const draggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const maxXRef = useRef(0);
   const enviar = useServerFn(motoristaEnviarAlerta);
 
   const obterPosicao = (): Promise<{ lat: number | null; lng: number | null }> =>
@@ -57,29 +60,48 @@ export function PanicButton({
       onToast(e instanceof Error ? e.message : "Erro ao enviar alerta");
     } finally {
       setEnviando(false);
-      setProgresso(0);
+      setDragX(0);
     }
   };
 
-  const iniciarHold = () => {
-    setProgresso(0);
-    const inicio = Date.now();
-    holdTimer.current = setInterval(() => {
-      const p = Math.min(100, ((Date.now() - inicio) / 2000) * 100);
-      setProgresso(p);
-      if (p >= 100) {
-        finalizarHold(true);
-      }
-    }, 50);
+  const KNOB = 48;
+
+  const computeMaxX = () => {
+    const w = trackRef.current?.clientWidth ?? 0;
+    maxXRef.current = Math.max(0, w - KNOB - 4);
   };
 
-  const finalizarHold = (disparar: boolean) => {
-    if (holdTimer.current) clearInterval(holdTimer.current);
-    holdTimer.current = null;
-    if (disparar) {
+  useEffect(() => {
+    if (confirmando) {
+      requestAnimationFrame(computeMaxX);
+    }
+  }, [confirmando]);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (enviando) return;
+    computeMaxX();
+    draggingRef.current = true;
+    startXRef.current = e.clientX;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    const dx = Math.max(0, Math.min(maxXRef.current, e.clientX - startXRef.current));
+    setDragX(dx);
+  };
+
+  const onPointerEnd = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+    if (dragX >= maxXRef.current - 2 && maxXRef.current > 0) {
+      setDragX(maxXRef.current);
       dispararPanico();
     } else {
-      setProgresso(0);
+      setDragX(0);
     }
   };
 
@@ -113,26 +135,34 @@ export function PanicButton({
               </button>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Pressione e <b>segure por 2 segundos</b> o botão abaixo para enviar
-              um alerta urgente à central com sua localização atual.
+              <b>Arraste da esquerda para a direita</b> para enviar um alerta
+              urgente à central com sua localização atual.
             </p>
-            <button
-              type="button"
-              disabled={enviando}
-              onPointerDown={iniciarHold}
-              onPointerUp={() => finalizarHold(false)}
-              onPointerLeave={() => finalizarHold(false)}
-              onPointerCancel={() => finalizarHold(false)}
-              className="relative w-full h-14 rounded-lg bg-red-600 text-white font-bold text-base overflow-hidden active:scale-[0.98] transition disabled:opacity-60"
+            <div
+              ref={trackRef}
+              className="relative w-full h-14 rounded-full bg-red-100 dark:bg-red-950 overflow-hidden border-2 border-red-600 select-none"
             >
-              <span
-                className="absolute inset-y-0 left-0 bg-red-800 transition-all"
-                style={{ width: `${progresso}%` }}
+              <div
+                className="absolute inset-y-0 left-0 bg-red-600/40 transition-[width]"
+                style={{ width: `${dragX + KNOB}px` }}
               />
-              <span className="relative">
-                {enviando ? "Enviando…" : "SEGURAR PARA ENVIAR"}
+              <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-red-700 dark:text-red-300 pointer-events-none">
+                {enviando ? "Enviando…" : "Arraste para enviar →"}
               </span>
-            </button>
+              <button
+                type="button"
+                disabled={enviando}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerEnd}
+                onPointerCancel={onPointerEnd}
+                className="absolute top-1/2 -translate-y-1/2 left-1 h-12 w-12 rounded-full bg-red-600 text-white shadow-lg flex items-center justify-center touch-none disabled:opacity-60"
+                style={{ transform: `translate(${dragX}px, -50%)`, transition: draggingRef.current ? "none" : "transform 0.2s" }}
+                aria-label="Arraste para enviar alerta"
+              >
+                <AlertTriangle className="h-5 w-5" />
+              </button>
+            </div>
             <p className="text-[11px] text-muted-foreground mt-3 text-center">
               Use somente em emergência real. A central será notificada imediatamente.
             </p>

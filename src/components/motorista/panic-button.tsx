@@ -135,26 +135,34 @@ export function PanicButton({
               </button>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Pressione e <b>segure por 2 segundos</b> o botão abaixo para enviar
-              um alerta urgente à central com sua localização atual.
+              <b>Arraste da esquerda para a direita</b> para enviar um alerta
+              urgente à central com sua localização atual.
             </p>
-            <button
-              type="button"
-              disabled={enviando}
-              onPointerDown={iniciarHold}
-              onPointerUp={() => finalizarHold(false)}
-              onPointerLeave={() => finalizarHold(false)}
-              onPointerCancel={() => finalizarHold(false)}
-              className="relative w-full h-14 rounded-lg bg-red-600 text-white font-bold text-base overflow-hidden active:scale-[0.98] transition disabled:opacity-60"
+            <div
+              ref={trackRef}
+              className="relative w-full h-14 rounded-full bg-red-100 dark:bg-red-950 overflow-hidden border-2 border-red-600 select-none"
             >
-              <span
-                className="absolute inset-y-0 left-0 bg-red-800 transition-all"
-                style={{ width: `${progresso}%` }}
+              <div
+                className="absolute inset-y-0 left-0 bg-red-600/40 transition-[width]"
+                style={{ width: `${dragX + KNOB}px` }}
               />
-              <span className="relative">
-                {enviando ? "Enviando…" : "SEGURAR PARA ENVIAR"}
+              <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-red-700 dark:text-red-300 pointer-events-none">
+                {enviando ? "Enviando…" : "Arraste para enviar →"}
               </span>
-            </button>
+              <button
+                type="button"
+                disabled={enviando}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerEnd}
+                onPointerCancel={onPointerEnd}
+                className="absolute top-1/2 -translate-y-1/2 left-1 h-12 w-12 rounded-full bg-red-600 text-white shadow-lg flex items-center justify-center touch-none disabled:opacity-60"
+                style={{ transform: `translate(${dragX}px, -50%)`, transition: draggingRef.current ? "none" : "transform 0.2s" }}
+                aria-label="Arraste para enviar alerta"
+              >
+                <AlertTriangle className="h-5 w-5" />
+              </button>
+            </div>
             <p className="text-[11px] text-muted-foreground mt-3 text-center">
               Use somente em emergência real. A central será notificada imediatamente.
             </p>

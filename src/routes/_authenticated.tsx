@@ -103,6 +103,14 @@ function AuthenticatedLayout() {
     );
   }
 
+  if (isMobile) {
+    return (
+      <MobileShell email={email}>
+        <Outlet />
+      </MobileShell>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background text-foreground">

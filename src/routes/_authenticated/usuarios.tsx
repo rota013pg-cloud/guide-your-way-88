@@ -113,13 +113,13 @@ function UsuariosPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h1 className="text-2xl font-bold">Usuários do painel</h1>
-          <p className="text-sm text-muted-foreground">{usuarios.length} cadastrados</p>
+        <div className="min-w-0">
+          <h1 className="text-lg md:text-2xl font-bold">Usuários do painel</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">{usuarios.length} cadastrados</p>
         </div>
-        <Button onClick={() => setOpenNovo(true)}><Plus className="h-4 w-4 mr-1" /> Novo usuário</Button>
+        <Button size="sm" onClick={() => setOpenNovo(true)}><Plus className="h-4 w-4 md:mr-1" /> <span className="hidden md:inline">Novo usuário</span></Button>
       </div>
 
       <Card>

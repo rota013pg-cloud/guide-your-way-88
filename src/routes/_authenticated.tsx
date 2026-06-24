@@ -10,6 +10,8 @@ import { CobrancaNotifier } from "@/components/cobranca-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
 import { NovaSolicitacaoNotifier } from "@/components/nova-solicitacao-notifier";
 import { ModoAutomaticoToggle } from "@/components/modo-automatico-toggle";
+import { MobileShell } from "@/components/painel/mobile-shell";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
 import {

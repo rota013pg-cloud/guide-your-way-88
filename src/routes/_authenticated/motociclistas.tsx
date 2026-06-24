@@ -136,14 +136,14 @@ function MotoristasPage() {
           const bloqueado = m.auth_status === "Bloqueado";
           const pausado = !!m.pausado;
           return (
-            <Card key={m.codigo} className="p-4 space-y-3">
-              <div className="flex items-start gap-3">
-                <Avatar className="h-12 w-12">
+            <Card key={m.codigo} className="p-3 space-y-3 overflow-hidden">
+              <div className="flex items-start gap-2 min-w-0">
+                <Avatar className="h-10 w-10 shrink-0">
                   <AvatarImage src={m.foto || undefined} />
                   <AvatarFallback>{m.nome?.[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1 flex-wrap">
                     <span className="font-mono text-xs text-muted-foreground">{m.codigo}</span>
                     {bloqueado ? (
                       <Badge variant="destructive" className="text-[10px]">
@@ -168,8 +168,8 @@ function MotoristasPage() {
                     )}
                   </div>
                   <p className="font-semibold truncate">{m.nome}</p>
-                  <p className="text-xs text-muted-foreground">{m.telefone || "Sem telefone"}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground truncate">{m.telefone || "Sem telefone"}</p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {m.moto || "—"} {m.placa ? `· ${m.placa}` : ""}
                   </p>
                   <div className="mt-1">

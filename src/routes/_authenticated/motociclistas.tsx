@@ -190,51 +190,53 @@ function MotoristasPage() {
                 </p>
               )}
 
-              <div className="flex gap-2 pt-2 border-t flex-wrap">
-                <Button size="sm" variant="outline" className="flex-1 min-w-[90px]" onClick={() => { setEditando(m); setOpen(true); }}>
-                  <Pencil className="h-3 w-3 mr-1" /> Editar
+              <div className="grid grid-cols-5 gap-1 pt-2 border-t">
+                <Button size="sm" variant="outline" className="h-8 px-1" title="Editar" onClick={() => { setEditando(m); setOpen(true); }}>
+                  <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 {pausado ? (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-emerald-600 border-emerald-500/40 hover:bg-emerald-500/10"
+                    className="h-8 px-1 text-emerald-600 border-emerald-500/40 hover:bg-emerald-500/10"
+                    title="Retomar"
                     onClick={() => retomarMut.mutate(m.codigo)}
                     disabled={retomarMut.isPending}
                   >
-                    <Play className="h-3 w-3 mr-1" /> Retomar
+                    <Play className="h-3.5 w-3.5" />
                   </Button>
                 ) : (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-amber-600 border-amber-500/40 hover:bg-amber-500/10"
+                    className="h-8 px-1 text-amber-600 border-amber-500/40 hover:bg-amber-500/10"
+                    title="Pausar"
                     onClick={() => {
                       const motivo = prompt(`Pausar ${m.nome}?\n\nMotivo (opcional):`) ?? null;
-                      if (motivo === null) return; // cancelou
+                      if (motivo === null) return;
                       pausarMut.mutate({ codigo: m.codigo, motivo: motivo.trim() });
                     }}
                     disabled={pausarMut.isPending}
                   >
-                    <Pause className="h-3 w-3 mr-1" /> Pausar
+                    <Pause className="h-3.5 w-3.5" />
                   </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => setAdminAlvo(m)}>
-                  {isAdmin ? <Shield className="h-3 w-3 mr-1" /> : <Smartphone className="h-3 w-3 mr-1" />}
-                  {isAdmin ? "Acesso" : "Resetar"}
+                <Button size="sm" variant="outline" className="h-8 px-1" title={isAdmin ? "Acesso" : "Resetar"} onClick={() => setAdminAlvo(m)}>
+                  {isAdmin ? <Shield className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />}
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setCorridasAlvo({ codigo: m.codigo, nome: m.nome })}>
-                  <Star className="h-3 w-3 mr-1" /> Corridas
+                <Button size="sm" variant="outline" className="h-8 px-1" title="Corridas" onClick={() => setCorridasAlvo({ codigo: m.codigo, nome: m.nome })}>
+                  <Star className="h-3.5 w-3.5" />
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setHistoricoAlvo({ codigo: m.codigo, nome: m.nome })}>
-                  <History className="h-3 w-3 mr-1" /> Histórico
+                <Button size="sm" variant="outline" className="h-8 px-1" title="Histórico" onClick={() => setHistoricoAlvo({ codigo: m.codigo, nome: m.nome })}>
+                  <History className="h-3.5 w-3.5" />
                 </Button>
                 <Button
-                  size="icon"
+                  size="sm"
                   variant="ghost"
+                  className="h-8 px-1 col-span-5 text-destructive hover:bg-destructive/10"
                   onClick={() => { if (confirm(`Remover ${m.nome}?`)) delMut.mutate(m.codigo); }}
                 >
-                  <Trash2 className="h-4 w-4 text-destructive" />
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Remover
                 </Button>
               </div>
             </Card>

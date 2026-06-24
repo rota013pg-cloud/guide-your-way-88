@@ -133,7 +133,7 @@ function ChatPage() {
   };
 
   return (
-    <div className="px-4 py-4 space-y-3 flex flex-col" style={{ minHeight: "calc(100vh - 8rem)" }}>
+    <div className="px-4 py-4 space-y-3 flex flex-col h-full min-h-0">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Central</h2>
         <Button asChild variant="outline" size="sm" className="rounded-xl gap-2">

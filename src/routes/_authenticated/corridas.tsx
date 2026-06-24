@@ -77,21 +77,67 @@ function CorridasPage() {
 
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Corridas</h1>
-          <p className="text-sm text-muted-foreground">
-            {corridas.length} últimas — clique para ver o histórico de status.
+        <div className="min-w-0">
+          <h1 className="text-lg md:text-2xl font-bold">Corridas</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
+            {corridas.length} últimas — toque para detalhes.
           </p>
         </div>
-        <Button onClick={() => setNovaAberta(true)}>
-          <Rocket className="h-4 w-4 mr-2" /> Nova corrida
+        <Button onClick={() => setNovaAberta(true)} size="sm" className="shrink-0">
+          <Rocket className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Nova corrida</span>
         </Button>
       </div>
       <NovaCorridaDialog open={novaAberta} onOpenChange={setNovaAberta} />
 
-      <Card>
+      {/* Cards mobile */}
+      <div className="md:hidden space-y-2">
+        {isLoading && (
+          <div className="text-center text-sm text-muted-foreground py-8">Carregando…</div>
+        )}
+        {!isLoading && corridas.length === 0 && (
+          <div className="text-center text-sm text-muted-foreground py-8">Nenhuma corrida ainda.</div>
+        )}
+        {corridas.map((c: any) => (
+          <Card
+            key={c.id}
+            onClick={() => setAberta(c)}
+            className="p-3 active:scale-[0.99] transition cursor-pointer"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-muted-foreground">#{c.id}</span>
+                  <span className="font-semibold text-sm truncate">{c.cliente || "—"}</span>
+                </div>
+                <div className="text-xs text-muted-foreground truncate">📍 {c.origem}</div>
+                {c.destino && <div className="text-xs text-muted-foreground truncate">🏁 {c.destino}</div>}
+                <div className="mt-1 flex flex-wrap gap-1">
+                  <Badge variant="outline" className="text-[10px]">{c.modelo}</Badge>
+                  <Badge variant="outline" className="text-[10px]">{c.despacho}</Badge>
+                  <Badge variant={statusVariant(c.status)} className="text-[10px]">{c.status}</Badge>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <span className="font-bold text-sm text-primary">R$ {Number(c.valor_final).toFixed(0)}</span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-9 w-9"
+                  aria-label="Mensagens WhatsApp"
+                  onClick={(e) => { e.stopPropagation(); setMsgCorrida(c); }}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Tabela desktop */}
+      <Card className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -144,6 +190,7 @@ function CorridasPage() {
           </TableBody>
         </Table>
       </Card>
+
 
       <Sheet open={!!aberta} onOpenChange={(v) => !v && setAberta(null)}>
         <SheetContent className="overflow-y-auto">

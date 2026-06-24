@@ -142,12 +142,13 @@ function ChatMotoristasPage() {
   const conversaAtual = conversas.find((c) => c.motorista_codigo === selecionado);
 
   return (
-    <div className="p-4 lg:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageSquare className="h-6 w-6" /> Chat com motociclistas
+    <div className="p-3 lg:p-6">
+      <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
+        <h1 className="text-base md:text-2xl font-bold flex items-center gap-2 min-w-0">
+          <MessageSquare className="h-5 w-5 md:h-6 md:w-6 shrink-0" />
+          <span className="truncate">Chat motociclistas</span>
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2 shrink-0">
           <Dialog open={novaAberto} onOpenChange={(o) => {
             setNovaAberto(o);
             if (o && motoristas.length === 0) {
@@ -158,7 +159,7 @@ function ChatMotoristasPage() {
           }}>
             <DialogTrigger asChild>
               <Button size="sm">
-                <Plus className="h-4 w-4 mr-1" /> Nova conversa
+                <Plus className="h-4 w-4 md:mr-1" /> <span className="hidden md:inline">Nova conversa</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
@@ -199,13 +200,14 @@ function ChatMotoristasPage() {
             </DialogContent>
           </Dialog>
           <Button variant="outline" size="sm" onClick={carregarConversas}>
-            <RefreshCw className="h-4 w-4 mr-1" /> Atualizar
+            <RefreshCw className="h-4 w-4 md:mr-1" /> <span className="hidden md:inline">Atualizar</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 h-[calc(100vh-160px)]">
-        <Card className="p-3 flex flex-col overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 h-[calc(100dvh-180px)] md:h-[calc(100vh-160px)]">
+        <Card className={`p-3 flex flex-col overflow-hidden ${selecionado ? "hidden md:flex" : ""}`}>
+
           <Input
             placeholder="Buscar motociclista..."
             value={busca}

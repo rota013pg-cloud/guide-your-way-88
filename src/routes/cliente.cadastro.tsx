@@ -24,7 +24,27 @@ export const Route = createFileRoute("/cliente/cadastro")({
   validateSearch: (s: Record<string, unknown>) => ({
     ref: typeof s.ref === "string" ? s.ref.toUpperCase().trim().slice(0, 20) : "",
   }),
-  head: () => ({ meta: [{ title: "Criar conta — Rota 013" }], links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }] }),
+  head: () => {
+    const title = "Criar conta de cliente — Rota 013";
+    const description = "Cadastre-se no Rota 013 e peça motoboy em Praia Grande com rapidez, segurança e preço justo.";
+    const url = "https://www.rota013.com.br/cliente/cadastro";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "website" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+      ],
+      links: [
+        { rel: "manifest", href: "/manifest-cliente.webmanifest" },
+        { rel: "canonical", href: url },
+      ],
+    };
+  },
   component: ClienteCadastroPage,
 });
 

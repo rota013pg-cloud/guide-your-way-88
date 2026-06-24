@@ -597,7 +597,50 @@ function CobrancasAutomaticasPanel() {
         </div>
         <Badge variant="outline">{ativos.length} ativa(s)</Badge>
       </div>
-      <div className="overflow-x-auto">
+      {/* Mobile: cards */}
+      <div className="md:hidden divide-y">
+        {isLoading && <div className="p-6 text-center"><Loader2 className="h-5 w-5 animate-spin inline" /></div>}
+        {!isLoading && linhas.length === 0 && (
+          <div className="p-6 text-center text-sm text-muted-foreground">Nenhuma cobrança em andamento hoje.</div>
+        )}
+        {linhas.map((c) => (
+          <div key={c.motorista_codigo} className="p-3 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-mono text-xs">{c.motorista_codigo}</div>
+                <div className="text-sm font-medium truncate">{c.motorista_nome ?? "—"}</div>
+                <div className="text-xs text-muted-foreground">
+                  Fat. {brl(Number(c.faturamento_dia))} · Diária {brl(Number(c.valor_diaria))}
+                </div>
+                {c.comprovante_enviado_em && (
+                  <div className="text-[10px] text-muted-foreground">
+                    Comprov. {new Date(c.comprovante_enviado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                )}
+              </div>
+              <Badge variant={corStatus(c.status)} className="shrink-0 text-[10px]">{c.status}</Badge>
+            </div>
+            <div className="flex gap-1.5">
+              {c.status !== "Pago" && (
+                <Button size="sm" className="h-8 px-2 text-xs"
+                  onClick={() => { if (confirm(`Confirmar pagamento e liberar ${c.motorista_codigo}?`)) liberar.mutate(c.motorista_codigo); }}
+                  disabled={liberar.isPending}>
+                  <Unlock className="h-3.5 w-3.5 mr-1" /> Liberar
+                </Button>
+              )}
+              {c.status !== "Bloqueado" && c.status !== "Pago" && (
+                <Button size="sm" variant="outline" className="h-8 px-2"
+                  onClick={() => { if (confirm(`Bloquear ${c.motorista_codigo} agora?`)) bloquear.mutate(c.motorista_codigo); }}>
+                  <ShieldAlert className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: tabela */}
+      <div className="hidden md:block overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

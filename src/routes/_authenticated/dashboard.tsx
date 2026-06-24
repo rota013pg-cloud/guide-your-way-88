@@ -177,17 +177,17 @@ function DashboardPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-1.5"><Users className="h-4 w-4 text-success" /><span className="font-semibold">{online.length}</span><span className="text-muted-foreground">online</span></div>
-          <div className="flex items-center gap-1.5"><ListChecks className="h-4 w-4 text-primary" /><span className="font-semibold">{ativas.length}</span><span className="text-muted-foreground">ativas</span></div>
-          <div className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /><span className="font-semibold">{finalizadasHoje.length}</span><span className="text-muted-foreground">hoje</span></div>
-          <div className="flex items-center gap-1.5" title="Apps de motociclista travados na tela de pagamento da diária">
+        <h1 className="text-lg md:text-2xl font-bold">Dashboard</h1>
+        <div className="flex w-full md:w-auto items-center gap-3 md:gap-4 text-xs md:text-sm overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center gap-1.5 shrink-0"><Users className="h-4 w-4 text-success" /><span className="font-semibold">{online.length}</span><span className="text-muted-foreground">online</span></div>
+          <div className="flex items-center gap-1.5 shrink-0"><ListChecks className="h-4 w-4 text-primary" /><span className="font-semibold">{ativas.length}</span><span className="text-muted-foreground">ativas</span></div>
+          <div className="flex items-center gap-1.5 shrink-0"><CheckCircle2 className="h-4 w-4 text-success" /><span className="font-semibold">{finalizadasHoje.length}</span><span className="text-muted-foreground">hoje</span></div>
+          <div className="flex items-center gap-1.5 shrink-0" title="Apps de motociclista travados na tela de pagamento da diária">
             <DollarSign className={`h-4 w-4 ${travadosPagto.length ? "text-warning" : "text-muted-foreground"}`} />
             <span className="font-semibold">{travadosPagto.length}</span>
-            <span className="text-muted-foreground">app{travadosPagto.length === 1 ? "" : "s"} pagto.</span>
+            <span className="text-muted-foreground">pagto.</span>
           </div>
         </div>
       </div>
@@ -196,7 +196,7 @@ function DashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_400px]">
 
-        <div className="space-y-4">
+        <div className="space-y-4 order-2 lg:order-1">
           <Card className="p-0 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <div className="flex items-center gap-2">
@@ -205,12 +205,13 @@ function DashboardPage() {
               </div>
               <Badge variant="secondary">{mapaMotoristas.length} no mapa</Badge>
             </div>
-            <div className="h-[400px] md:h-[480px]">
+            <div className="h-[320px] md:h-[480px]">
               <ErrorBoundary label="o mapa">
                 <MapLeaflet motoristas={mapaMotoristas} />
               </ErrorBoundary>
             </div>
           </Card>
+
 
           <Card className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-4">
@@ -235,7 +236,7 @@ function DashboardPage() {
           </Card>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 order-1 lg:order-2">
           <Card className="p-4">
             <NovaCorridaDialog onCriada={carregar} />
           </Card>

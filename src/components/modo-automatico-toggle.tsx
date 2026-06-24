@@ -55,7 +55,7 @@ export function ModoAutomaticoToggle() {
 
   return (
     <div
-      className={`hidden sm:flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs transition ${
+      className={`flex items-center gap-1.5 sm:gap-2 rounded-full border px-2 sm:px-2.5 py-1 text-xs transition shrink-0 ${
         ativo
           ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
           : "border-border bg-muted/40 text-muted-foreground"
@@ -63,7 +63,7 @@ export function ModoAutomaticoToggle() {
       title="Modo Automático: aceita solicitações completas automaticamente e responde ao chat do cliente."
     >
       <Bot className={`size-3.5 ${ativo ? "animate-pulse" : ""}`} />
-      <span className="font-medium">Auto</span>
+      <span className="font-medium hidden sm:inline">Auto</span>
       <Switch
         checked={!!ativo}
         disabled={ativo === null || salvando}

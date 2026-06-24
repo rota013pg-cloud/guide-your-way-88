@@ -186,7 +186,14 @@ function ClienteAppLayout() {
               <Menu className="size-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="theme-cliente w-72 p-0 flex flex-col bg-card border-r hairline">
+          <SheetContent
+            side="left"
+            className="theme-cliente w-72 p-0 flex flex-col bg-card border-r hairline"
+            style={{
+              paddingTop: "env(safe-area-inset-top)",
+              paddingBottom: "env(safe-area-inset-bottom)",
+            }}
+          >
             <SheetHeader className="border-b hairline p-4 text-left">
               <Link
                 to="/cliente/app"

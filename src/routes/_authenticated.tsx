@@ -10,6 +10,8 @@ import { CobrancaNotifier } from "@/components/cobranca-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
 import { NovaSolicitacaoNotifier } from "@/components/nova-solicitacao-notifier";
 import { ModoAutomaticoToggle } from "@/components/modo-automatico-toggle";
+import { MobileShell } from "@/components/painel/mobile-shell";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import { useAlertasAgendadas } from "@/hooks/use-alertas-agendadas";
 import {
@@ -39,6 +41,7 @@ function AuthenticatedLayout() {
   const [email, setEmail] = useState("");
   const [redirectMessage, setRedirectMessage] = useState("");
   const [redirectReason, setRedirectReason] = useState<"unauthenticated" | "session_error" | "timeout" | null>(null);
+  const isMobile = useIsMobile();
 
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   useAlertasAgendadas(15);
@@ -98,6 +101,14 @@ function AuthenticatedLayout() {
           <div className={`h-full rounded-full w-2/3 animate-[pulse_1.2s_ease-in-out_infinite] ${redirecting ? "bg-destructive" : "bg-primary"}`} />
         </div>
       </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <MobileShell email={email}>
+        <Outlet />
+      </MobileShell>
     );
   }
 

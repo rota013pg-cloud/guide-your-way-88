@@ -151,7 +151,7 @@ function ChatPage() {
         </Button>
       </div>
 
-      <Card ref={scrollRef as never} className="flex-1 rounded-2xl p-3 overflow-y-auto space-y-2 max-h-[60vh]">
+      <Card ref={scrollRef as never} className="flex-1 min-h-0 rounded-2xl p-3 overflow-y-auto space-y-2">
         {mensagens.length === 0 && (
           <div className="text-center text-sm text-muted-foreground py-12">
             <MessageCircle className="size-10 mx-auto mb-2" />

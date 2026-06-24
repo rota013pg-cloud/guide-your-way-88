@@ -86,16 +86,17 @@ function MotoristasPage() {
   });
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold">Motociclistas</h1>
-          <p className="text-sm text-muted-foreground">{motoristas.length} cadastrados</p>
+        <div className="min-w-0">
+          <h1 className="text-lg md:text-2xl font-bold">Motociclistas</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">{motoristas.length} cadastrados</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {isAdmin && (
             <Button
               variant="outline"
+              size="sm"
               className="text-destructive border-destructive/40 hover:bg-destructive/10"
               onClick={() => {
                 if (confirm("ATENÇÃO: Isso vai APAGAR TODAS as corridas de TODOS os motociclistas (modo de teste). Continuar?")) {
@@ -104,14 +105,15 @@ function MotoristasPage() {
               }}
               disabled={zerarMut.isPending}
             >
-              <RotateCcw className="h-4 w-4 mr-2" /> Zerar histórico (teste)
+              <RotateCcw className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Zerar histórico (teste)</span>
             </Button>
           )}
-          <Button onClick={() => { setEditando(null); setOpen(true); }}>
-            <Plus className="h-4 w-4 mr-2" /> Novo motociclista
+          <Button size="sm" onClick={() => { setEditando(null); setOpen(true); }}>
+            <Plus className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Novo motociclista</span>
           </Button>
         </div>
       </div>
+
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />

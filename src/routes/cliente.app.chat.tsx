@@ -133,7 +133,7 @@ function ChatPage() {
   };
 
   return (
-    <div className="px-4 py-4 space-y-3 flex flex-col" style={{ minHeight: "calc(100vh - 8rem)" }}>
+    <div className="px-4 py-4 space-y-3 flex flex-col h-full min-h-0">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Central</h2>
         <Button asChild variant="outline" size="sm" className="rounded-xl gap-2">
@@ -151,7 +151,7 @@ function ChatPage() {
         </Button>
       </div>
 
-      <Card ref={scrollRef as never} className="flex-1 rounded-2xl p-3 overflow-y-auto space-y-2 max-h-[60vh]">
+      <Card ref={scrollRef as never} className="flex-1 min-h-0 rounded-2xl p-3 overflow-y-auto space-y-2">
         {mensagens.length === 0 && (
           <div className="text-center text-sm text-muted-foreground py-12">
             <MessageCircle className="size-10 mx-auto mb-2" />

@@ -59,10 +59,10 @@ function MuralPage() {
   });
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4 max-w-3xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold">Mural de recados</h1>
-        <p className="text-sm text-muted-foreground">Anotações entre operadores e turnos.</p>
+        <h1 className="text-lg md:text-2xl font-bold">Mural de recados</h1>
+        <p className="text-xs md:text-sm text-muted-foreground">Anotações entre operadores e turnos.</p>
       </div>
 
       <Card className="p-4 space-y-3">

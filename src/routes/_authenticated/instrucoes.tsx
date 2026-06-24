@@ -567,14 +567,14 @@ function InstrucoesPage() {
   }, [busca]);
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6 max-w-5xl mx-auto">
       <div className="flex items-start gap-3">
-        <div className="rounded-lg bg-primary/10 p-2.5">
-          <BookOpen className="h-6 w-6 text-primary" />
+        <div className="rounded-lg bg-primary/10 p-2 md:p-2.5 shrink-0">
+          <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-primary" />
         </div>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">Manual do Operador</h1>
-          <p className="text-sm text-muted-foreground">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg md:text-2xl font-bold tracking-tight">Manual do Operador</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
             Guia completo de operação do Rota 013 — fluxos do painel,
             atendimento ao motociclista e respostas para dúvidas comuns.
           </p>

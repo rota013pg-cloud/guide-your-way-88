@@ -92,9 +92,7 @@ export function MobileShell({ children, email }: { children: ReactNode; email: s
       {/* Top App Bar */}
       <header className="app-header-safe sticky top-0 z-30 flex items-center gap-2 border-b border-border bg-card/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <LogoRota013 className="text-lg shrink-0" />
-        <div className="min-w-0 flex-1 truncate text-sm font-semibold text-muted-foreground">
-          {title}
-        </div>
+        <div className="min-w-0 flex-1" />
         <ModoAutomaticoToggle />
         <CobrancaNotifier />
         <ChatNotifier />

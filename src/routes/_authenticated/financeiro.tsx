@@ -149,10 +149,10 @@ function FinanceiroPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Financeiro</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-lg md:text-2xl font-bold">Financeiro</h1>
+        <p className="text-xs md:text-sm text-muted-foreground">
           Diárias do dia operacional (corte às 06h) e relatórios por período.
         </p>
       </div>

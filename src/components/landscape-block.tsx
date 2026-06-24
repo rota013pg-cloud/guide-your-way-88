@@ -13,7 +13,7 @@ export function LandscapeBlock() {
       className="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/95 text-white p-8 text-center landscape-block"
     >
       <style>{`
-        @media (orientation: landscape) and (max-height: 500px) {
+        @media (orientation: landscape) and (max-height: 500px) and (max-width: 767px) {
           .landscape-block { display: flex !important; }
           body { overflow: hidden !important; }
         }

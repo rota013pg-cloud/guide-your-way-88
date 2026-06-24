@@ -102,19 +102,19 @@ function TarifasPage() {
   const restaurar = () => setForm(TARIFAS_DEFAULT);
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold">Tarifas</h1>
-          <p className="text-sm text-muted-foreground">
+        <div className="min-w-0">
+          <h1 className="text-lg md:text-2xl font-bold">Tarifas</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
             Tabelas fixas, híbrida, simulador e distâncias.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={restaurar}>
+          <Button size="sm" variant="outline" onClick={restaurar}>
             Restaurar padrão
           </Button>
-          <Button onClick={() => salvar.mutate(form)} disabled={salvar.isPending}>
+          <Button size="sm" onClick={() => salvar.mutate(form)} disabled={salvar.isPending}>
             {salvar.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (

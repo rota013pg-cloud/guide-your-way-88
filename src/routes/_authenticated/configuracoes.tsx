@@ -53,10 +53,10 @@ function ConfiguracoesPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold">Configurações</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4 max-w-3xl">
+      <div className="min-w-0">
+        <h1 className="text-lg md:text-2xl font-bold">Configurações</h1>
+        <p className="text-xs md:text-sm text-muted-foreground">
           Dados da empresa, WhatsApp central, valor de diária e PIX.
         </p>
       </div>

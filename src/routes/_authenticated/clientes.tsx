@@ -63,14 +63,14 @@ function ClientesPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold">Clientes</h1>
-          <p className="text-sm text-muted-foreground">{clientes.length} cadastrados</p>
+        <div className="min-w-0">
+          <h1 className="text-lg md:text-2xl font-bold">Clientes</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">{clientes.length} cadastrados</p>
         </div>
-        <Button onClick={() => { setEditando(null); setOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Novo cliente
+        <Button size="sm" onClick={() => { setEditando(null); setOpen(true); }}>
+          <Plus className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Novo cliente</span>
         </Button>
       </div>
 
@@ -88,7 +88,49 @@ function ClientesPage() {
         />
       </div>
 
-      <Card>
+      {/* Cards mobile */}
+      <div className="md:hidden space-y-2">
+        {isLoading && <p className="text-sm text-muted-foreground text-center py-6">Carregando…</p>}
+        {!isLoading && filtrados.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-6">Nenhum cliente encontrado.</p>
+        )}
+        {filtrados.map((c: any) => (
+          <Card key={c.codigo} className="p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-muted-foreground">{c.codigo}</span>
+                  <span className="font-semibold text-sm truncate">{c.nome}</span>
+                </div>
+                <div className="text-xs text-muted-foreground">{c.telefone || "—"}</div>
+                {c.endereco && <div className="text-xs text-muted-foreground truncate">📍 {c.endereco}</div>}
+              </div>
+            </div>
+            <div className="mt-2 flex gap-1 border-t pt-2">
+              <Button size="sm" variant="ghost" className="flex-1 h-9" onClick={() => novaCorrida(c)}>
+                <Bike className="h-4 w-4 text-primary" />
+              </Button>
+              <Button size="sm" variant="ghost" className="flex-1 h-9" onClick={() => setHistoricoAlvo({ codigo: c.codigo, nome: c.nome })}>
+                <History className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="ghost" className="flex-1 h-9" onClick={() => { setEditando(c); setOpen(true); }}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="flex-1 h-9"
+                onClick={() => { if (confirm(`Excluir ${c.nome}?`)) delMut.mutate(c.codigo); }}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Tabela desktop */}
+      <Card className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -141,6 +183,7 @@ function ClientesPage() {
           </TableBody>
         </Table>
       </Card>
+
 
       <ClienteDialog open={open} onOpenChange={setOpen} cliente={editando} />
       <NovaCorridaDialog

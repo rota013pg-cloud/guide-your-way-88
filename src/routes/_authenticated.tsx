@@ -41,6 +41,7 @@ function AuthenticatedLayout() {
   const [email, setEmail] = useState("");
   const [redirectMessage, setRedirectMessage] = useState("");
   const [redirectReason, setRedirectReason] = useState<"unauthenticated" | "session_error" | "timeout" | null>(null);
+  const isMobile = useIsMobile();
 
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   useAlertasAgendadas(15);

@@ -54,13 +54,13 @@ function TermosPage() {
     : "—";
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-5xl">
+    <div className="p-3 md:p-6 space-y-3 md:space-y-4 max-w-5xl">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FileText className="h-6 w-6" /> Termos e Condições
+        <div className="min-w-0">
+          <h1 className="text-lg md:text-2xl font-bold flex items-center gap-2">
+            <FileText className="h-5 w-5 md:h-6 md:w-6 shrink-0" /> Termos e Condições
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Conteúdo exibido no cadastro de novos clientes. Suporta HTML básico
             (&lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;strong&gt;, &lt;a&gt;…).
           </p>

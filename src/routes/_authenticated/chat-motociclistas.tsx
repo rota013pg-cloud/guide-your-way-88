@@ -245,20 +245,32 @@ function ChatMotoristasPage() {
           </div>
         </Card>
 
-        <Card className="flex flex-col overflow-hidden">
+        <Card className={`flex flex-col overflow-hidden ${!selecionado ? "hidden md:flex" : ""}`}>
           {!selecionado ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               Selecione uma conversa
             </div>
           ) : (
             <>
-              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                <div>
-                  <div className="font-semibold">{selecionado} - {conversaAtual?.motorista_nome}</div>
-                  {conversaAtual?.telefone && (
-                    <div className="text-xs text-muted-foreground">{conversaAtual.telefone}</div>
-                  )}
+              <div className="px-3 md:px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden h-9 w-9 shrink-0"
+                    onClick={() => setSelecionado(null)}
+                    aria-label="Voltar"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-sm md:text-base truncate">{selecionado} - {conversaAtual?.motorista_nome}</div>
+                    {conversaAtual?.telefone && (
+                      <div className="text-xs text-muted-foreground truncate">{conversaAtual.telefone}</div>
+                    )}
+                  </div>
                 </div>
+
                 {isAdmin && (
                   <Button
                     variant="ghost"

@@ -37,6 +37,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { useRole } from "@/hooks/use-role";
 import { useTheme } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { atualizarFotoUsuario } from "@/lib/usuarios.functions";
 
 type Item = { title: string; url: string; icon: typeof LayoutDashboard; adminOnly?: boolean };
 
@@ -73,6 +75,7 @@ export function AppSidebar() {
   const [userFoto, setUserFoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const atualizarFotoFn = useServerFn(atualizarFotoUsuario);
   
 
   useEffect(() => {
@@ -111,7 +114,9 @@ export function AppSidebar() {
       const { data: signed } = await supabase.storage.from("motoristas-docs").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
       const url = signed?.signedUrl ?? null;
       if (url) {
-        await supabase.from("usuarios_painel").update({ foto: url }).eq("user_id", userId);
+        // Usa a server fn (chave de serviço, só a coluna foto): admin altera qualquer
+        // usuário; operador comum altera a própria — sem esbarrar no RLS da tabela.
+        await atualizarFotoFn({ data: { userId, foto: url } });
         setUserFoto(url);
       }
     } finally {

@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
+const ROUTES_URL = "https://routes.googleapis.com/directions/v2:computeRoutes";
 
 const PontoSchema = z.object({
   lat: z.number().min(-90).max(90),
@@ -18,17 +18,14 @@ export const calcularRota = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CalcSchema.parse(d))
   .handler(async ({ data }) => {
-    const lovableKey = process.env.LOVABLE_API_KEY;
-    const connKey = process.env.GOOGLE_MAPS_API_KEY;
-    if (!lovableKey) throw new Error("LOVABLE_API_KEY ausente");
-    if (!connKey) throw new Error("GOOGLE_MAPS_API_KEY ausente (connector Google Maps não conectado)");
+    const key = process.env.GOOGLE_MAPS_SERVER_KEY;
+    if (!key) throw new Error("GOOGLE_MAPS_SERVER_KEY ausente");
 
-    const res = await fetch(`${GATEWAY_URL}/routes/directions/v2:computeRoutes`, {
+    const res = await fetch(ROUTES_URL, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${lovableKey}`,
-        "X-Connection-Api-Key": connKey,
         "Content-Type": "application/json",
+        "X-Goog-Api-Key": key,
         "X-Goog-FieldMask": "routes.distanceMeters,routes.duration",
       },
       body: JSON.stringify({

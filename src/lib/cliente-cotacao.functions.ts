@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { calcularValorComParadas } from "@/lib/tarifas-calc";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
+const ROUTES_URL = "https://routes.googleapis.com/directions/v2:computeRoutes";
 
 type TarifaOpt = { id: string; nome: string; tarifaMinima: number; valorKm: number };
 
@@ -26,17 +26,14 @@ const CotacaoSchema = z.object({
 });
 
 async function calcularKmRota(origem: { lat: number; lng: number }, destino: { lat: number; lng: number }) {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (!lovableKey) throw new Error("LOVABLE_API_KEY ausente");
-  if (!connKey) throw new Error("GOOGLE_MAPS_API_KEY ausente (connector Google Maps não conectado)");
+  const key = process.env.GOOGLE_MAPS_SERVER_KEY;
+  if (!key) throw new Error("GOOGLE_MAPS_SERVER_KEY ausente");
 
-  const res = await fetch(`${GATEWAY_URL}/routes/directions/v2:computeRoutes`, {
+  const res = await fetch(ROUTES_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": connKey,
       "Content-Type": "application/json",
+      "X-Goog-Api-Key": key,
       "X-Goog-FieldMask": "routes.distanceMeters",
     },
     body: JSON.stringify({

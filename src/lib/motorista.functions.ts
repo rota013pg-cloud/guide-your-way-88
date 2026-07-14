@@ -33,23 +33,21 @@ async function validarToken(codigo: string, token: string) {
   return data;
 }
 
-// Calcula ETA (em segundos) via Google Routes API através do gateway Lovable.
+// Calcula ETA (em segundos) via Google Routes API (chamada direta).
 // Retorna 0 se não houver chave ou rota — chamadores devem tratar como "sem ETA".
 async function calcularEtaSegundos(
   origem: { lat: number; lng: number },
   destino: { lat: number; lng: number },
 ): Promise<number> {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (!lovableKey || !connKey) return 0;
+  const key = process.env.GOOGLE_MAPS_SERVER_KEY;
+  if (!key) return 0;
   const res = await fetch(
-    "https://connector-gateway.lovable.dev/google_maps/routes/directions/v2:computeRoutes",
+    "https://routes.googleapis.com/directions/v2:computeRoutes",
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${lovableKey}`,
-        "X-Connection-Api-Key": connKey,
         "Content-Type": "application/json",
+        "X-Goog-Api-Key": key,
         "X-Goog-FieldMask": "routes.duration",
       },
       body: JSON.stringify({
@@ -73,15 +71,13 @@ async function calcularKmRotaDrive(
   origem: { lat: number; lng: number },
   destino: { lat: number; lng: number },
 ): Promise<number> {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (!lovableKey || !connKey) return 0;
-  const res = await fetch("https://connector-gateway.lovable.dev/google_maps/routes/directions/v2:computeRoutes", {
+  const key = process.env.GOOGLE_MAPS_SERVER_KEY;
+  if (!key) return 0;
+  const res = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": connKey,
       "Content-Type": "application/json",
+      "X-Goog-Api-Key": key,
       "X-Goog-FieldMask": "routes.distanceMeters",
     },
     body: JSON.stringify({

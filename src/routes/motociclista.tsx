@@ -643,7 +643,7 @@ function MotoristaApp() {
     // aba do navegador — assim o Waze é aberto pelo handler do sistema e, ao
     // voltar, retornamos direto ao app GMD em vez de uma tela em branco com
     // barra de endereço.
-    window.location.href = `https://waze.com/ul?q=${encodeURIComponent(lugar)}`;
+    window.location.href = `waze://?q=${encodeURIComponent(lugar)}&navigate=yes`;
   };
 
 

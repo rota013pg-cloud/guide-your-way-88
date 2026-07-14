@@ -7,12 +7,11 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { ensureAudioUnlock } from "@/lib/notification-sound";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalLoadingOverlay } from "@/components/global-loading-overlay";
 
@@ -41,9 +40,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -101,8 +97,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Rota 013" },
       { name: "twitter:description", content: "App do motociclista Rota 013 — corridas, faturamento e chat em tempo real." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e9c2ab2d-7b16-4dd3-862d-ac56ee92f99e/id-preview-0c887e19--9dea8a03-a9e7-44f7-bdb3-9eed2afcc12d.lovable.app-1780423144681.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e9c2ab2d-7b16-4dd3-862d-ac56ee92f99e/id-preview-0c887e19--9dea8a03-a9e7-44f7-bdb3-9eed2afcc12d.lovable.app-1780423144681.png" },
+      { property: "og:image", content: "https://www.rota013.com.br/rota013-logo.png" },
+      { name: "twitter:image", content: "https://www.rota013.com.br/rota013-logo.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

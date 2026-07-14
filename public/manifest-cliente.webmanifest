@@ -15,19 +15,19 @@
   "categories": ["travel", "lifestyle", "business"],
   "icons": [
     {
-      "src": "/__l5e/assets-v1/3cbb4166-322b-415f-83cb-1d5860514bd2/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/__l5e/assets-v1/59f6c808-7258-426c-a72c-9812d75e80c3/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/__l5e/assets-v1/35018711-8cb2-4656-8dcd-7b57888f2680/icon-maskable-512.png",
+      "src": "/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

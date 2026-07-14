@@ -112,19 +112,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "apple-touch-icon",
         sizes: "180x180",
-        href: "/__l5e/assets-v1/a90bb029-5c97-4de0-9270-0ddba8e77e68/apple-touch-icon.png",
+        href: "/apple-touch-icon.png",
       },
       {
         rel: "icon",
         type: "image/png",
         sizes: "192x192",
-        href: "/__l5e/assets-v1/3cbb4166-322b-415f-83cb-1d5860514bd2/icon-192.png",
+        href: "/icon-192.png",
       },
       {
         rel: "icon",
         type: "image/png",
         sizes: "512x512",
-        href: "/__l5e/assets-v1/59f6c808-7258-426c-a72c-9812d75e80c3/icon-512.png",
+        href: "/icon-512.png",
       },
     ],
   }),

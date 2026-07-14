@@ -42,6 +42,10 @@ function IndexPage() {
         navigate({ to: "/motociclista", replace: true });
         return;
       }
+      if (host.startsWith("cliente.")) {
+        navigate({ to: "/cliente", replace: true });
+        return;
+      }
     }
     setReady(true);
   }, [navigate]);

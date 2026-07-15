@@ -383,12 +383,11 @@ export const marcarStaleOffline = createServerFn({ method: "POST" })
       .eq("status", "Online");
     if (error) throw new Error(error.message);
 
-    // encerra sessões dos motoristas marcados como offline
-    await supabaseAdmin
-      .from("motorista_sessoes")
-      .update({ status: "encerrada" })
-      .in("motorista_codigo", paraOffline)
-      .eq("status", "ativa");
+    // IMPORTANTE: NÃO encerra a sessão aqui. Ficar sem ping por um tempo (parado,
+    // app em background) só deve marcar o motorista Offline — que é reversível —
+    // e nunca deslogá-lo. Encerrar a sessão invalidava o token guardado no app e
+    // causava o "Sessão inválida" ao reabrir. A sessão só encerra em logout real
+    // ou em novo login. Ao voltar, o app reativa o status Online com o token válido.
 
     return { atualizados: paraOffline.length, codigos: paraOffline };
   });

@@ -36,6 +36,12 @@ export function ehNativo(): boolean {
 let webWatchId: number | null = null;
 let webInterval: ReturnType<typeof setInterval> | null = null;
 let nativeWatcherId: string | null = null;
+let nativeHeartbeat: ReturnType<typeof setInterval> | null = null;
+let ultimaPosNativa: PosicaoGps | null = null;
+
+// A cada quanto tempo reenviar a última posição quando o motociclista está parado
+// (o plugin só dispara por deslocamento; sem isso a central marcava offline).
+const HEARTBEAT_MS = 45_000;
 
 function kmh(speedMs: number | null | undefined): number {
   return speedMs ? Math.round(speedMs * 3.6) : 0;
@@ -62,16 +68,30 @@ async function iniciarNativo(onPos: OnPosicao) {
         return;
       }
       if (!location) return;
-      onPos({
+      const p: PosicaoGps = {
         lat: location.latitude,
         lng: location.longitude,
         velocidade: kmh(location.speed),
-      });
+      };
+      ultimaPosNativa = p;
+      onPos(p);
     },
   );
+
+  // Batimento: mesmo parado (sem deslocamento -> plugin não dispara), reenvia a
+  // última posição periodicamente pra central continuar vendo o motociclista online.
+  if (nativeHeartbeat) clearInterval(nativeHeartbeat);
+  nativeHeartbeat = setInterval(() => {
+    if (ultimaPosNativa) onPos(ultimaPosNativa);
+  }, HEARTBEAT_MS);
 }
 
 async function pararNativo() {
+  if (nativeHeartbeat) {
+    clearInterval(nativeHeartbeat);
+    nativeHeartbeat = null;
+  }
+  ultimaPosNativa = null;
   if (!nativeWatcherId) return;
   const id = nativeWatcherId;
   nativeWatcherId = null;

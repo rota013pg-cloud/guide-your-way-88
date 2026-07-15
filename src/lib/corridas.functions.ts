@@ -5,6 +5,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { enviarPushMotorista } from "@/lib/push.server";
 
 const QTD_MOT = 5;
 const LAT_BASE = -24.0122;
@@ -46,7 +47,7 @@ async function _executarDispararOfertas(
     const { data: corrida, error: corridaErr } = await supabaseAdmin
       .from("corridas")
       .select(
-        "id, status, origem_lat, origem_lng, despacho, modelo, motoristas_manuais",
+        "id, status, origem, origem_lat, origem_lng, despacho, modelo, motoristas_manuais, valor_final",
       )
       .eq("id", corridaId)
       .maybeSingle();
@@ -207,7 +208,13 @@ async function _executarDispararOfertas(
       .upsert(rows, { onConflict: "corrida_id,motorista_codigo" });
     if (insErr) throw new Error(insErr.message);
 
-
+    // Push: avisa os motociclistas que receberam a oferta (não bloqueia o fluxo)
+    const valor = corrida.valor_final != null ? ` — R$ ${Number(corrida.valor_final).toFixed(2)}` : "";
+    void enviarPushMotorista(codigosFinais, {
+      title: "🏍️ Nova corrida disponível",
+      body: `${corrida.origem ?? "Nova corrida"}${valor}`,
+      data: { tipo: "corrida", corridaId: String(corridaId) },
+    });
 
     await supabaseAdmin
       .from("corridas")

@@ -33,6 +33,30 @@ async function validarToken(codigo: string, token: string) {
   return data;
 }
 
+// ─── PUSH: registra o token FCM do dispositivo do motociclista ───
+export const registrarPushToken = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      codigo: z.string(),
+      token: z.string(),
+      fcmToken: z.string().min(20),
+      plataforma: z.string().max(20).optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await validarToken(data.codigo, data.token);
+    await supabaseAdmin.from("motorista_push_tokens").upsert(
+      {
+        motorista_codigo: data.codigo,
+        fcm_token: data.fcmToken,
+        plataforma: data.plataforma ?? "android",
+        atualizado_em: new Date().toISOString(),
+      } as never,
+      { onConflict: "fcm_token" },
+    );
+    return { ok: true };
+  });
+
 // Calcula ETA (em segundos) via Google Routes API (chamada direta).
 // Retorna 0 se não houver chave ou rota — chamadores devem tratar como "sem ETA".
 async function calcularEtaSegundos(

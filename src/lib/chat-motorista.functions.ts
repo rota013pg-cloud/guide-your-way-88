@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { enviarPushMotorista } from "@/lib/push.server";
 
 const BUCKET_CHAT = "chat-midia";
 const MidiaTipoEnum = z.enum(["imagem", "video", "audio", "arquivo"]);
@@ -200,6 +201,14 @@ export const operadorEnviarMensagem = createServerFn({ method: "POST" })
       midia_tipo: data.midiaTipo ?? null,
       midia_nome: data.midiaNome ?? null,
     } as never);
+
+    // Push da mensagem pro motociclista (não bloqueia)
+    const previa = data.texto?.trim() || rotuloMidia(data.midiaTipo);
+    void enviarPushMotorista([data.motoristaCodigo], {
+      title: `💬 ${op?.nome ?? "Central"}`,
+      body: previa || "Nova mensagem",
+      data: { tipo: "chat", motoristaCodigo: data.motoristaCodigo },
+    });
     return { ok: true };
   });
 

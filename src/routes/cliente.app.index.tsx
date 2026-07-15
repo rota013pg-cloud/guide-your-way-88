@@ -496,6 +496,27 @@ function CorridaAtivaCard({
 }) {
   const aceita = !!corrida.motorista_codigo;
   const procurando = corrida.status === "Pendente" || corrida.status === "Ofertada";
+  const rastreando = ["Aceita", "A caminho", "Chegou", "Em viagem"].includes(corrida.status);
+  const [posMot, setPosMot] = useState<MapMotorista | null>(null);
+
+  // Posição ao vivo do motociclista da corrida (poll a cada 5s enquanto em andamento)
+  useEffect(() => {
+    if (!rastreando) { setPosMot(null); return; }
+    const token = getClienteToken();
+    if (!token) return;
+    let alive = true;
+    const buscar = async () => {
+      const { data } = await supabase.rpc("cliente_posicao_motorista", { _token: token });
+      if (!alive) return;
+      const row = (data as Array<{ motorista_codigo: string; nome: string | null; lat: number | null; lng: number | null }> | null)?.[0];
+      if (row && row.lat != null && row.lng != null) {
+        setPosMot({ codigo: row.motorista_codigo, nome: row.nome ?? "Motociclista", lat: Number(row.lat), lng: Number(row.lng), status: "Em corrida" });
+      }
+    };
+    void buscar();
+    const id = setInterval(buscar, 5000);
+    return () => { alive = false; clearInterval(id); };
+  }, [rastreando, corrida.id]);
 
   return (
     <Card className="rounded-2xl p-5 space-y-4">
@@ -537,6 +558,12 @@ function CorridaAtivaCard({
               )}
             </div>
           </div>
+
+          {rastreando && posMot && (
+            <div className="rounded-xl overflow-hidden border border-border" style={{ height: 220 }}>
+              <MapLeaflet motoristas={[posMot]} hideLabels />
+            </div>
+          )}
 
           {(corrida.status === "Aceita" || corrida.status === "A caminho") && (corrida.eta_coleta_segundos || corrida.eta_chegada_em) && (
             <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-center">

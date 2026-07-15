@@ -19,6 +19,7 @@ import {
   User,
 } from "lucide-react";
 import { useCliente, getClienteToken } from "@/lib/cliente-auth";
+import { iniciarPushCliente } from "@/lib/push-native";
 import { LogoRota013 } from "@/components/logo-rota013";
 import { LandscapeBlock } from "@/components/landscape-block";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +45,14 @@ function ClienteAppLayout() {
   useEffect(() => {
     if (!loading && !cliente) navigate({ to: "/cliente/login", replace: true });
   }, [loading, cliente, navigate]);
+
+  // Push: registra o dispositivo do cliente (efetivo só no app nativo)
+  useEffect(() => {
+    if (cliente) {
+      const token = getClienteToken();
+      if (token) void iniciarPushCliente(token);
+    }
+  }, [cliente]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

@@ -544,11 +544,16 @@ function CorridaAtivaCard({
                 Chegada em{" "}
                 <span className="font-bold text-primary">
                   aproximadamente {(() => {
+                    // ETA enviado manualmente pelo operador tem precedência sobre o
+                    // ETA automático (GPS). eta_chegada_em só é preenchido pelo operador.
+                    if (corrida.eta_chegada_em) {
+                      const ms = new Date(corrida.eta_chegada_em).getTime() - Date.now();
+                      return Math.max(1, Math.round(ms / 60000));
+                    }
                     if (corrida.eta_coleta_segundos && corrida.eta_coleta_segundos > 0) {
                       return Math.max(1, Math.round(corrida.eta_coleta_segundos / 60));
                     }
-                    const ms = new Date(corrida.eta_chegada_em!).getTime() - Date.now();
-                    return Math.max(1, Math.round(ms / 60000));
+                    return 1;
                   })()} min
                 </span>
                 .

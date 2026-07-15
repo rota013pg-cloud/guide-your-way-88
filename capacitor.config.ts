@@ -16,8 +16,8 @@ const config: CapacitorConfig = {
   appName: "Rota 013 Motociclista",
   webDir: ".output/public",
   server: {
-    // Carrega o site publicado. Trocar para o domínio final em produção.
-    url: "https://rota013.com.br",
+    // Carrega o app do motociclista publicado (server.url = shell nativo fino).
+    url: "https://app.rota013.com.br",
     cleartext: false,
     androidScheme: "https",
   },

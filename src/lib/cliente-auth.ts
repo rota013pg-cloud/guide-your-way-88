@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { desregistrarPushCliente } from "@/lib/push-native";
 
 const TOKEN_KEY = "rota013_cliente_token";
 
@@ -59,6 +60,9 @@ export function useCliente() {
 
   const logout = useCallback(async () => {
     const token = getClienteToken();
+    // Remove o token de push deste aparelho ANTES de encerrar a sessão, pra o
+    // aparelho não continuar recebendo notificações do cliente que está saindo.
+    await desregistrarPushCliente().catch(() => undefined);
     if (token) {
       await supabase.rpc("cliente_logout", { _token: token });
     }

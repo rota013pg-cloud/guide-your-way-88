@@ -66,6 +66,17 @@ export const clienteRegistrarPushToken = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ─── CLIENTE: remove token FCM do dispositivo (logout) ───
+// Apaga pelo fcm_token (que é único por aparelho). Não exige sessão porque
+// no logout a sessão já está sendo encerrada; conhecer o token do próprio
+// aparelho já é prova suficiente pra removê-lo.
+export const clienteDesregistrarPushToken = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ fcmToken: z.string().min(20) }).parse(d))
+  .handler(async ({ data }) => {
+    await supabaseAdmin.from("cliente_push_tokens").delete().eq("fcm_token", data.fcmToken);
+    return { ok: true };
+  });
+
 // ─── CLIENTE: URL de upload de mídia ─────────────────────
 export const clienteChatUploadUrl = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ token: z.string().min(10), ext: z.string().max(10) }).parse(d))

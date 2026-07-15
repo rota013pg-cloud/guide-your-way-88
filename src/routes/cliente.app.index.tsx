@@ -561,7 +561,7 @@ function CorridaAtivaCard({
 
           {rastreando && (
             <div className="relative rounded-xl overflow-hidden border border-border" style={{ height: 220 }}>
-              <MapLeaflet motoristas={posMot ? [posMot] : []} hideLabels />
+              <MapLeaflet motoristas={posMot ? [posMot] : []} hideLabels seguir />
               {!posMot && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/60">
                   <div className="flex items-center gap-2 rounded-full bg-card/90 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow">

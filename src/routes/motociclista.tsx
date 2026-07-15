@@ -320,6 +320,12 @@ function MotoristaApp() {
     // Garante que ofertas pendentes sejam apresentadas mesmo sem evento INSERT.
     const pollInterval = setInterval(() => {
       recarregarContexto();
+      // Repesca a cobrança: o realtime de motorista_cobranca não chega ao app
+      // (conecta como anon, sem SELECT nessa tabela), então sem isto o app ficava
+      // travado na tela da taxa mesmo após a central confirmar o pagamento.
+      minhaCobrancaFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } })
+        .then((r) => { setCobranca(r.cobranca as typeof cobranca); setCobrancaCfg(r.config); })
+        .catch(() => {});
     }, 8000);
 
     return () => {
@@ -1594,7 +1600,8 @@ const cssMotorista = `
 }
 .moto-app .oferta-card {
   background:var(--card); border-radius:28px 28px 0 0;
-  padding:24px 20px 28px; width:100%; max-width:480px;
+  padding:24px 20px calc(28px + env(safe-area-inset-bottom)); width:100%; max-width:480px;
+  max-height:92vh; overflow-y:auto;
 }
 .moto-app .oferta-titulo {
   font-size:20px; font-weight:900; text-align:center;

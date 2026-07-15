@@ -24,6 +24,7 @@ import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { PanicButton } from "@/components/motorista/panic-button";
 import { playChatBeep } from "@/lib/notification-sound";
 import { iniciarRastreamento, pararRastreamento, ehNativo } from "@/lib/gps-tracker";
+import { iniciarPushMotorista } from "@/lib/push-native";
 import { LogoRota013 } from "@/components/logo-rota013";
 import { LandscapeBlock } from "@/components/landscape-block";
 import { RawPasswordInput } from "@/components/ui/password-input";
@@ -402,6 +403,11 @@ function MotoristaApp() {
       pararGps();
     }
   }, [sessao, online, iniciarGps, pararGps]);
+
+  // Push: registra o dispositivo quando logado (efetivo só no app nativo)
+  useEffect(() => {
+    if (sessao) void iniciarPushMotorista(sessao.motorista.codigo, sessao.token);
+  }, [sessao]);
 
   // ─── App em background/fechado: força Offline para não receber corridas ─
   // Sem isso o painel acha que o motorista está online mas ele não responde

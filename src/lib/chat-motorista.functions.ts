@@ -2,9 +2,35 @@
  * Chat motorista <-> operador (Supabase Realtime).
  */
 import { createServerFn } from "@tanstack/react-start";
+import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+const BUCKET_CHAT = "chat-midia";
+const MidiaTipoEnum = z.enum(["imagem", "video", "audio", "arquivo"]);
+
+function rotuloMidia(tipo?: string | null): string {
+  switch (tipo) {
+    case "imagem": return "📷 Foto";
+    case "video": return "🎬 Vídeo";
+    case "audio": return "🎤 Áudio";
+    case "arquivo": return "📎 Arquivo";
+    default: return "";
+  }
+}
+
+// Gera uma URL de upload assinada — o cliente sobe o arquivo direto pro Storage
+// (aguenta vídeo grande sem passar pelo payload da server function).
+async function gerarUploadUrl(prefixo: string, ext: string) {
+  const safeExt = (ext || "bin").replace(/[^a-z0-9]/gi, "").slice(0, 8) || "bin";
+  const nome = `${Date.now()}-${randomBytes(8).toString("hex")}.${safeExt}`;
+  const path = `${prefixo}/${nome}`;
+  const { data, error } = await supabaseAdmin.storage.from(BUCKET_CHAT).createSignedUploadUrl(path);
+  if (error || !data) throw new Error(error?.message ?? "Falha ao preparar upload.");
+  const { data: pub } = supabaseAdmin.storage.from(BUCKET_CHAT).getPublicUrl(path);
+  return { path: data.path, token: data.token, publicUrl: pub.publicUrl };
+}
 
 async function validarTokenMotorista(codigo: string, token: string) {
   const { data } = await supabaseAdmin
@@ -38,15 +64,32 @@ export const motoristaListarChat = createServerFn({ method: "POST" })
     return { mensagens: msgs ?? [] };
   });
 
-// ─── MOTORISTA: envia mensagem ───────────────────────────
-export const motoristaEnviarMensagem = createServerFn({ method: "POST" })
+// ─── MOTORISTA: URL de upload de mídia ───────────────────
+export const motoristaChatUploadUrl = createServerFn({ method: "POST" })
   .inputValidator((d) =>
-    z.object({
-      codigo: z.string(),
-      token: z.string(),
-      texto: z.string().min(1).max(1000),
-    }).parse(d),
+    z.object({ codigo: z.string(), token: z.string(), ext: z.string().max(10) }).parse(d),
   )
+  .handler(async ({ data }) => {
+    await validarTokenMotorista(data.codigo, data.token);
+    return gerarUploadUrl(`motorista/${data.codigo}`, data.ext);
+  });
+
+// ─── MOTORISTA: envia mensagem (texto e/ou mídia) ────────
+const EnviarMotoristaSchema = z
+  .object({
+    codigo: z.string(),
+    token: z.string(),
+    texto: z.string().max(1000).optional().default(""),
+    midiaUrl: z.string().url().optional(),
+    midiaTipo: MidiaTipoEnum.optional(),
+    midiaNome: z.string().max(200).optional(),
+  })
+  .refine((v) => v.texto.trim().length > 0 || !!v.midiaUrl, {
+    message: "Mensagem vazia.",
+  });
+
+export const motoristaEnviarMensagem = createServerFn({ method: "POST" })
+  .inputValidator((d) => EnviarMotoristaSchema.parse(d))
   .handler(async ({ data }) => {
     await validarTokenMotorista(data.codigo, data.token);
     const { data: mot } = await supabaseAdmin
@@ -55,8 +98,11 @@ export const motoristaEnviarMensagem = createServerFn({ method: "POST" })
       motorista_codigo: data.codigo,
       autor: "motorista",
       autor_nome: mot?.nome ?? data.codigo,
-      texto: data.texto,
-    });
+      texto: data.texto?.trim() || null,
+      midia_url: data.midiaUrl ?? null,
+      midia_tipo: data.midiaTipo ?? null,
+      midia_nome: data.midiaNome ?? null,
+    } as never);
     return { ok: true };
   });
 
@@ -91,7 +137,7 @@ export const operadorListarConversas = createServerFn({ method: "POST" })
           motorista_nome: m?.nome ?? c.motorista_codigo,
           telefone: m?.telefone ?? null,
           status: m?.status ?? null,
-          ultima_msg: c.texto,
+          ultima_msg: c.texto || rotuloMidia((c as { midia_tipo?: string | null }).midia_tipo),
           ultima_em: c.criado_em,
           nao_lidas: 0,
         });
@@ -122,15 +168,26 @@ export const operadorListarChat = createServerFn({ method: "POST" })
     return { mensagens: msgs ?? [] };
   });
 
-// ─── OPERADOR: envia mensagem ────────────────────────────
+// ─── OPERADOR: URL de upload de mídia ────────────────────
+export const operadorChatUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ ext: z.string().max(10) }).parse(d))
+  .handler(async ({ data }) => gerarUploadUrl("operador", data.ext));
+
+// ─── OPERADOR: envia mensagem (texto e/ou mídia) ─────────
+const EnviarOperadorSchema = z
+  .object({
+    motoristaCodigo: z.string(),
+    texto: z.string().max(1000).optional().default(""),
+    midiaUrl: z.string().url().optional(),
+    midiaTipo: MidiaTipoEnum.optional(),
+    midiaNome: z.string().max(200).optional(),
+  })
+  .refine((v) => v.texto.trim().length > 0 || !!v.midiaUrl, { message: "Mensagem vazia." });
+
 export const operadorEnviarMensagem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
-    z.object({
-      motoristaCodigo: z.string(),
-      texto: z.string().min(1).max(1000),
-    }).parse(d),
-  )
+  .inputValidator((d) => EnviarOperadorSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { data: op } = await supabaseAdmin
       .from("usuarios_painel").select("nome").eq("user_id", context.userId as string).maybeSingle();
@@ -138,8 +195,11 @@ export const operadorEnviarMensagem = createServerFn({ method: "POST" })
       motorista_codigo: data.motoristaCodigo,
       autor: "operador",
       autor_nome: op?.nome ?? "Central",
-      texto: data.texto,
-    });
+      texto: data.texto?.trim() || null,
+      midia_url: data.midiaUrl ?? null,
+      midia_tipo: data.midiaTipo ?? null,
+      midia_nome: data.midiaNome ?? null,
+    } as never);
     return { ok: true };
   });
 

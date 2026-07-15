@@ -5,9 +5,11 @@ import {
   operadorListarConversas,
   operadorListarChat,
   operadorEnviarMensagem,
+  operadorChatUploadUrl,
   adminApagarMensagem,
   adminApagarConversa,
 } from "@/lib/chat-motorista.functions";
+import { BotoesAnexo, MidiaMensagem } from "@/lib/chat-midia";
 import { listarMotoristas } from "@/lib/motoristas.functions";
 import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";
@@ -102,6 +104,20 @@ function ChatMotoristasPage() {
     } finally {
       setEnviando(false);
     }
+  };
+
+  const enviarMidia = async (m: { midiaUrl: string; midiaTipo: string; midiaNome: string }) => {
+    if (!selecionado) return;
+    await operadorEnviarMensagem({
+      data: {
+        motoristaCodigo: selecionado,
+        texto: "",
+        midiaUrl: m.midiaUrl,
+        midiaTipo: m.midiaTipo as "imagem" | "video" | "audio" | "arquivo",
+        midiaNome: m.midiaNome,
+      },
+    });
+    await carregarMensagens(selecionado);
   };
 
   const conversasFiltradas = conversas.filter((c) =>
@@ -289,7 +305,8 @@ function ChatMotoristasPage() {
                 {mensagens.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-8">Sem mensagens ainda.</p>
                 )}
-                {mensagens.map((m) => {
+                {mensagens.map((mRaw) => {
+                  const m = mRaw as typeof mRaw & { midia_url?: string | null; midia_tipo?: string | null; midia_nome?: string | null };
                   const meu = m.autor === "operador";
                   return (
                     <div key={m.id} className={`flex ${meu ? "justify-end" : "justify-start"}`}>
@@ -313,7 +330,12 @@ function ChatMotoristasPage() {
                             </button>
                           )}
                         </div>
-                        <div className="whitespace-pre-wrap break-words">{m.texto}</div>
+                        {m.midia_url && (
+                          <div className="mb-1">
+                            <MidiaMensagem url={m.midia_url} tipo={m.midia_tipo} nome={m.midia_nome} />
+                          </div>
+                        )}
+                        {m.texto && <div className="whitespace-pre-wrap break-words">{m.texto}</div>}
                         <div className="text-[10px] opacity-60 mt-1 text-right">
                           {new Date(m.criado_em).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",
@@ -326,7 +348,13 @@ function ChatMotoristasPage() {
                 })}
                 <div ref={fimRef} />
               </div>
-              <form onSubmit={enviar} className="flex gap-2 p-3 border-t border-border">
+              <form onSubmit={enviar} className="flex items-center gap-1 p-3 border-t border-border">
+                <BotoesAnexo
+                  obterUploadUrl={(ext) => operadorChatUploadUrl({ data: { ext } })}
+                  onEnviar={enviarMidia}
+                  cor="hsl(var(--primary))"
+                  disabled={enviando}
+                />
                 <Input
                   placeholder="Mensagem..."
                   value={texto}

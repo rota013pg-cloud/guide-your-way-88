@@ -30,3 +30,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Variáveis de ambiente (configurar na Vercel, nunca versionar)
+.env
+.env.*
+!.env.example

@@ -23,6 +23,7 @@ import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { PanicButton } from "@/components/motorista/panic-button";
 import { playChatBeep } from "@/lib/notification-sound";
+import { iniciarRastreamento, pararRastreamento, ehNativo } from "@/lib/gps-tracker";
 import { LogoRota013 } from "@/components/logo-rota013";
 import { LandscapeBlock } from "@/components/landscape-block";
 import { RawPasswordInput } from "@/components/ui/password-input";
@@ -134,8 +135,6 @@ function MotoristaApp() {
   const minhaCobrancaFn = useServerFn(motoristaMinhaCobranca);
   const solicitarLibFn = useServerFn(motoristaSolicitarLiberacao);
 
-  const gpsWatchRef = useRef<number | null>(null);
-  const gpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const ofertaTimerRef = useRef<NodeJS.Timeout | null>(null);
   const ultimoStatusCobrancaRef = useRef<string | null>(null);
   // Intenção do motociclista: ficou online por escolha própria? Usado para
@@ -375,48 +374,21 @@ function MotoristaApp() {
     );
   }, [sessao, gpsFn]);
 
+  // Delega ao gps-tracker: no app nativo usa GPS em background (plugin Capacitor,
+  // segue rodando com tela bloqueada); no navegador/PWA usa watchPosition + reforço.
   const iniciarGps = useCallback(() => {
-    if (!sessao || !navigator.geolocation) return;
-    if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
-    if (gpsIntervalRef.current) clearInterval(gpsIntervalRef.current);
-
-    // Posição imediata ao iniciar (não espera o primeiro fix do watch).
-    enviarPosicaoAgora();
-
-    gpsWatchRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        gpsFn({
-          data: {
-            codigo: sessao.motorista.codigo,
-            token: sessao.token,
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            velocidade: pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : 0,
-          },
-        }).catch(() => {});
-      },
-      (err) => console.warn("GPS:", err.message),
-      // maximumAge:0 força fix novo a cada notificação — evita pin "preso"
-      // no endereço onde o motorista ficou online.
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
-    );
-
-    // Backup: a cada 10s força um getCurrentPosition mesmo se o watch não
-    // disparar (alguns navegadores param o watch parado, sem movimento).
-    gpsIntervalRef.current = setInterval(() => {
-      enviarPosicaoAgora();
-    }, 10000);
-  }, [sessao, gpsFn, enviarPosicaoAgora]);
+    if (!sessao) return;
+    const codigo = sessao.motorista.codigo;
+    const token = sessao.token;
+    void iniciarRastreamento((p) => {
+      gpsFn({
+        data: { codigo, token, lat: p.lat, lng: p.lng, velocidade: p.velocidade },
+      }).catch(() => {});
+    });
+  }, [sessao, gpsFn]);
 
   const pararGps = useCallback(() => {
-    if (gpsWatchRef.current !== null) {
-      navigator.geolocation.clearWatch(gpsWatchRef.current);
-      gpsWatchRef.current = null;
-    }
-    if (gpsIntervalRef.current) {
-      clearInterval(gpsIntervalRef.current);
-      gpsIntervalRef.current = null;
-    }
+    void pararRastreamento();
   }, []);
 
   useEffect(() => () => pararGps(), [pararGps]);
@@ -437,6 +409,10 @@ function MotoristaApp() {
   // o status Online automaticamente se essa era a intenção do motorista.
   useEffect(() => {
     if (!sessao) return;
+    // No app nativo o GPS roda em background (foreground service), então NÃO
+    // forçamos offline ao minimizar — o motociclista continua Online e recebendo
+    // corridas. Esse workaround é exclusivo do PWA (web), onde o GPS morre.
+    if (ehNativo()) return;
 
     const irOffline = (motivo: string) => {
       if (!intencaoOnlineRef.current) return;
@@ -639,10 +615,11 @@ function MotoristaApp() {
 
 
   const irWaze = (lugar: string) => {
-    // Usar location.href (não window.open) evita que o Android abra uma nova
-    // aba do navegador — assim o Waze é aberto pelo handler do sistema e, ao
-    // voltar, retornamos direto ao app GMD em vez de uma tela em branco com
-    // barra de endereço.
+    // Usa o esquema do app (waze://) em vez do link https://waze.com/ul.
+    // O link https carregava a página da waze.com no app, que reabria o Waze
+    // sozinha toda vez que voltava ao foco (inclusive após finalizar a corrida).
+    // O esquema waze:// abre o app direto, sem carregar página web. Requer Waze
+    // instalado (é o app de navegação usado pelo motociclista).
     window.location.href = `waze://?q=${encodeURIComponent(lugar)}&navigate=yes`;
   };
 

@@ -2,9 +2,78 @@
  * Chat cliente <-> operador (Supabase Realtime).
  */
 import { createServerFn } from "@tanstack/react-start";
+import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+const BUCKET_CHAT = "chat-midia";
+const MidiaTipoEnum = z.enum(["imagem", "video", "audio", "arquivo"]);
+
+function rotuloMidia(tipo?: string | null): string {
+  switch (tipo) {
+    case "imagem": return "📷 Foto";
+    case "video": return "🎬 Vídeo";
+    case "audio": return "🎤 Áudio";
+    case "arquivo": return "📎 Arquivo";
+    default: return "";
+  }
+}
+
+async function gerarUploadUrl(prefixo: string, ext: string) {
+  const safeExt = (ext || "bin").replace(/[^a-z0-9]/gi, "").slice(0, 8) || "bin";
+  const nome = `${Date.now()}-${randomBytes(8).toString("hex")}.${safeExt}`;
+  const path = `${prefixo}/${nome}`;
+  const { data, error } = await supabaseAdmin.storage.from(BUCKET_CHAT).createSignedUploadUrl(path);
+  if (error || !data) throw new Error(error?.message ?? "Falha ao preparar upload.");
+  const { data: pub } = supabaseAdmin.storage.from(BUCKET_CHAT).getPublicUrl(path);
+  return { path: data.path, token: data.token, publicUrl: pub.publicUrl };
+}
+
+async function validarTokenCliente(token: string): Promise<{ codigo: string; nome: string }> {
+  const { data: sess } = await supabaseAdmin
+    .from("cliente_sessoes")
+    .select("cliente_codigo")
+    .eq("token", token)
+    .eq("status", "ativa")
+    .maybeSingle();
+  if (!sess) throw new Error("Sessão inválida — faça login novamente.");
+  const codigo = sess.cliente_codigo as string;
+  const { data: cli } = await supabaseAdmin.from("clientes").select("nome").eq("codigo", codigo).maybeSingle();
+  return { codigo, nome: cli?.nome ?? codigo };
+}
+
+// ─── CLIENTE: URL de upload de mídia ─────────────────────
+export const clienteChatUploadUrl = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: z.string().min(10), ext: z.string().max(10) }).parse(d))
+  .handler(async ({ data }) => {
+    const { codigo } = await validarTokenCliente(data.token);
+    return gerarUploadUrl(`cliente/${codigo}`, data.ext);
+  });
+
+// ─── CLIENTE: envia mídia ────────────────────────────────
+export const clienteEnviarMidia = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      token: z.string().min(10),
+      midiaUrl: z.string().url(),
+      midiaTipo: MidiaTipoEnum,
+      midiaNome: z.string().max(200).optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { codigo, nome } = await validarTokenCliente(data.token);
+    await supabaseAdmin.from("chat_cliente").insert({
+      cliente_codigo: codigo,
+      autor: "cliente",
+      autor_nome: nome,
+      texto: null,
+      midia_url: data.midiaUrl,
+      midia_tipo: data.midiaTipo,
+      midia_nome: data.midiaNome ?? null,
+    } as never);
+    return { ok: true };
+  });
 
 // ─── OPERADOR: lista conversas (último por cliente) ───
 export const operadorListarConversasCliente = createServerFn({ method: "POST" })
@@ -35,7 +104,7 @@ export const operadorListarConversasCliente = createServerFn({ method: "POST" })
           cliente_codigo: c.cliente_codigo,
           cliente_nome: m?.nome ?? c.cliente_codigo,
           telefone: m?.telefone ?? null,
-          ultima_msg: c.texto,
+          ultima_msg: c.texto || rotuloMidia((c as { midia_tipo?: string | null }).midia_tipo),
           ultima_em: c.criado_em,
           nao_lidas: 0,
         });
@@ -66,15 +135,26 @@ export const operadorListarChatCliente = createServerFn({ method: "POST" })
     return { mensagens: msgs ?? [] };
   });
 
-// ─── OPERADOR: envia mensagem ────────────────────────────
+// ─── OPERADOR: URL de upload de mídia (chat cliente) ─────
+export const operadorChatClienteUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ ext: z.string().max(10) }).parse(d))
+  .handler(async ({ data }) => gerarUploadUrl("operador", data.ext));
+
+// ─── OPERADOR: envia mensagem (texto e/ou mídia) ─────────
+const EnviarClienteSchema = z
+  .object({
+    clienteCodigo: z.string(),
+    texto: z.string().max(1000).optional().default(""),
+    midiaUrl: z.string().url().optional(),
+    midiaTipo: MidiaTipoEnum.optional(),
+    midiaNome: z.string().max(200).optional(),
+  })
+  .refine((v) => v.texto.trim().length > 0 || !!v.midiaUrl, { message: "Mensagem vazia." });
+
 export const operadorEnviarMensagemCliente = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
-    z.object({
-      clienteCodigo: z.string(),
-      texto: z.string().min(1).max(1000),
-    }).parse(d),
-  )
+  .inputValidator((d) => EnviarClienteSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { data: op } = await supabaseAdmin
       .from("usuarios_painel").select("nome").eq("user_id", context.userId as string).maybeSingle();
@@ -82,8 +162,11 @@ export const operadorEnviarMensagemCliente = createServerFn({ method: "POST" })
       cliente_codigo: data.clienteCodigo,
       autor: "central",
       autor_nome: op?.nome ?? "Central",
-      texto: data.texto,
-    });
+      texto: data.texto?.trim() || null,
+      midia_url: data.midiaUrl ?? null,
+      midia_tipo: data.midiaTipo ?? null,
+      midia_nome: data.midiaNome ?? null,
+    } as never);
     return { ok: true };
   });
 

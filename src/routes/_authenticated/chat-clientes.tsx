@@ -5,9 +5,11 @@ import {
   operadorListarConversasCliente,
   operadorListarChatCliente,
   operadorEnviarMensagemCliente,
+  operadorChatClienteUploadUrl,
   adminApagarMensagemCliente,
   adminApagarConversaCliente,
 } from "@/lib/chat-cliente.functions";
+import { BotoesAnexo, MidiaMensagem } from "@/lib/chat-midia";
 import { listarClientes } from "@/lib/clientes.functions";
 import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";
@@ -103,6 +105,20 @@ function ChatClientesPage() {
     } finally {
       setEnviando(false);
     }
+  };
+
+  const enviarMidia = async (m: { midiaUrl: string; midiaTipo: string; midiaNome: string }) => {
+    if (!selecionado) return;
+    await operadorEnviarMensagemCliente({
+      data: {
+        clienteCodigo: selecionado,
+        texto: "",
+        midiaUrl: m.midiaUrl,
+        midiaTipo: m.midiaTipo as "imagem" | "video" | "audio" | "arquivo",
+        midiaNome: m.midiaNome,
+      },
+    });
+    await carregarMensagens(selecionado);
   };
 
   const conversasFiltradas = conversas.filter((c) =>
@@ -312,7 +328,8 @@ function ChatClientesPage() {
                 {mensagens.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-8">Sem mensagens ainda.</p>
                 )}
-                {mensagens.map((m) => {
+                {mensagens.map((mRaw) => {
+                  const m = mRaw as typeof mRaw & { midia_url?: string | null; midia_tipo?: string | null; midia_nome?: string | null };
                   const meu = m.autor === "central";
                   return (
                     <div key={m.id} className={`flex ${meu ? "justify-end" : "justify-start"}`}>
@@ -335,7 +352,12 @@ function ChatClientesPage() {
                             </button>
                           )}
                         </div>
-                        <div className="whitespace-pre-wrap break-words">{m.texto}</div>
+                        {m.midia_url && (
+                          <div className="mb-1">
+                            <MidiaMensagem url={m.midia_url} tipo={m.midia_tipo} nome={m.midia_nome} />
+                          </div>
+                        )}
+                        {m.texto && <div className="whitespace-pre-wrap break-words">{m.texto}</div>}
                         <div className="text-[10px] opacity-60 mt-1 text-right">
                           {new Date(m.criado_em).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",
@@ -348,12 +370,19 @@ function ChatClientesPage() {
                 })}
                 <div ref={fimRef} />
               </div>
-              <form onSubmit={enviar} className="flex gap-2 p-3 border-t border-border">
+              <form onSubmit={enviar} className="flex items-center gap-1 p-3 border-t border-border">
+                <BotoesAnexo
+                  obterUploadUrl={(ext) => operadorChatClienteUploadUrl({ data: { ext } })}
+                  onEnviar={enviarMidia}
+                  cor="hsl(var(--primary))"
+                  disabled={enviando}
+                />
                 <Input
                   placeholder="Mensagem..."
                   value={texto}
                   onChange={(e) => setTexto(e.target.value)}
                   disabled={enviando}
+                  className="min-w-0"
                 />
                 <Button type="submit" disabled={enviando || !texto.trim()}>
                   <Send className="h-4 w-4" />

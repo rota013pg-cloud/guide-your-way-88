@@ -96,7 +96,12 @@ export async function enviarPushMotorista(codigos: string[], msg: PushMsg): Prom
               data: msg.data ?? {},
               android: {
                 priority: "HIGH",
-                notification: { sound: "default" },
+                notification: {
+                  sound: "default",
+                  channel_id: "rota013",
+                  notification_priority: "PRIORITY_HIGH",
+                  default_vibrate_timings: true,
+                },
               },
             },
           }),

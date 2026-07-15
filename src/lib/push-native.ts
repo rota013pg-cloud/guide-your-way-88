@@ -22,6 +22,21 @@ export async function iniciarPushMotorista(codigo: string, sessaoToken: string):
       return;
     }
 
+    // Canal de ALTA importância → notificação "heads-up" (banner + som), igual WhatsApp.
+    try {
+      await PushNotifications.createChannel({
+        id: "rota013",
+        name: "Rota 013 — Corridas e mensagens",
+        description: "Novas corridas e mensagens da central",
+        importance: 5, // MAX → heads-up
+        visibility: 1, // pública
+        vibration: true,
+        lights: true,
+      });
+    } catch (e) {
+      console.warn("[push] createChannel:", e);
+    }
+
     // Token FCM -> servidor
     await PushNotifications.addListener("registration", (tk) => {
       registrarPushToken({

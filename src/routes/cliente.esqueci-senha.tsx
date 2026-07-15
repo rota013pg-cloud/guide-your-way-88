@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { solicitarResetCliente } from "@/lib/cliente-reset.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,13 +18,13 @@ function EsqueciSenhaPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [enviado, setEnviado] = useState(false);
+  const solicitarFn = useServerFn(solicitarResetCliente);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.rpc("cliente_solicitar_reset", { _email: email });
-      if (error) throw error;
+      await solicitarFn({ data: { email } });
       setEnviado(true);
       toast.success("Se a conta existir, um link de redefinição foi enviado por e-mail.");
     } catch (err) {

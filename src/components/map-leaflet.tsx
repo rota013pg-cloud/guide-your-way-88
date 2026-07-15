@@ -10,7 +10,16 @@ export type MapMotorista = {
 
 const MapInner = lazy(() => import("./map-leaflet-inner"));
 
-export function MapLeaflet({ motoristas, hideLabels }: { motoristas: MapMotorista[]; hideLabels?: boolean }) {
+export function MapLeaflet({
+  motoristas,
+  hideLabels,
+  seguir,
+}: {
+  motoristas: MapMotorista[];
+  hideLabels?: boolean;
+  /** Faz o mapa acompanhar (pan) o primeiro motorista sempre que ele se move. */
+  seguir?: boolean;
+}) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) {
@@ -18,7 +27,7 @@ export function MapLeaflet({ motoristas, hideLabels }: { motoristas: MapMotorist
   }
   return (
     <Suspense fallback={<div className="h-full w-full rounded-lg bg-muted/30 animate-pulse" />}>
-      <MapInner motoristas={motoristas} hideLabels={hideLabels} />
+      <MapInner motoristas={motoristas} hideLabels={hideLabels} seguir={seguir} />
     </Suspense>
   );
 }

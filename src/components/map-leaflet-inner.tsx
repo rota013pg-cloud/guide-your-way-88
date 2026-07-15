@@ -1,7 +1,20 @@
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import type { MapMotorista } from "./map-leaflet";
+
+// Faz o mapa acompanhar o pin: dá pan pra posição sempre que ela muda.
+// Mantém o zoom atual (deixa o usuário aproximar/afastar à vontade).
+function SeguirPin({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap();
+  useEffect(() => {
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      map.setView([lat, lng], map.getZoom(), { animate: true });
+    }
+  }, [lat, lng, map]);
+  return null;
+}
 
 // Pin de moto com ID acima (opcionalmente sem rótulo)
 const buildIcon = (codigo: string, status: string, hideLabel: boolean) => {
@@ -32,17 +45,28 @@ const buildIcon = (codigo: string, status: string, hideLabel: boolean) => {
 // Praia Grande / Baixada Santista
 const CENTRO: [number, number] = [-24.0122, -46.4097];
 
-export default function MapInner({ motoristas, hideLabels }: { motoristas: MapMotorista[]; hideLabels?: boolean }) {
+export default function MapInner({
+  motoristas,
+  hideLabels,
+  seguir,
+}: {
+  motoristas: MapMotorista[];
+  hideLabels?: boolean;
+  seguir?: boolean;
+}) {
   const center: [number, number] =
     motoristas.length > 0 ? [Number(motoristas[0].lat), Number(motoristas[0].lng)] : CENTRO;
 
   return (
     <MapContainer
       center={center}
-      zoom={13}
+      zoom={seguir ? 15 : 13}
       scrollWheelZoom
       style={{ height: "100%", width: "100%", borderRadius: "0.5rem", background: "#eaeaea", zIndex: 0 }}
     >
+      {seguir && motoristas.length > 0 && (
+        <SeguirPin lat={Number(motoristas[0].lat)} lng={Number(motoristas[0].lng)} />
+      )}
       <TileLayer
         attribution='&copy; OpenStreetMap &copy; CARTO'
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"

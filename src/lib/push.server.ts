@@ -61,18 +61,11 @@ async function getAccessToken(sa: ServiceAccount): Promise<string> {
 
 export type PushMsg = { title: string; body: string; data?: Record<string, string> };
 
-/** Envia push para os dispositivos dos motociclistas informados. Silencioso se não configurado. */
-export async function enviarPushMotorista(codigos: string[], msg: PushMsg): Promise<void> {
-  if (codigos.length === 0) return;
+/** Envia para uma lista de tokens FCM. `tabela` é usada só pra remover token morto. */
+async function enviarParaTokens(tokens: string[], msg: PushMsg, tabela: "motorista_push_tokens" | "cliente_push_tokens") {
+  if (tokens.length === 0) return;
   const sa = getServiceAccount();
   if (!sa) return; // push não configurado ainda — não quebra o fluxo
-
-  const { data: toks } = await supabaseAdmin
-    .from("motorista_push_tokens")
-    .select("fcm_token")
-    .in("motorista_codigo", codigos);
-  const tokens = (toks ?? []).map((t) => t.fcm_token as string).filter(Boolean);
-  if (tokens.length === 0) return;
 
   let accessToken: string;
   try {
@@ -108,9 +101,8 @@ export async function enviarPushMotorista(codigos: string[], msg: PushMsg): Prom
         });
         if (!res.ok) {
           const t = await res.text();
-          // 404/400 UNREGISTERED = token morto → remove
           if (res.status === 404 || /UNREGISTERED|INVALID_ARGUMENT/i.test(t)) {
-            await supabaseAdmin.from("motorista_push_tokens").delete().eq("fcm_token", fcmToken);
+            await supabaseAdmin.from(tabela).delete().eq("fcm_token", fcmToken);
           } else {
             console.error("[push] envio falhou", res.status, t.slice(0, 200));
           }
@@ -120,4 +112,24 @@ export async function enviarPushMotorista(codigos: string[], msg: PushMsg): Prom
       }
     }),
   );
+}
+
+/** Envia push para os dispositivos dos motociclistas informados. Silencioso se não configurado. */
+export async function enviarPushMotorista(codigos: string[], msg: PushMsg): Promise<void> {
+  if (codigos.length === 0 || !getServiceAccount()) return;
+  const { data: toks } = await supabaseAdmin
+    .from("motorista_push_tokens")
+    .select("fcm_token")
+    .in("motorista_codigo", codigos);
+  await enviarParaTokens((toks ?? []).map((t) => t.fcm_token as string).filter(Boolean), msg, "motorista_push_tokens");
+}
+
+/** Envia push para os dispositivos dos clientes informados. Silencioso se não configurado. */
+export async function enviarPushCliente(codigos: string[], msg: PushMsg): Promise<void> {
+  if (codigos.length === 0 || !getServiceAccount()) return;
+  const { data: toks } = await supabaseAdmin
+    .from("cliente_push_tokens")
+    .select("fcm_token")
+    .in("cliente_codigo", codigos);
+  await enviarParaTokens((toks ?? []).map((t) => t.fcm_token as string).filter(Boolean), msg, "cliente_push_tokens");
 }

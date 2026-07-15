@@ -1,16 +1,16 @@
 /**
- * Push no app do motociclista (nativo/Android via FCM).
- * Só roda no app nativo (Capacitor). Pede permissão, registra e envia o token
- * FCM pro servidor (registrarPushToken). Background: o Android exibe a
- * notificação sozinho; foreground: mostramos um toast.
+ * Push nos apps nativos (Android via FCM). Só roda no app nativo (Capacitor).
+ * Pede permissão, cria o canal de alta importância (heads-up), registra e envia
+ * o token FCM pro servidor. Foreground mostra um toast.
  */
 import { toast } from "sonner";
 import { ehNativo } from "@/lib/gps-tracker";
 import { registrarPushToken } from "@/lib/motorista.functions";
+import { clienteRegistrarPushToken } from "@/lib/chat-cliente.functions";
 
 let iniciado = false;
 
-export async function iniciarPushMotorista(codigo: string, sessaoToken: string): Promise<void> {
+async function iniciarPush(registrar: (fcmToken: string) => Promise<unknown>): Promise<void> {
   if (!ehNativo() || iniciado) return;
   iniciado = true;
   try {
@@ -26,10 +26,10 @@ export async function iniciarPushMotorista(codigo: string, sessaoToken: string):
     try {
       await PushNotifications.createChannel({
         id: "rota013",
-        name: "Rota 013 — Corridas e mensagens",
-        description: "Novas corridas e mensagens da central",
-        importance: 5, // MAX → heads-up
-        visibility: 1, // pública
+        name: "Rota 013 — Avisos",
+        description: "Corridas e mensagens",
+        importance: 5,
+        visibility: 1,
         vibration: true,
         lights: true,
       });
@@ -37,18 +37,10 @@ export async function iniciarPushMotorista(codigo: string, sessaoToken: string):
       console.warn("[push] createChannel:", e);
     }
 
-    // Token FCM -> servidor
     await PushNotifications.addListener("registration", (tk) => {
-      registrarPushToken({
-        data: { codigo, token: sessaoToken, fcmToken: tk.value, plataforma: "android" },
-      }).catch((e) => console.warn("[push] registrar token:", e));
+      registrar(tk.value).catch((e) => console.warn("[push] registrar token:", e));
     });
-
-    await PushNotifications.addListener("registrationError", (e) =>
-      console.warn("[push] erro de registro:", e),
-    );
-
-    // App aberto (foreground): Android não mostra o balão sozinho -> toast.
+    await PushNotifications.addListener("registrationError", (e) => console.warn("[push] erro:", e));
     await PushNotifications.addListener("pushNotificationReceived", (n) => {
       const t = n.title ?? "Rota 013";
       const b = n.body ?? "";
@@ -60,4 +52,16 @@ export async function iniciarPushMotorista(codigo: string, sessaoToken: string):
     iniciado = false;
     console.warn("[push] init:", e);
   }
+}
+
+export function iniciarPushMotorista(codigo: string, sessaoToken: string): Promise<void> {
+  return iniciarPush((fcmToken) =>
+    registrarPushToken({ data: { codigo, token: sessaoToken, fcmToken, plataforma: "android" } }),
+  );
+}
+
+export function iniciarPushCliente(clienteToken: string): Promise<void> {
+  return iniciarPush((fcmToken) =>
+    clienteRegistrarPushToken({ data: { token: clienteToken, fcmToken, plataforma: "android" } }),
+  );
 }

@@ -10,6 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { enviarPushCliente } from "@/lib/push.server";
 import { calcularValorComParadas } from "@/lib/tarifas-calc";
 
 const SALT = "rota013salt";
@@ -324,6 +325,15 @@ export const motoristaAceitarOferta = createServerFn({ method: "POST" })
       .maybeSingle();
     if (e2) throw new Error(e2.message);
 
+    // Push pro cliente: motociclista aceitou
+    if (corrida?.cliente_codigo) {
+      void enviarPushCliente([corrida.cliente_codigo as string], {
+        title: "🏍️ Corrida aceita!",
+        body: `${motorista?.nome ?? "Um motociclista"} está a caminho.`,
+        data: { tipo: "corrida_aceita", corridaId: String(corridaId) },
+      });
+    }
+
     await supabaseAdmin
       .from("motoristas")
       .update({ status: "Em corrida" })
@@ -442,12 +452,30 @@ export const motoristaAtualizarStatusCorrida = createServerFn({ method: "POST" }
         ? { status: data.status, finalizada_em: new Date().toISOString() }
         : { status: data.status };
 
-    const { error } = await supabaseAdmin
+    const { data: corridaUpd, error } = await supabaseAdmin
       .from("corridas")
       .update(patch)
       .eq("id", data.corridaId)
-      .eq("motorista_codigo", data.codigo);
+      .eq("motorista_codigo", data.codigo)
+      .select("cliente_codigo")
+      .maybeSingle();
     if (error) throw new Error(error.message);
+
+    // Push pro cliente nos marcos importantes
+    const cliCod = corridaUpd?.cliente_codigo as string | undefined;
+    if (cliCod && data.status === "Chegou") {
+      void enviarPushCliente([cliCod], {
+        title: "📍 Seu motociclista chegou!",
+        body: "Ele está no ponto de embarque.",
+        data: { tipo: "chegou", corridaId: String(data.corridaId) },
+      });
+    } else if (cliCod && data.status === "A caminho") {
+      void enviarPushCliente([cliCod], {
+        title: "🏍️ A caminho",
+        body: "Seu motociclista está indo até você.",
+        data: { tipo: "a_caminho", corridaId: String(data.corridaId) },
+      });
+    }
 
     // Registra no log de status para o painel acompanhar a evolução
     await supabaseAdmin.from("corrida_status_log").insert({

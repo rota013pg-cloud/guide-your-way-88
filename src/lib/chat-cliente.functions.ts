@@ -43,6 +43,29 @@ async function validarTokenCliente(token: string): Promise<{ codigo: string; nom
   return { codigo, nome: cli?.nome ?? codigo };
 }
 
+// ─── CLIENTE: registra token FCM do dispositivo ──────────
+export const clienteRegistrarPushToken = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({
+      token: z.string().min(10),
+      fcmToken: z.string().min(20),
+      plataforma: z.string().max(20).optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { codigo } = await validarTokenCliente(data.token);
+    await supabaseAdmin.from("cliente_push_tokens").upsert(
+      {
+        cliente_codigo: codigo,
+        fcm_token: data.fcmToken,
+        plataforma: data.plataforma ?? "android",
+        atualizado_em: new Date().toISOString(),
+      } as never,
+      { onConflict: "fcm_token" },
+    );
+    return { ok: true };
+  });
+
 // ─── CLIENTE: URL de upload de mídia ─────────────────────
 export const clienteChatUploadUrl = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ token: z.string().min(10), ext: z.string().max(10) }).parse(d))

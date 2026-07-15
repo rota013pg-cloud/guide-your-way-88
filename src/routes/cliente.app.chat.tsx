@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageCircle, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken, useCliente } from "@/lib/cliente-auth";
+import { BotoesAnexo, MidiaMensagem } from "@/lib/chat-midia";
+import { clienteChatUploadUrl, clienteEnviarMidia } from "@/lib/chat-cliente.functions";
 import { toast } from "sonner";
 import { ensureAudioUnlock, playChatBeep } from "@/lib/notification-sound";
 import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";
@@ -20,12 +23,17 @@ type Mensagem = {
   cliente_codigo: string;
   autor: "cliente" | "central";
   autor_nome: string | null;
-  texto: string;
+  texto: string | null;
   criado_em: string;
+  midia_url?: string | null;
+  midia_tipo?: string | null;
+  midia_nome?: string | null;
 };
 
 function ChatPage() {
   const { cliente } = useCliente();
+  const uploadUrlFn = useServerFn(clienteChatUploadUrl);
+  const enviarMidiaFn = useServerFn(clienteEnviarMidia);
   const [whatsapp, setWhatsapp] = useState<string>("5513900000000");
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [texto, setTexto] = useState("");
@@ -132,6 +140,25 @@ function ChatPage() {
     }
   };
 
+  const enviarMidia = async (mm: { midiaUrl: string; midiaTipo: string; midiaNome: string }) => {
+    const token = getClienteToken();
+    if (!token) return;
+    await enviarMidiaFn({
+      data: {
+        token,
+        midiaUrl: mm.midiaUrl,
+        midiaTipo: mm.midiaTipo as "imagem" | "video" | "audio" | "arquivo",
+        midiaNome: mm.midiaNome,
+      },
+    });
+    const { data } = await supabase.rpc("cliente_listar_mensagens", { _token: token });
+    if (data) {
+      const lista = data as unknown as Mensagem[];
+      ultimoIdRef.current = lista.reduce((acc, m) => (m.id > acc ? m.id : acc), ultimoIdRef.current);
+      setMensagens(lista);
+    }
+  };
+
   return (
     <div className="px-4 py-4 space-y-3 flex flex-col h-full min-h-0">
       <div className="flex items-center justify-between">
@@ -170,7 +197,12 @@ function ChatPage() {
                   : "bg-muted text-foreground rounded-bl-sm"
               }`}
             >
-              <p className="whitespace-pre-wrap break-words">{m.texto}</p>
+              {m.midia_url && (
+                <div className="mb-1">
+                  <MidiaMensagem url={m.midia_url} tipo={m.midia_tipo} nome={m.midia_nome} />
+                </div>
+              )}
+              {m.texto && <p className="whitespace-pre-wrap break-words">{m.texto}</p>}
               <p className="text-[10px] opacity-70 mt-0.5 text-right">
                 {new Date(m.criado_em).toLocaleTimeString("pt-BR", {
                   hour: "2-digit",
@@ -182,15 +214,21 @@ function ChatPage() {
         ))}
       </Card>
 
-      <form onSubmit={enviar} className="flex gap-2">
+      <form onSubmit={enviar} className="flex items-center gap-1">
+        <BotoesAnexo
+          obterUploadUrl={(ext) => uploadUrlFn({ data: { token: getClienteToken() ?? "", ext } })}
+          onEnviar={enviarMidia}
+          cor="hsl(var(--primary))"
+          disabled={sending}
+        />
         <Input
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           placeholder="Digite sua mensagem..."
-          className="rounded-xl"
+          className="rounded-xl min-w-0"
           disabled={sending}
         />
-        <Button type="submit" className="rounded-xl" size="icon" disabled={sending || !texto.trim()}>
+        <Button type="submit" className="rounded-xl shrink-0" size="icon" disabled={sending || !texto.trim()}>
           <Send className="size-4" />
         </Button>
       </form>

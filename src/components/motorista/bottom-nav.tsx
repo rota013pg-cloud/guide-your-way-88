@@ -7,7 +7,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { motoristaAlterarSenha, motoristaListarCorridas } from "@/lib/motorista.functions";
-import { motoristaListarChat, motoristaEnviarMensagem } from "@/lib/chat-motorista.functions";
+import { motoristaListarChat, motoristaEnviarMensagem, motoristaChatUploadUrl } from "@/lib/chat-motorista.functions";
+import { BotoesAnexo, MidiaMensagem } from "@/lib/chat-midia";
 import { RawPasswordInput } from "@/components/ui/password-input";
 import { motoristaListarCobrancasExtras } from "@/lib/cobrancas-extras.functions";
 import { useQuery } from "@tanstack/react-query";
@@ -404,10 +405,14 @@ function SenhaTab({ codigo, token, onPronto }: { codigo: string; token: string; 
 }
 
 // ─── CHAT ───────────────────────────────────────────────
-type Msg = { id: number; autor: string; autor_nome: string | null; texto: string; criado_em: string };
+type Msg = {
+  id: number; autor: string; autor_nome: string | null; texto: string | null; criado_em: string;
+  midia_url?: string | null; midia_tipo?: string | null; midia_nome?: string | null;
+};
 function ChatTab({ codigo, token }: { codigo: string; token: string }) {
   const listarFn = useServerFn(motoristaListarChat);
   const enviarFn = useServerFn(motoristaEnviarMensagem);
+  const uploadUrlFn = useServerFn(motoristaChatUploadUrl);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -442,6 +447,17 @@ function ChatTab({ codigo, token }: { codigo: string; token: string }) {
     } catch { /* ignore */ } finally { setEnviando(false); }
   };
 
+  const enviarMidia = async (m: { midiaUrl: string; midiaTipo: string; midiaNome: string }) => {
+    await enviarFn({
+      data: {
+        codigo, token, texto: "",
+        midiaUrl: m.midiaUrl,
+        midiaTipo: m.midiaTipo as "imagem" | "video" | "audio" | "arquivo",
+        midiaNome: m.midiaNome,
+      },
+    });
+  };
+
   return (
     <div className="moto-chat">
       <div className="moto-chat-lista">
@@ -451,13 +467,23 @@ function ChatTab({ codigo, token }: { codigo: string; token: string }) {
           return (
             <div key={m.id} className={`moto-msg ${isSelf ? "self" : "op"}`}>
               <div className="moto-msg-autor">{isSelf ? "Você" : (m.autor_nome ?? "Central")}</div>
-              <div className="moto-msg-texto">{m.texto}</div>
+              {m.midia_url && (
+                <div className="moto-msg-midia">
+                  <MidiaMensagem url={m.midia_url} tipo={m.midia_tipo} nome={m.midia_nome} />
+                </div>
+              )}
+              {m.texto && <div className="moto-msg-texto">{m.texto}</div>}
             </div>
           );
         })}
         <div ref={fimRef} />
       </div>
       <div className="moto-chat-input">
+        <BotoesAnexo
+          obterUploadUrl={(ext) => uploadUrlFn({ data: { codigo, token, ext } })}
+          onEnviar={enviarMidia}
+          disabled={enviando}
+        />
         <input
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
@@ -882,6 +908,8 @@ const cssNav = `
   background:#f7c600; color:#111; border:0; border-radius:12px;
   padding:0 18px; font-size:18px; font-weight:800; cursor:pointer;
 }
+.moto-app .moto-msg-midia { margin-bottom:4px; }
+.moto-app .moto-msg-midia img, .moto-app .moto-msg-midia video { border-radius:10px; }
 
 .moto-app .moto-historico { display:flex; flex-direction:column; gap:10px; }
 .moto-app .moto-hist-item { background:#0f0f0f; border:1px solid #2a2a2a; border-radius:14px; padding:12px; }

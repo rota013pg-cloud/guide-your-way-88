@@ -237,8 +237,8 @@ export function BotoesAnexo({
   };
 
   const estilo: React.CSSProperties = {
-    background: "transparent", border: 0, cursor: "pointer",
-    fontSize: 20, lineHeight: 1, padding: "0 6px", opacity: disabled || enviando ? 0.5 : 1,
+    background: "transparent", border: 0, cursor: "pointer", flex: "0 0 auto",
+    fontSize: 19, lineHeight: 1, padding: "0 3px", opacity: disabled || enviando ? 0.5 : 1,
   };
   const off = disabled || enviando;
 

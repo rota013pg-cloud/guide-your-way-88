@@ -899,15 +899,17 @@ const cssNav = `
 .moto-app .moto-msg.self .moto-msg-autor { color:#0d0d0d; opacity:.65; text-align:right; }
 .moto-app .moto-msg.op .moto-msg-autor { color:#c9a84c; opacity:1; }
 .moto-app .moto-msg-autor { font-size:10px; margin-bottom:2px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
-.moto-app .moto-chat-input { display:flex; gap:8px; padding-top:8px; border-top:1px solid #2a2a2a; }
+.moto-app .moto-chat-input { display:flex; align-items:center; gap:4px; padding-top:8px; border-top:1px solid #2a2a2a; }
 .moto-app .moto-chat-input input {
-  flex:1; background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:12px;
-  padding:12px 14px; color:#f1f1f1; outline:none; font-size:15px;
+  flex:1 1 auto; min-width:0; background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:12px;
+  padding:12px 12px; color:#f1f1f1; outline:none; font-size:15px;
 }
 .moto-app .moto-chat-input button {
-  background:#f7c600; color:#111; border:0; border-radius:12px;
-  padding:0 18px; font-size:18px; font-weight:800; cursor:pointer;
+  flex:0 0 auto; background:#f7c600; color:#111; border:0; border-radius:12px;
+  padding:0 14px; font-size:18px; font-weight:800; cursor:pointer;
 }
+/* botões de anexo (📷 📎 🎤) — transparentes, compactos, não empurram o layout */
+.moto-app .moto-chat-input button[title]:not([type="submit"]) { padding:0 3px; }
 .moto-app .moto-msg-midia { margin-bottom:4px; }
 .moto-app .moto-msg-midia img, .moto-app .moto-msg-midia video { border-radius:10px; }
 

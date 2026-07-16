@@ -22,6 +22,7 @@ import { expirarOferta } from "@/lib/corridas.functions";
 import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { PanicButton } from "@/components/motorista/panic-button";
+import { AtivarRastreamento } from "@/components/motorista/ativar-rastreamento";
 import { playChatBeep } from "@/lib/notification-sound";
 import { iniciarRastreamento, pararRastreamento, ehNativo } from "@/lib/gps-tracker";
 import { iniciarPushMotorista } from "@/lib/push-native";
@@ -742,6 +743,8 @@ function MotoristaApp() {
           onToast={mostrarToast}
         />
       )}
+
+      {sessao && tela !== "login" && <AtivarRastreamento />}
 
 
       {carregando && <AguardeOverlay />}

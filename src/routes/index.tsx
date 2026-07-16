@@ -43,7 +43,9 @@ function IndexPage() {
         return;
       }
       if (host.startsWith("cliente.")) {
-        navigate({ to: "/cliente", replace: true });
+        // Vai direto pro login; se já houver sessão salva, a própria tela de
+        // login reencaminha pro app (mantém o cliente sempre logado).
+        navigate({ to: "/cliente/login", replace: true });
         return;
       }
     }

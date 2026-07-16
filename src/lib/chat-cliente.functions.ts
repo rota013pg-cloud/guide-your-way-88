@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { enviarPushCliente } from "@/lib/push.server";
 
 const BUCKET_CHAT = "chat-midia";
 const MidiaTipoEnum = z.enum(["imagem", "video", "audio", "arquivo"]);
@@ -192,15 +193,25 @@ export const operadorEnviarMensagemCliente = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: op } = await supabaseAdmin
       .from("usuarios_painel").select("nome").eq("user_id", context.userId as string).maybeSingle();
+    const nome = op?.nome ?? "Central";
     await supabaseAdmin.from("chat_cliente").insert({
       cliente_codigo: data.clienteCodigo,
       autor: "central",
-      autor_nome: op?.nome ?? "Central",
+      autor_nome: nome,
       texto: data.texto?.trim() || null,
       midia_url: data.midiaUrl ?? null,
       midia_tipo: data.midiaTipo ?? null,
       midia_nome: data.midiaNome ?? null,
     } as never);
+
+    // Push pro app do cliente (silencioso se push não estiver configurado).
+    const preview = data.texto?.trim() || rotuloMidia(data.midiaTipo) || "Nova mensagem";
+    void enviarPushCliente([data.clienteCodigo], {
+      title: `💬 ${nome}`,
+      body: preview.length > 120 ? preview.slice(0, 120) + "…" : preview,
+      data: { tipo: "chat" },
+    });
+
     return { ok: true };
   });
 

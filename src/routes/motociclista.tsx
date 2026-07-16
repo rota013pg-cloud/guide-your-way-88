@@ -23,7 +23,7 @@ import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { PanicButton } from "@/components/motorista/panic-button";
 import { AtivarRastreamento } from "@/components/motorista/ativar-rastreamento";
-import { playChatBeep } from "@/lib/notification-sound";
+import { ensureAudioUnlock, playOfertaSom } from "@/lib/notification-sound";
 import { iniciarRastreamento, pararRastreamento, ehNativo } from "@/lib/gps-tracker";
 import { iniciarPushMotorista } from "@/lib/push-native";
 import { LogoRota013 } from "@/components/logo-rota013";
@@ -239,12 +239,7 @@ function MotoristaApp() {
         valor: Number(corrida.valor_final ?? 0),
         distancia: corrida.distancia_km as number | null,
       });
-      try {
-        navigator.vibrate?.([200, 100, 200, 100, 200]);
-      } catch {
-        /* ignore */
-      }
-      try { playChatBeep(); } catch { /* ignore */ }
+      // som + vibração ficam no efeito que acompanha `oferta` (toca repetido).
     };
 
     // Realtime: novas ofertas para este motorista
@@ -334,6 +329,25 @@ function MotoristaApp() {
       supabase.removeChannel(channel);
     };
   }, [sessao, carregarCorridaFn, recarregarContexto, minhaCobrancaFn]);
+
+  // Desbloqueia o áudio no primeiro toque (senão o alerta de oferta sai mudo).
+  useEffect(() => {
+    ensureAudioUnlock();
+  }, []);
+
+  // ─── Alerta sonoro da oferta ─────────────────────────
+  // Toca um som forte + vibra assim que a oferta aparece, e repete a cada ~2,5s
+  // enquanto o card estiver na tela (até aceitar, recusar ou expirar).
+  useEffect(() => {
+    if (!oferta) return;
+    const tocar = () => {
+      playOfertaSom();
+      try { navigator.vibrate?.([300, 150, 300, 150, 300]); } catch { /* ignore */ }
+    };
+    tocar();
+    const id = setInterval(tocar, 2500);
+    return () => clearInterval(id);
+  }, [oferta?.ofertaId]);
 
   // ─── Countdown da oferta ────────────────────────────
   useEffect(() => {

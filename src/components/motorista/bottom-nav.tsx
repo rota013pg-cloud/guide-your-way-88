@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { motoristaAlterarSenha, motoristaListarCorridas } from "@/lib/motorista.functions";
+import { motoristaAlterarSenha, motoristaListarCorridas, motoristaSolicitarExclusao } from "@/lib/motorista.functions";
 import { motoristaListarChat, motoristaEnviarMensagem, motoristaChatUploadUrl } from "@/lib/chat-motorista.functions";
 import { BotoesAnexo, MidiaMensagem } from "@/lib/chat-midia";
 import { RawPasswordInput } from "@/components/ui/password-input";
@@ -68,6 +68,17 @@ export function MotoristaBottomNav({
   const [unread, setUnread] = useState(0);
   const tabRef = useRef<Tab>(null);
   tabRef.current = tab;
+
+  const excluirFn = useServerFn(motoristaSolicitarExclusao);
+  const solicitarExclusao = async () => {
+    try {
+      await excluirFn({ data: { codigo: motorista.codigo, token } });
+      toast.success("Pedido de exclusão enviado. Sua conta será removida pela central.");
+      onSair();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não foi possível solicitar a exclusão");
+    }
+  };
 
   // Contagem inicial de mensagens não lidas (operador → motorista)
   useEffect(() => {
@@ -161,7 +172,7 @@ export function MotoristaBottomNav({
 
       {tab && (
         <SheetWrap titulo={tituloTab(tab)} onClose={fechar}>
-          {tab === "perfil" && <PerfilTab motorista={motorista} online={online} emCorrida={emCorrida} onAlterarSenha={() => setTab("senha")} onIndicar={() => setTab("indicar")} onSair={onSair} />}
+          {tab === "perfil" && <PerfilTab motorista={motorista} online={online} emCorrida={emCorrida} onAlterarSenha={() => setTab("senha")} onIndicar={() => setTab("indicar")} onSair={onSair} onExcluirConta={solicitarExclusao} />}
           {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
           {tab === "indicar" && <IndicarTab motorista={motorista} />}
           {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
@@ -252,7 +263,9 @@ function SheetWrap({ titulo, onClose, children }: { titulo: string; onClose: () 
 }
 
 // ─── PERFIL ─────────────────────────────────────────────
-function PerfilTab({ motorista, online, emCorrida, onAlterarSenha, onIndicar, onSair }: { motorista: Motorista; online: boolean; emCorrida: boolean; onAlterarSenha: () => void; onIndicar: () => void; onSair: () => void }) {
+function PerfilTab({ motorista, online, emCorrida, onAlterarSenha, onIndicar, onSair, onExcluirConta }: { motorista: Motorista; online: boolean; emCorrida: boolean; onAlterarSenha: () => void; onIndicar: () => void; onSair: () => void; onExcluirConta: () => Promise<void> }) {
+  const [confirmando, setConfirmando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
   const statusAtual = emCorrida ? "Em corrida" : online ? "Online" : "Offline";
   const linhas: [string, string | null][] = [
     ["Código", motorista.codigo],
@@ -281,6 +294,40 @@ function PerfilTab({ motorista, online, emCorrida, onAlterarSenha, onIndicar, on
       <button className="btn-sair" onClick={onSair} style={{ marginTop: 10 }}>
         Sair do app
       </button>
+
+      {!confirmando ? (
+        <button
+          onClick={() => setConfirmando(true)}
+          style={{ marginTop: 18, width: "100%", background: "transparent", border: "1px solid #7f1d1d", color: "#f87171", padding: "10px", borderRadius: 10, fontSize: 13, fontWeight: 600 }}
+        >
+          Excluir minha conta
+        </button>
+      ) : (
+        <div style={{ marginTop: 18, border: "1px solid #7f1d1d", borderRadius: 12, padding: 12 }}>
+          <p style={{ fontSize: 12.5, color: "#cfcfcf", margin: "0 0 4px" }}>
+            Isso desativa seu acesso na hora e envia o pedido de exclusão para a central concluir.
+          </p>
+          <p style={{ fontSize: 11.5, color: "#8a8a8a", margin: "0 0 10px" }}>
+            Se você tiver cobranças em aberto, a central entra em contato antes de remover.
+          </p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setConfirmando(false)}
+              disabled={excluindo}
+              style={{ flex: 1, background: "#2a2a2a", color: "#eee", border: "none", padding: "10px", borderRadius: 10, fontSize: 13, fontWeight: 600 }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={async () => { setExcluindo(true); try { await onExcluirConta(); } finally { setExcluindo(false); } }}
+              disabled={excluindo}
+              style={{ flex: 1, background: "#b91c1c", color: "#fff", border: "none", padding: "10px", borderRadius: 10, fontSize: 13, fontWeight: 700, opacity: excluindo ? 0.6 : 1 }}
+            >
+              {excluindo ? "Enviando..." : "Sim, excluir"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,11 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { getClienteToken, useCliente } from "@/lib/cliente-auth";
+import { getClienteToken, clearClienteToken, useCliente } from "@/lib/cliente-auth";
+import { desregistrarPushCliente } from "@/lib/push-native";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cliente/app/perfil")({
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/cliente/app/perfil")({
 
 function PerfilPage() {
   const { cliente, recarregar } = useCliente();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     telefone: "",
     email: "",
@@ -24,6 +26,25 @@ function PerfilPage() {
     cidade: "",
   });
   const [saving, setSaving] = useState(false);
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+
+  const excluirConta = async () => {
+    const token = getClienteToken();
+    if (!token) return;
+    setExcluindo(true);
+    try {
+      const { error } = await supabase.rpc("cliente_excluir_conta", { _token: token });
+      if (error) throw error;
+      await desregistrarPushCliente().catch(() => undefined);
+      clearClienteToken();
+      toast.success("Conta excluída. Sentiremos sua falta!");
+      navigate({ to: "/cliente/login", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível excluir a conta");
+      setExcluindo(false);
+    }
+  };
 
   useEffect(() => {
     if (cliente) {
@@ -112,6 +133,45 @@ function PerfilPage() {
             {saving ? "Salvando..." : "Salvar alterações"}
           </Button>
         </form>
+      </Card>
+
+      {/* Excluir conta */}
+      <Card className="p-4 rounded-2xl border-destructive/40">
+        <h3 className="text-sm font-semibold text-destructive">Excluir conta</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Remove sua conta e seus dados pessoais de forma permanente. Esta ação não pode ser desfeita.
+        </p>
+        {!confirmandoExclusao ? (
+          <button
+            type="button"
+            onClick={() => setConfirmandoExclusao(true)}
+            className="mt-3 w-full rounded-xl border border-destructive/50 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/10"
+          >
+            Excluir minha conta
+          </button>
+        ) : (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs font-medium">Tem certeza? Isso é permanente.</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmandoExclusao(false)}
+                disabled={excluindo}
+                className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium hover:bg-muted"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={excluirConta}
+                disabled={excluindo}
+                className="flex-1 rounded-xl bg-destructive py-2.5 text-sm font-semibold text-destructive-foreground hover:opacity-90 disabled:opacity-60"
+              >
+                {excluindo ? "Excluindo..." : "Sim, excluir"}
+              </button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );

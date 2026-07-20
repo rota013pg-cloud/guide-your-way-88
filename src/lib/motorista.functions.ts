@@ -230,6 +230,40 @@ export const motoristaLogout = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ─── SOLICITAR EXCLUSÃO DE CONTA ────────────────────────
+// Desativa o login na hora (bloqueia o auth + encerra sessões + remove push)
+// e registra o pedido pra central concluir a remoção (protege cobranças/histórico).
+export const motoristaSolicitarExclusao = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ codigo: z.string(), token: z.string() }).parse(d))
+  .handler(async ({ data }) => {
+    await validarToken(data.codigo, data.token);
+
+    // bloqueia o login
+    await supabaseAdmin
+      .from("motorista_auth")
+      .update({ status: "Bloqueado", motivo_bloqueio: "Exclusão de conta solicitada pelo app" })
+      .eq("motorista_codigo", data.codigo);
+
+    // encerra sessões ativas e remove tokens de push
+    await supabaseAdmin
+      .from("motorista_sessoes")
+      .update({ status: "encerrada" })
+      .eq("motorista_codigo", data.codigo)
+      .eq("status", "ativa");
+    await supabaseAdmin
+      .from("motorista_push_tokens")
+      .delete()
+      .eq("motorista_codigo", data.codigo);
+
+    // marca o pedido e coloca offline (a central conclui a remoção)
+    await supabaseAdmin
+      .from("motoristas")
+      .update({ status: "Offline", exclusao_solicitada_em: new Date().toISOString() })
+      .eq("codigo", data.codigo);
+
+    return { ok: true };
+  });
+
 // ─── TOGGLE STATUS (online/offline) ─────────────────────
 export const motoristaToggleStatus = createServerFn({ method: "POST" })
   .inputValidator((d) =>

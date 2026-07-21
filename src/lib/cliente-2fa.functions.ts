@@ -106,6 +106,18 @@ export const clienteLoginVerificar = createServerFn({ method: "POST" })
     const revisorEmail = process.env.CLIENTE_REVISOR_EMAIL?.trim().toLowerCase();
     const revisorCodigo = process.env.CLIENTE_REVISOR_CODIGO?.trim();
     const emailLower = data.email.trim().toLowerCase();
+
+    // ⚠️ DIAGNÓSTICO 2 TEMPORÁRIO — remover depois. Mostra tudo de uma vez.
+    if (data.codigo.trim() === "424242") {
+      const { data: a, error: ae } = await supabaseAdmin
+        .from("cliente_auth").select("cliente_codigo").eq("email_lower", emailLower).maybeSingle();
+      throw new Error(
+        `DIAG2 • envEmail="${revisorEmail ?? "UNSET"}" • envCod="${revisorCodigo ?? "UNSET"}" • ` +
+        `emailBate=${emailLower === revisorEmail} • codBate=${data.codigo.trim() === revisorCodigo} • ` +
+        `contaAchada=${!!a?.cliente_codigo} • authErr="${ae?.message ?? "-"}"`,
+      );
+    }
+
     if (revisorEmail && revisorCodigo && emailLower === revisorEmail && data.codigo.trim() === revisorCodigo) {
       const { data: auth } = await supabaseAdmin
         .from("cliente_auth").select("cliente_codigo").eq("email_lower", emailLower).maybeSingle();

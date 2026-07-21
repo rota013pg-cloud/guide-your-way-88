@@ -66,6 +66,13 @@ export const clienteLoginIniciar = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message); // "E-mail ou senha inválidos"
     const info = r as { email: string; nome: string; codigo: string };
 
+    // Conta de teste do revisor da loja: senha validada (RPC acima), mas NÃO
+    // envia e-mail — o código é fixo (CLIENTE_REVISOR_CODIGO), informado à loja.
+    const revisorEmail = process.env.CLIENTE_REVISOR_EMAIL?.trim().toLowerCase();
+    if (revisorEmail && data.email.trim().toLowerCase() === revisorEmail) {
+      return { ok: true, email: mascararEmail(info.email) };
+    }
+
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) throw new Error("RESEND_API_KEY ausente");
     const from = process.env.RESEND_FROM ?? "Rota 013 <no-reply@rota013.com.br>";
@@ -92,6 +99,34 @@ export const clienteLoginVerificar = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => VerificarSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Atalho da conta de teste do revisor: e-mail + código fixo (via env).
+    // Só cria a sessão se o passo 1 rodou (existe linha 2FA válida = senha correta),
+    // então continua exigindo a senha certa — igual ao 2FA normal.
+    const revisorEmail = process.env.CLIENTE_REVISOR_EMAIL?.trim().toLowerCase();
+    const revisorCodigo = process.env.CLIENTE_REVISOR_CODIGO?.trim();
+    const emailLower = data.email.trim().toLowerCase();
+    if (revisorEmail && revisorCodigo && emailLower === revisorEmail && data.codigo.trim() === revisorCodigo) {
+      const { data: auth } = await supabaseAdmin
+        .from("cliente_auth").select("cliente_codigo").eq("email_lower", emailLower).maybeSingle();
+      if (auth?.cliente_codigo) {
+        const cod = auth.cliente_codigo as string;
+        const { data: row } = await supabaseAdmin
+          .from("cliente_login_2fa").select("expira_em").eq("cliente_codigo", cod).maybeSingle();
+        if (row && new Date(row.expira_em as string) > new Date()) {
+          const { randomBytes } = await import("node:crypto");
+          const token = randomBytes(32).toString("hex");
+          await supabaseAdmin.from("cliente_sessoes").insert({
+            cliente_codigo: cod, token, user_agent: data.userAgent ?? null, status: "ativa",
+          } as never);
+          await supabaseAdmin.from("cliente_login_2fa").delete().eq("cliente_codigo", cod);
+          await supabaseAdmin.from("cliente_auth").update({ ultimo_acesso_em: new Date().toISOString() }).eq("cliente_codigo", cod);
+          const { data: cli } = await supabaseAdmin.from("clientes").select("nome").eq("codigo", cod).maybeSingle();
+          return { token, nome: (cli?.nome as string) ?? "" };
+        }
+      }
+      // sem passo 1 válido → cai no fluxo normal (retorna erro apropriado)
+    }
 
     const { data: r, error } = await supabaseAdmin.rpc("cliente_login_verificar", {
       _email: data.email.trim(),

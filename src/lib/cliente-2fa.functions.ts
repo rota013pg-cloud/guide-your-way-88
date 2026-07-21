@@ -100,9 +100,9 @@ export const clienteLoginVerificar = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Atalho da conta de teste do revisor: e-mail + código fixo (via env).
-    // Só cria a sessão se o passo 1 rodou (existe linha 2FA válida = senha correta),
-    // então continua exigindo a senha certa — igual ao 2FA normal.
+    // Atalho da conta de teste do revisor da loja: e-mail + código fixo (via env).
+    // Cria a sessão direto — o revisor não tem acesso ao e-mail pra pegar o código.
+    // Vale só para esse e-mail específico (conta de teste descartável).
     const revisorEmail = process.env.CLIENTE_REVISOR_EMAIL?.trim().toLowerCase();
     const revisorCodigo = process.env.CLIENTE_REVISOR_CODIGO?.trim();
     const emailLower = data.email.trim().toLowerCase();
@@ -111,30 +111,16 @@ export const clienteLoginVerificar = createServerFn({ method: "POST" })
         .from("cliente_auth").select("cliente_codigo").eq("email_lower", emailLower).maybeSingle();
       if (auth?.cliente_codigo) {
         const cod = auth.cliente_codigo as string;
-        const { data: row } = await supabaseAdmin
-          .from("cliente_login_2fa").select("expira_em").eq("cliente_codigo", cod).maybeSingle();
-        if (row && new Date(row.expira_em as string) > new Date()) {
-          const { randomBytes } = await import("node:crypto");
-          const token = randomBytes(32).toString("hex");
-          await supabaseAdmin.from("cliente_sessoes").insert({
-            cliente_codigo: cod, token, user_agent: data.userAgent ?? null, status: "ativa",
-          } as never);
-          await supabaseAdmin.from("cliente_login_2fa").delete().eq("cliente_codigo", cod);
-          await supabaseAdmin.from("cliente_auth").update({ ultimo_acesso_em: new Date().toISOString() }).eq("cliente_codigo", cod);
-          const { data: cli } = await supabaseAdmin.from("clientes").select("nome").eq("codigo", cod).maybeSingle();
-          return { token, nome: (cli?.nome as string) ?? "" };
-        }
+        const { randomBytes } = await import("node:crypto");
+        const token = randomBytes(32).toString("hex");
+        await supabaseAdmin.from("cliente_sessoes").insert({
+          cliente_codigo: cod, token, user_agent: data.userAgent ?? null, status: "ativa",
+        } as never);
+        await supabaseAdmin.from("cliente_login_2fa").delete().eq("cliente_codigo", cod);
+        await supabaseAdmin.from("cliente_auth").update({ ultimo_acesso_em: new Date().toISOString() }).eq("cliente_codigo", cod);
+        const { data: cli } = await supabaseAdmin.from("clientes").select("nome").eq("codigo", cod).maybeSingle();
+        return { token, nome: (cli?.nome as string) ?? "" };
       }
-      // sem passo 1 válido → cai no fluxo normal (retorna erro apropriado)
-    }
-
-    // ⚠️ DIAGNÓSTICO TEMPORÁRIO — remover depois que o atalho do revisor funcionar.
-    // Se você digitou o código do revisor e o atalho não entrou, este erro revela o motivo.
-    if (data.codigo.trim() === "424242" || (revisorCodigo && data.codigo.trim() === revisorCodigo)) {
-      throw new Error(
-        `DIAG • login="${emailLower}" • envEmail="${revisorEmail ?? "UNSET"}" • ` +
-        `envCodigoDefinido=${revisorCodigo ? "sim" : "NAO"} • emailBate=${emailLower === revisorEmail}`,
-      );
     }
 
     const { data: r, error } = await supabaseAdmin.rpc("cliente_login_verificar", {

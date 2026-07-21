@@ -128,6 +128,15 @@ export const clienteLoginVerificar = createServerFn({ method: "POST" })
       // sem passo 1 válido → cai no fluxo normal (retorna erro apropriado)
     }
 
+    // ⚠️ DIAGNÓSTICO TEMPORÁRIO — remover depois que o atalho do revisor funcionar.
+    // Se você digitou o código do revisor e o atalho não entrou, este erro revela o motivo.
+    if (data.codigo.trim() === "424242" || (revisorCodigo && data.codigo.trim() === revisorCodigo)) {
+      throw new Error(
+        `DIAG • login="${emailLower}" • envEmail="${revisorEmail ?? "UNSET"}" • ` +
+        `envCodigoDefinido=${revisorCodigo ? "sim" : "NAO"} • emailBate=${emailLower === revisorEmail}`,
+      );
+    }
+
     const { data: r, error } = await supabaseAdmin.rpc("cliente_login_verificar", {
       _email: data.email.trim(),
       _codigo: data.codigo.trim(),

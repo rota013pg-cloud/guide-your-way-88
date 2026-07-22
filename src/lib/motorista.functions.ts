@@ -307,6 +307,24 @@ export const motoristaEnviarGps = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ─── STATUS DA OFERTA (fallback do realtime) ────────────
+// O app consulta isso enquanto o alerta de oferta está na tela; se a oferta
+// não estiver mais "pendente" (outro aceitou / expirou), o app para o som e
+// fecha o card — garante que não depende só do evento realtime de UPDATE.
+export const motoristaOfertaStatus = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({ codigo: z.string(), token: z.string(), ofertaId: z.number() }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    await validarToken(data.codigo, data.token);
+    const { data: o } = await supabaseAdmin
+      .from("corrida_ofertas")
+      .select("status")
+      .eq("id", data.ofertaId)
+      .maybeSingle();
+    return { status: (o?.status as string) ?? "cancelada" };
+  });
+
 // ─── ACEITAR OFERTA (atômico) ───────────────────────────
 export const motoristaAceitarOferta = createServerFn({ method: "POST" })
   .inputValidator((d) =>

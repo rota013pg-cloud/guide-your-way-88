@@ -259,6 +259,12 @@ html, body {
   transform: rotate(45deg);
 }
 
+/* Faz o pino do motociclista DESLIZAR até a nova posição (em vez de pular),
+   dando o efeito de "andando" no mapa durante a corrida. */
+.leaflet-marker-icon.moto-anim {
+  transition: transform 2.5s linear;
+}
+
 /* iOS safe-area insets para apps móveis */
 [data-sidebar="sidebar"] {
   padding-top: var(--safe-top);

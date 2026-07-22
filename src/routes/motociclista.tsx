@@ -402,11 +402,15 @@ function MotoristaApp() {
     if (!sessao) return;
     const codigo = sessao.motorista.codigo;
     const token = sessao.token;
-    void iniciarRastreamento((p) => {
-      gpsFn({
-        data: { codigo, token, lat: p.lat, lng: p.lng, velocidade: p.velocidade },
-      }).catch(() => {});
-    });
+    void iniciarRastreamento(
+      (p) => {
+        // Usado só no PWA/web (no app nativo o envio é feito pela camada nativa).
+        gpsFn({
+          data: { codigo, token, lat: p.lat, lng: p.lng, velocidade: p.velocidade },
+        }).catch(() => {});
+      },
+      { codigo, token },
+    );
   }, [sessao, gpsFn]);
 
   const pararGps = useCallback(() => {

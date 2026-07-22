@@ -1,28 +1,23 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
-import type { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
+import { Capacitor } from "@capacitor/core";
 
 /**
  * Rastreamento de posição do motociclista.
  *
- * - No app NATIVO (Capacitor/Android): usa @capacitor-community/background-geolocation,
- *   que mantém o GPS vivo mesmo com o app em segundo plano ou tela bloqueada,
- *   exibindo uma notificação de serviço em primeiro plano. É isso que resolve o
- *   congelamento do ETA automático e a "sessão inválida" do PWA.
+ * - No app NATIVO (Capacitor/Android/iOS): usa @transistorsoft/capacitor-background-geolocation.
+ *   O envio da posição é feito pela CAMADA NATIVA (HTTP nativo com fila SQLite),
+ *   direto no PostgREST do Supabase (RPC motorista_gps_ingerir). Por isso continua
+ *   enviando mesmo com a tela bloqueada, com o Waze aberto ou o app em segundo plano
+ *   — não depende do JavaScript estar "acordado".
  * - No NAVEGADOR/PWA: mantém o comportamento antigo (navigator.geolocation.watchPosition
- *   + reforço periódico), que só funciona com o app em foreground.
+ *   + reforço periódico), que só funciona com o app em foreground. Aí o envio é pelo
+ *   callback onPos (server function), como antes.
  *
- * A escolha é automática via Capacitor.isNativePlatform(). O mesmo bundle web
- * (publicado na Vercel) roda nos dois ambientes.
- *
- * OBS: o pacote do plugin só traz os TIPOS + código nativo (sem JS de runtime);
- * o objeto do plugin vem do `registerPlugin` do @capacitor/core, que fala com a
- * camada nativa via ponte do Capacitor. Por isso o import do pacote é `import type`.
+ * A escolha é automática via Capacitor.isNativePlatform().
  */
-
-const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
 
 export type PosicaoGps = { lat: number; lng: number; velocidade: number };
 type OnPosicao = (p: PosicaoGps) => void;
+export type AuthRastreio = { codigo: string; token: string };
 
 export function ehNativo(): boolean {
   try {
@@ -32,73 +27,83 @@ export function ehNativo(): boolean {
   }
 }
 
+function kmh(speedMs: number | null | undefined): number {
+  return speedMs && speedMs > 0 ? Math.round(speedMs * 3.6) : 0;
+}
+
+// URL + chave pública do Supabase (mesmas usadas pelo cliente do navegador).
+const SUPABASE_URL =
+  (import.meta as any).env?.VITE_SUPABASE_URL || (globalThis as any).process?.env?.SUPABASE_URL || "";
+const SUPABASE_ANON =
+  (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  (globalThis as any).process?.env?.SUPABASE_PUBLISHABLE_KEY ||
+  "";
+
 // ─── Estado interno ────────────────────────────────────────────────
 let webWatchId: number | null = null;
 let webInterval: ReturnType<typeof setInterval> | null = null;
-let nativeWatcherId: string | null = null;
-let nativeHeartbeat: ReturnType<typeof setInterval> | null = null;
-let ultimaPosNativa: PosicaoGps | null = null;
+let nativoIniciado = false;
 
-// A cada quanto tempo reenviar a última posição quando o motociclista está parado
-// (o plugin só dispara por deslocamento; sem isso a central marcava offline).
-const HEARTBEAT_MS = 45_000;
+// ─── Nativo (background real via Transistorsoft) ───────────────────
+async function iniciarNativo(auth: AuthRastreio) {
+  // Import dinâmico: o plugin só carrega no app nativo (evita quebrar o build web).
+  const mod = await import("@transistorsoft/capacitor-background-geolocation");
+  const BackgroundGeolocation = (mod as any).default ?? mod;
 
-function kmh(speedMs: number | null | undefined): number {
-  return speedMs ? Math.round(speedMs * 3.6) : 0;
-}
-
-// ─── Nativo (background) ───────────────────────────────────────────
-async function iniciarNativo(onPos: OnPosicao) {
-  // Remove watcher anterior, se houver, para não duplicar.
-  await pararNativo();
-  nativeWatcherId = await BackgroundGeolocation.addWatcher(
-    {
-      backgroundTitle: "Rota 013 — Online",
-      backgroundMessage: "Compartilhando sua localização com a central enquanto você está online.",
-      requestPermissions: true,
-      // stale:false = só entrega posições novas (evita pin preso).
-      stale: false,
-      // dispara a cada ~15m de deslocamento.
-      distanceFilter: 15,
+  await BackgroundGeolocation.ready({
+    reset: true,
+    desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
+    distanceFilter: 20, // dispara a cada ~20m de deslocamento
+    stationaryRadius: 25,
+    // ── Envio HTTP NATIVO (independe do JavaScript) ──
+    url: `${SUPABASE_URL}/rest/v1/rpc/motorista_gps_ingerir`,
+    method: "POST",
+    httpRootProperty: "_pontos",
+    locationTemplate:
+      '{"lat":<%= latitude %>,"lng":<%= longitude %>,"vel":<%= speed %>,"ts":"<%= timestamp %>"}',
+    params: { _token: auth.token },
+    headers: {
+      apikey: SUPABASE_ANON,
+      Authorization: `Bearer ${SUPABASE_ANON}`,
+      "Content-Type": "application/json",
     },
-    (location, error) => {
-      if (error) {
-        // NOT_AUTHORIZED = usuário negou a permissão de localização.
-        console.warn("[bg-geo]", error.code, error.message ?? "");
-        return;
-      }
-      if (!location) return;
-      const p: PosicaoGps = {
-        lat: location.latitude,
-        lng: location.longitude,
-        velocidade: kmh(location.speed),
-      };
-      ultimaPosNativa = p;
-      onPos(p);
+    autoSync: true, // envia assim que registra
+    batchSync: true, // agrupa vários pontos num POST (bom para escala)
+    maxBatchSize: 50,
+    // ── Comportamento em background ──
+    stopOnTerminate: false,
+    startOnBoot: false,
+    foregroundService: true,
+    backgroundPermissionRationale: {
+      title: "Permitir localização o tempo todo",
+      message:
+        "Para enviar sua posição à central durante as corridas, permita a localização “O tempo todo”.",
+      positiveAction: "Abrir ajustes",
     },
-  );
+    notification: {
+      title: "Rota 013 — Online",
+      text: "Compartilhando sua localização com a central.",
+    },
+    locationAuthorizationRequest: "Always",
+    enableHeadless: true,
+    debug: false,
+    logLevel: BackgroundGeolocation.LOG_LEVEL_OFF,
+  });
 
-  // Batimento: mesmo parado (sem deslocamento -> plugin não dispara), reenvia a
-  // última posição periodicamente pra central continuar vendo o motociclista online.
-  if (nativeHeartbeat) clearInterval(nativeHeartbeat);
-  nativeHeartbeat = setInterval(() => {
-    if (ultimaPosNativa) onPos(ultimaPosNativa);
-  }, HEARTBEAT_MS);
+  await BackgroundGeolocation.start();
+  nativoIniciado = true;
 }
 
 async function pararNativo() {
-  if (nativeHeartbeat) {
-    clearInterval(nativeHeartbeat);
-    nativeHeartbeat = null;
-  }
-  ultimaPosNativa = null;
-  if (!nativeWatcherId) return;
-  const id = nativeWatcherId;
-  nativeWatcherId = null;
+  if (!nativoIniciado) return;
   try {
-    await BackgroundGeolocation.removeWatcher({ id });
+    const mod = await import("@transistorsoft/capacitor-background-geolocation");
+    const BackgroundGeolocation = (mod as any).default ?? mod;
+    await BackgroundGeolocation.stop();
   } catch (e) {
-    console.warn("[bg-geo] falha ao remover watcher:", e);
+    console.warn("[bg-geo] falha ao parar:", e);
+  } finally {
+    nativoIniciado = false;
   }
 }
 
@@ -138,9 +143,23 @@ function pararWeb() {
 }
 
 // ─── API pública ───────────────────────────────────────────────────
-export async function iniciarRastreamento(onPos: OnPosicao): Promise<void> {
-  if (ehNativo()) await iniciarNativo(onPos);
-  else iniciarWeb(onPos);
+/**
+ * Inicia o rastreamento.
+ * - Nativo: configura e liga o plugin (envio nativo). `onPos` NÃO é usado para
+ *   enviar ao servidor (o nativo já faz isso), evitando envio duplicado.
+ * - Web: usa `onPos` para enviar (server function), como antes.
+ * `auth` (código + token) é obrigatório no nativo para autenticar o envio.
+ */
+export async function iniciarRastreamento(onPos: OnPosicao, auth?: AuthRastreio): Promise<void> {
+  if (ehNativo()) {
+    if (!auth) {
+      console.warn("[bg-geo] sem auth (código/token) — rastreamento nativo não iniciado.");
+      return;
+    }
+    await iniciarNativo(auth);
+  } else {
+    iniciarWeb(onPos);
+  }
 }
 
 export async function pararRastreamento(): Promise<void> {

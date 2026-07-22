@@ -70,7 +70,9 @@ function doUnlock() {
       /* ignore */
     }
   }
-  primeOfertaAudio();
+  // NÃO prepara o áudio de oferta aqui — este unlock roda em TODAS as telas
+  // (cliente/operador/motociclista). O mp3 "Nova corrida!" só deve ser tocado/
+  // preparado no app do motociclista (ver ensureOfertaAudio).
 }
 
 export function ensureAudioUnlock() {
@@ -84,6 +86,25 @@ export function ensureAudioUnlock() {
       window.removeEventListener("click", handler);
       window.removeEventListener("keydown", handler);
     }
+  };
+  window.addEventListener("touchend", handler, { passive: true });
+  window.addEventListener("touchstart", handler, { passive: true });
+  window.addEventListener("click", handler);
+  window.addEventListener("keydown", handler);
+}
+
+// Prepara o áudio de oferta (mp3) no primeiro gesto — SÓ deve ser chamado no
+// app do motociclista. Assim o "Nova corrida!" nunca é tocado no cliente/operador.
+let ofertaBound = false;
+export function ensureOfertaAudio() {
+  if (typeof window === "undefined" || ofertaBound) return;
+  ofertaBound = true;
+  const handler = () => {
+    primeOfertaAudio();
+    window.removeEventListener("touchend", handler);
+    window.removeEventListener("touchstart", handler);
+    window.removeEventListener("click", handler);
+    window.removeEventListener("keydown", handler);
   };
   window.addEventListener("touchend", handler, { passive: true });
   window.addEventListener("touchstart", handler, { passive: true });

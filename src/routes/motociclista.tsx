@@ -23,7 +23,7 @@ import { CobrancaModal } from "@/components/motorista/cobranca-modal";
 import { MotoristaBottomNav } from "@/components/motorista/bottom-nav";
 import { PanicButton } from "@/components/motorista/panic-button";
 import { AtivarRastreamento } from "@/components/motorista/ativar-rastreamento";
-import { ensureAudioUnlock, playOfertaSom } from "@/lib/notification-sound";
+import { ensureAudioUnlock, ensureOfertaAudio, playOfertaSom } from "@/lib/notification-sound";
 import { iniciarRastreamento, pararRastreamento, ehNativo } from "@/lib/gps-tracker";
 import { iniciarPushMotorista } from "@/lib/push-native";
 import { LogoRota013 } from "@/components/logo-rota013";
@@ -331,8 +331,10 @@ function MotoristaApp() {
   }, [sessao, carregarCorridaFn, recarregarContexto, minhaCobrancaFn]);
 
   // Desbloqueia o áudio no primeiro toque (senão o alerta de oferta sai mudo).
+  // ensureOfertaAudio prepara o mp3 "Nova corrida!" — só aqui no motociclista.
   useEffect(() => {
     ensureAudioUnlock();
+    ensureOfertaAudio();
   }, []);
 
   // ─── Alerta sonoro da oferta ─────────────────────────

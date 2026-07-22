@@ -43,6 +43,7 @@ const SUPABASE_ANON =
 let webWatchId: number | null = null;
 let webInterval: ReturnType<typeof setInterval> | null = null;
 let nativoIniciado = false;
+let heartbeatRegistrado = false;
 
 // ─── Nativo (background real via Transistorsoft) ───────────────────
 async function iniciarNativo(auth: AuthRastreio) {
@@ -55,6 +56,8 @@ async function iniciarNativo(auth: AuthRastreio) {
     desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
     distanceFilter: 20, // dispara a cada ~20m de deslocamento
     stationaryRadius: 25,
+    // Mesmo PARADO, envia um ponto a cada 60s (a central marca offline sem ping em 90s).
+    heartbeatInterval: 60,
     // ── Envio HTTP NATIVO (independe do JavaScript) ──
     url: `${SUPABASE_URL}/rest/v1/rpc/motorista_gps_ingerir`,
     method: "POST",
@@ -91,6 +94,27 @@ async function iniciarNativo(auth: AuthRastreio) {
   });
 
   await BackgroundGeolocation.start();
+
+  // Heartbeat: mesmo parado, força um ponto periódico para manter o motociclista
+  // Online (a central marca offline se ficar >90s sem ping) e a posição do cliente
+  // atualizada. getCurrentPosition grava e o autoSync envia pela camada nativa.
+  if (!heartbeatRegistrado) {
+    heartbeatRegistrado = true;
+    BackgroundGeolocation.onHeartbeat(() => {
+      BackgroundGeolocation.getCurrentPosition({
+        samples: 1,
+        persist: true,
+        maximumAge: 10000,
+        timeout: 30,
+      }).catch(() => undefined);
+    });
+  }
+
+  // Ponto inicial imediato ao ficar Online (para não esperar o 1º deslocamento/heartbeat).
+  BackgroundGeolocation.getCurrentPosition({ samples: 1, persist: true, timeout: 30 }).catch(
+    () => undefined,
+  );
+
   nativoIniciado = true;
 }
 

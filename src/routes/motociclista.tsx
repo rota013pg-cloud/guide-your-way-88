@@ -8,6 +8,7 @@ import {
   motoristaToggleStatus,
   motoristaEnviarGps,
   motoristaAceitarOferta,
+  motoristaOfertaStatus,
   motoristaRecusarOferta,
   motoristaAtualizarStatusCorrida,
   motoristaCarregarContexto,
@@ -111,6 +112,7 @@ function MotoristaApp() {
   const toggleFn = useServerFn(motoristaToggleStatus);
   const gpsFn = useServerFn(motoristaEnviarGps);
   const aceitarFn = useServerFn(motoristaAceitarOferta);
+  const ofertaStatusFn = useServerFn(motoristaOfertaStatus);
   const recusarFn = useServerFn(motoristaRecusarOferta);
   const statusCorridaFn = useServerFn(motoristaAtualizarStatusCorrida);
   const contextoFn = useServerFn(motoristaCarregarContexto);
@@ -208,14 +210,29 @@ function MotoristaApp() {
       setCorridasHoje((ctx.corridasHoje as Corrida[]) ?? []);
       setConfig(ctx.config);
       const estaOnline = ctx.motorista?.status === "Online" || ctx.motorista?.status === "Em corrida";
-      setOnline(estaOnline);
-      if (estaOnline) intencaoOnlineRef.current = true;
+      if (estaOnline) {
+        setOnline(true);
+        intencaoOnlineRef.current = true;
+      } else if (intencaoOnlineRef.current) {
+        // Servidor marcou offline (ex.: marcarStaleOffline durante um gap do
+        // operador), mas o motociclista QUER estar online e o app está VIVO
+        // (este código rodando) → reassume online no servidor. Isso quebra o
+        // loop "offline sozinho" que parava o GPS e prendia o motociclista.
+        try {
+          await toggleFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token, online: true } });
+          setOnline(true);
+        } catch {
+          setOnline(false);
+        }
+      } else {
+        setOnline(false);
+      }
       if (ctx.oferta && !oferta) setOferta(ctx.oferta);
       if (ctx.corridaAtual && tela !== "corrida") setTela("corrida");
     } catch (e) {
       console.error("contexto:", e);
     }
-  }, [sessao, contextoFn, oferta, tela]);
+  }, [sessao, contextoFn, toggleFn, oferta, tela]);
 
   useEffect(() => {
     if (!sessao) return;
@@ -350,6 +367,28 @@ function MotoristaApp() {
     const id = setInterval(tocar, 2500);
     return () => clearInterval(id);
   }, [oferta?.ofertaId]);
+
+  // ─── Trava: para o som quando outro aceita (fallback do realtime) ──
+  // Confere a cada 3s se a oferta ainda está 'pendente'. Se outro motociclista
+  // já aceitou (vira 'cancelada') ou expirou, fecha o card e para o som — mesmo
+  // que o evento realtime de UPDATE não chegue.
+  useEffect(() => {
+    if (!oferta || !sessao) return;
+    const alvo = oferta.ofertaId;
+    const id = setInterval(async () => {
+      try {
+        const r = await ofertaStatusFn({
+          data: { codigo: sessao.motorista.codigo, token: sessao.token, ofertaId: alvo },
+        });
+        if (r.status !== "pendente") {
+          setOferta((cur) => (cur && cur.ofertaId === alvo ? null : cur));
+        }
+      } catch {
+        /* ignore */
+      }
+    }, 3000);
+    return () => clearInterval(id);
+  }, [oferta?.ofertaId, sessao, ofertaStatusFn]);
 
   // ─── Countdown da oferta ────────────────────────────
   useEffect(() => {

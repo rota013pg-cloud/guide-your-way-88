@@ -44,6 +44,7 @@ let webWatchId: number | null = null;
 let webInterval: ReturnType<typeof setInterval> | null = null;
 let nativoIniciado = false;
 let heartbeatRegistrado = false;
+let nativoJsInterval: ReturnType<typeof setInterval> | null = null;
 
 // ─── Nativo (background real via Transistorsoft) ───────────────────
 async function iniciarNativo(auth: AuthRastreio) {
@@ -58,6 +59,8 @@ async function iniciarNativo(auth: AuthRastreio) {
     stationaryRadius: 25,
     // Mesmo PARADO, envia um ponto a cada 60s (a central marca offline sem ping em 90s).
     heartbeatInterval: 60,
+    // Entra em modo "parado" rápido (1 min) para o heartbeat começar cedo.
+    stopTimeout: 1,
     // ── Envio HTTP NATIVO (independe do JavaScript) ──
     url: `${SUPABASE_URL}/rest/v1/rpc/motorista_gps_ingerir`,
     method: "POST",
@@ -115,10 +118,27 @@ async function iniciarNativo(auth: AuthRastreio) {
     () => undefined,
   );
 
+  // Reforço em JS a cada 45s: garante o ping quando o app está ABERTO na tela
+  // (caso mais comum do motociclista esperando corrida). No background o timer
+  // do JS congela, mas aí o heartbeat nativo assume. getCurrentPosition grava+envia.
+  if (nativoJsInterval) clearInterval(nativoJsInterval);
+  nativoJsInterval = setInterval(() => {
+    BackgroundGeolocation.getCurrentPosition({
+      samples: 1,
+      persist: true,
+      maximumAge: 10000,
+      timeout: 30,
+    }).catch(() => undefined);
+  }, 45000);
+
   nativoIniciado = true;
 }
 
 async function pararNativo() {
+  if (nativoJsInterval) {
+    clearInterval(nativoJsInterval);
+    nativoJsInterval = null;
+  }
   if (!nativoIniciado) return;
   try {
     const mod = await import("@transistorsoft/capacitor-background-geolocation");

@@ -338,7 +338,7 @@ export const retomarMotorista = createServerFn({ method: "POST" })
 export const marcarStaleOffline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
-    const JANELA_MS = 90_000;
+    const JANELA_MS = 180_000;
     const cutoffIso = new Date(Date.now() - JANELA_MS).toISOString();
 
     const { data: onlineMot } = await supabaseAdmin

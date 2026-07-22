@@ -499,7 +499,7 @@ function CorridaAtivaCard({
   const rastreando = ["Aceita", "A caminho", "Chegou", "Em viagem"].includes(corrida.status);
   const [posMot, setPosMot] = useState<MapMotorista | null>(null);
 
-  // Posição ao vivo do motociclista da corrida (poll a cada 5s enquanto em andamento)
+  // Posição ao vivo do motociclista da corrida (poll a cada 2,5s enquanto em andamento)
   useEffect(() => {
     if (!rastreando) { setPosMot(null); return; }
     const token = getClienteToken();
@@ -514,7 +514,7 @@ function CorridaAtivaCard({
       }
     };
     void buscar();
-    const id = setInterval(buscar, 5000);
+    const id = setInterval(buscar, 2500);
     return () => { alive = false; clearInterval(id); };
   }, [rastreando, corrida.id]);
 

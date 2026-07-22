@@ -25,17 +25,14 @@ const buildIcon = (codigo: string, status: string, hideLabel: boolean) => {
     <div class="moto-marker">
       ${hideLabel ? "" : `<div class="moto-id" style="background:${cor}">${codigo}</div>`}
       <div class="moto-pin" style="background:${cor}">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="18.5" cy="17.5" r="3.5"/>
-          <circle cx="5.5" cy="17.5" r="3.5"/>
-          <circle cx="15" cy="5" r="1"/>
-          <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+          <path d="M19.44 9.03 15.41 5H11v2h3.59l2 2H5c-2.8 0-5 2.2-5 5s2.2 5 5 5c2.46 0 4.45-1.69 4.9-4h1.65l2.77-2.77c-.21.54-.32 1.14-.32 1.77 0 2.8 2.2 5 5 5s5-2.2 5-5c0-2.65-1.97-4.77-4.56-4.97zM7.82 15C7.4 16.15 6.28 17 5 17c-1.63 0-3-1.37-3-3s1.37-3 3-3c1.28 0 2.4.85 2.82 2H5v2h2.82zM19 17c-1.63 0-3-1.37-3-3s1.37-3 3-3 3 1.37 3 3-1.37 3-3 3z"/>
         </svg>
       </div>
     </div>`;
   return L.divIcon({
     html,
-    className: "",
+    className: "moto-anim",
     iconSize: [56, 56],
     iconAnchor: [28, 52],
     popupAnchor: [0, -50],

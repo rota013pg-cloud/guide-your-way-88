@@ -162,9 +162,9 @@ function ClienteCadastroPage() {
             <Field label="Cidade" id="cidade" value={form.cidade} onChange={(v) => set("cidade", v)} />
           </div>
 
-          <div className="pt-2 space-y-2">
-            <label className="flex items-start gap-2 cursor-pointer">
-              <Checkbox checked={aceito} onCheckedChange={(c) => setAceito(c === true)} className="mt-0.5" />
+          <div className="pt-3 space-y-1.5">
+            <label className="flex items-start gap-2.5 cursor-pointer leading-snug">
+              <Checkbox checked={aceito} onCheckedChange={(c) => setAceito(c === true)} className="mt-[3px] shrink-0" />
               <span className="text-sm text-muted-foreground">
                 Li e aceito os{" "}
                 <Dialog open={openTermos} onOpenChange={setOpenTermos}>
@@ -195,13 +195,13 @@ function ClienteCadastroPage() {
               </span>
             </label>
             {!aceito && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground pl-[26px]">
                 Você deve aceitar os Termos e Condições para prosseguir com o cadastro.
               </p>
             )}
           </div>
 
-          <Button type="submit" className="w-full rounded-xl mt-2" disabled={loading || !aceito}>
+          <Button type="submit" className="w-full rounded-xl mt-4" disabled={loading || !aceito}>
             {loading ? "Criando..." : "Criar conta"}
           </Button>
 

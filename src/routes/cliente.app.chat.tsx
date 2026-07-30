@@ -34,7 +34,7 @@ function ChatPage() {
   const { cliente } = useCliente();
   const uploadUrlFn = useServerFn(clienteChatUploadUrl);
   const enviarMidiaFn = useServerFn(clienteEnviarMidia);
-  const [whatsapp, setWhatsapp] = useState<string>("5513900000000");
+  const [whatsapp, setWhatsapp] = useState<string>("551340423331");
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [texto, setTexto] = useState("");
   const [sending, setSending] = useState(false);

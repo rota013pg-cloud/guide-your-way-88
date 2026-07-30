@@ -25,7 +25,7 @@ export const Route = createFileRoute("/parceiros")({
   component: ParceirosPage,
 });
 
-const WHATS_MOT = "https://wa.me/5513978120209?text=Ol%C3%A1!%20Tenho%20interesse%20em%20ser%20motociclista%20parceiro%20da%20Rota013.";
+const WHATS_MOT = "https://wa.me/551340423331?text=Ol%C3%A1!%20Tenho%20interesse%20em%20ser%20motociclista%20parceiro%20da%20Rota013.";
 
 function ParceirosPage() {
   return (
@@ -201,7 +201,7 @@ function ParceirosPage() {
                 </Button>
               </Link>
             </div>
-            <div className="mt-4 text-sm text-muted-foreground">(13) 40423331</div>
+            <div className="mt-4 text-sm text-muted-foreground">(13) 4042-3331</div>
           </div>
         </section>
       </main>

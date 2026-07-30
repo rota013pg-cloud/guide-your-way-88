@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Conectamos passageiros e motoristas parceiros em Praia Grande e região com tecnologia, agilidade e segurança.",
+          "Conectamos passageiros e motociclistas parceiros em Praia Grande e região com tecnologia, agilidade e segurança.",
       },
     ],
     links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
@@ -73,7 +73,7 @@ function IndexPage() {
               <span className="text-primary italic">rápida</span> e confiável.
             </h1>
             <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Conectamos clientes e motoristas parceiros com agilidade, segurança e
+              Conectamos clientes e motociclistas parceiros com agilidade, segurança e
               tecnologia. Atendemos Praia Grande e região com a rapidez que você precisa.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
@@ -84,7 +84,7 @@ function IndexPage() {
               </Link>
               <Link to="/parceiros">
                 <Button size="lg" variant="outline" className="rounded-xl w-full sm:w-auto">
-                  💼 Quero trabalhar conosco
+                  💼 Quero ser um motociclista parceiro
                 </Button>
               </Link>
             </div>
@@ -93,7 +93,7 @@ function IndexPage() {
           <div className="mx-auto max-w-3xl mt-12 grid grid-cols-2 md:grid-cols-4 gap-3">
             <Stat top="100%" label="Para o motorista" />
             <Stat top="24h" label="Disponibilidade" />
-            <Stat top="013" label="DDD da região" />
+            <Stat top="013" label="Praia Grande e região" />
             <Stat top="Rápido" label="Atendimento direto" />
           </div>
         </section>
@@ -114,7 +114,7 @@ function IndexPage() {
               <EssenceCard
                 n="01"
                 title="Missão"
-                desc="Oferecer transporte ágil e seguro conectando clientes a motoristas parceiros qualificados no Litoral Sul de SP — com tecnologia, respeito e eficiência em cada corrida."
+                desc="Oferecer transporte ágil e seguro conectando clientes a motociclistas parceiros qualificados no Litoral Sul de SP — com tecnologia, respeito e eficiência em cada corrida."
               />
               <EssenceCard
                 n="02"
@@ -144,11 +144,11 @@ function IndexPage() {
 
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
               <ValueCard icon={<Zap className="size-5" />} title="Agilidade" desc="Respostas rápidas e atendimento eficiente. Seu tempo é precioso." />
-              <ValueCard icon={<ShieldCheck className="size-5" />} title="Segurança" desc="Motoristas verificados, documentação em dia e conduta profissional." />
-              <ValueCard icon={<Handshake className="size-5" />} title="Parceria" desc="O motorista recebe 100% das corridas. A diária fixa garante sustentabilidade." />
-              <ValueCard icon={<Smartphone className="size-5" />} title="Tecnologia" desc="App para motoristas, painel em tempo real, rastreamento e comunicação integrada." />
+              <ValueCard icon={<ShieldCheck className="size-5" />} title="Segurança" desc="Motociclistas verificados, documentação em dia e conduta profissional." />
+              <ValueCard icon={<Handshake className="size-5" />} title="Parceria" desc="O motociclista recebe 100% das corridas. A diária fixa garante sustentabilidade." />
+              <ValueCard icon={<Smartphone className="size-5" />} title="Tecnologia" desc="App para motociclistas, painel em tempo real, rastreamento e comunicação integrada." />
               <ValueCard icon={<Waves className="size-5" />} title="Regional" desc="Somos da Baixada Santista. Conhecemos cada rua e atalho da região." />
-              <ValueCard icon={<CheckCircle2 className="size-5" />} title="Transparência" desc="Preços claros, sem surpresas. Motorista e cliente sabem o que esperar." />
+              <ValueCard icon={<CheckCircle2 className="size-5" />} title="Transparência" desc="Preços claros, sem surpresas. Motociclista e cliente sabem o que esperar." />
             </div>
           </div>
         </section>
@@ -170,7 +170,7 @@ function IndexPage() {
               </Link>
               <Link to="/parceiros">
                 <Button size="lg" variant="outline" className="rounded-xl w-full sm:w-auto">
-                  Seja motorista parceiro
+                  Seja motociclista parceiro
                 </Button>
               </Link>
             </div>

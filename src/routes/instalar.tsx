@@ -1,18 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
-import { Share, Plus, MoreVertical, Smartphone } from "lucide-react";
+import { Smartphone } from "lucide-react";
+import {
+  APP_STORE_CLIENTE,
+  PLAY_STORE_CLIENTE,
+  detectarPlataforma,
+  type PlataformaLoja,
+} from "@/lib/lojas-app";
 
 export const Route = createFileRoute("/instalar")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Instalar o app — Rota013" },
+      { title: "Baixar o app — Rota013" },
       {
         name: "description",
         content:
-          "Adicione o Rota013 à tela inicial do seu celular e use como aplicativo: passo a passo para iPhone e Android.",
+          "Baixe o aplicativo Rota013 na Google Play ou na App Store e peça sua moto com poucos toques.",
       },
-      { property: "og:title", content: "Instalar o app — Rota013" },
+      { property: "og:title", content: "Baixar o app — Rota013" },
     ],
     links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
   }),
@@ -20,6 +27,11 @@ export const Route = createFileRoute("/instalar")({
 });
 
 function InstalarPage() {
+  const [plataforma, setPlataforma] = useState<PlataformaLoja>("desktop");
+  useEffect(() => {
+    setPlataforma(detectarPlataforma());
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SiteHeader />
@@ -29,58 +41,31 @@ function InstalarPage() {
             <div className="flex items-center gap-3">
               <Smartphone className="size-8 text-primary" />
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                Instalar o Rota013 no seu celular
+                Baixe o app do Rota013
               </h1>
             </div>
             <p className="mt-4 text-muted-foreground">
-              O Rota013 funciona como aplicativo direto pelo navegador. Em
-              poucos toques você adiciona à tela inicial e abre como qualquer
-              outro app — sem baixar nada da loja.
+              Agora o Rota013 tem aplicativo próprio. Baixe direto da loja do seu
+              celular para pedir sua moto, acompanhar a corrida e falar com a
+              central com mais rapidez e segurança.
             </p>
 
-            <div className="mt-10 grid gap-6 md:grid-cols-2">
-              <Cartao titulo="iPhone (Safari)">
-                <Passo n={1}>
-                  Abra <strong>www.rota013.com.br</strong> no <strong>Safari</strong>.
-                </Passo>
-                <Passo n={2}>
-                  Toque no botão <Share className="inline size-4 mb-0.5" />{" "}
-                  <strong>Compartilhar</strong> na barra inferior.
-                </Passo>
-                <Passo n={3}>
-                  Role e toque em{" "}
-                  <strong>“Adicionar à Tela de Início”</strong>.
-                </Passo>
-                <Passo n={4}>
-                  Confirme em <strong>Adicionar</strong>. Pronto, o ícone do
-                  Rota013 vai aparecer junto dos seus apps.
-                </Passo>
-              </Cartao>
-
-              <Cartao titulo="Android (Chrome)">
-                <Passo n={1}>
-                  Abra <strong>www.rota013.com.br</strong> no <strong>Chrome</strong>.
-                </Passo>
-                <Passo n={2}>
-                  Toque no menu <MoreVertical className="inline size-4 mb-0.5" />{" "}
-                  no canto superior direito.
-                </Passo>
-                <Passo n={3}>
-                  Toque em{" "}
-                  <strong>
-                    “Adicionar à tela inicial” <Plus className="inline size-4 mb-0.5" />
-                  </strong>
-                  .
-                </Passo>
-                <Passo n={4}>
-                  Confirme em <strong>Adicionar</strong>. O ícone aparece na
-                  sua tela inicial.
-                </Passo>
-              </Cartao>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              <LojaCard
+                loja="google"
+                href={PLAY_STORE_CLIENTE}
+                destaque={plataforma === "android" || plataforma === "desktop"}
+              />
+              <LojaCard
+                loja="apple"
+                href={APP_STORE_CLIENTE}
+                destaque={plataforma === "ios" || plataforma === "desktop"}
+              />
             </div>
 
-            <p className="mt-10 text-xs text-muted-foreground">
-              Dica: depois de instalado, abra pelo ícone
+            <p className="mt-8 text-sm text-muted-foreground">
+              Já instalou? É só abrir o app pelo ícone do Rota013 na sua tela
+              inicial.
             </p>
           </div>
         </section>
@@ -90,22 +75,46 @@ function InstalarPage() {
   );
 }
 
-function Cartao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+function LojaCard({
+  loja,
+  href,
+  destaque,
+}: {
+  loja: "google" | "apple";
+  href: string;
+  destaque: boolean;
+}) {
+  const isApple = loja === "apple";
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
-      <h2 className="font-semibold text-lg">{titulo}</h2>
-      <ol className="mt-4 space-y-3">{children}</ol>
-    </div>
-  );
-}
-
-function Passo({ n, children }: { n: number; children: React.ReactNode }) {
-  return (
-    <li className="flex gap-3 text-sm text-muted-foreground">
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary font-semibold text-xs">
-        {n}
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`flex items-center gap-4 rounded-2xl border p-5 transition-colors ${
+        destaque
+          ? "border-primary/60 bg-card hover:border-primary"
+          : "border-border bg-card hover:border-primary/40"
+      }`}
+    >
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        {isApple ? (
+          <svg viewBox="0 0 24 24" className="size-7" fill="currentColor">
+            <path d="M16.365 1.43c0 1.14-.417 2.2-1.11 3.005-.836.97-2.198 1.72-3.336 1.63-.14-1.11.417-2.29 1.083-3.02.75-.83 2.06-1.45 3.13-1.5.03.28.233.55.233.885zM20.5 17.02c-.55 1.27-.81 1.84-1.52 2.96-.99 1.57-2.39 3.52-4.12 3.53-1.54.02-1.94-1-4.03-.99-2.09.01-2.53 1.01-4.07.99-1.73-.01-3.06-1.77-4.05-3.34C-.02 16.5-.34 11.13 1.42 8.28c1.02-1.65 2.63-2.62 4.14-2.62 1.54 0 2.5 1.02 3.77 1.02 1.23 0 1.98-1.02 3.76-1.02 1.34 0 2.76.73 3.77 1.99-3.31 1.81-2.77 6.54.64 7.37z" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" className="size-7" fill="currentColor">
+            <path d="M3.6 2.4a1.3 1.3 0 0 0-.5 1.05v17.1c0 .43.2.82.53 1.05l9.9-9.6-9.93-9.6zm11.36 8.02L5.1 1.02l11.4 6.55-1.54 2.85zm3.3 1.9 2.28 1.31c.98.56.98 1.98 0 2.54l-2.32 1.33-1.74-3.22 1.78-2.96zm-2.83 3.28 1.55 2.87L5.1 22.98l9.86-9.4 1.47 2.9z" />
+          </svg>
+        )}
       </span>
-      <span className="leading-relaxed">{children}</span>
-    </li>
+      <span className="min-w-0">
+        <span className="block text-xs text-muted-foreground">
+          {isApple ? "Baixe na" : "Disponível no"}
+        </span>
+        <span className="block text-lg font-semibold">
+          {isApple ? "App Store" : "Google Play"}
+        </span>
+      </span>
+    </a>
   );
 }

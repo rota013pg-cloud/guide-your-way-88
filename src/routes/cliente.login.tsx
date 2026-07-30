@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { getClienteToken, setClienteToken } from "@/lib/cliente-auth";
 import { clienteLoginIniciar, clienteLoginVerificar } from "@/lib/cliente-2fa.functions";
 import { LogoRota013 } from "@/components/logo-rota013";
+import { AppDownloadPrompt } from "@/components/app-download-prompt";
 
 export const Route = createFileRoute("/cliente/login")({
   ssr: false,
@@ -81,7 +82,8 @@ function ClienteLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 py-8">
+      <AppDownloadPrompt />
       <Card className="w-full max-w-md p-6 rounded-2xl">
         <div className="mb-6 text-center">
           <div className="flex justify-center">

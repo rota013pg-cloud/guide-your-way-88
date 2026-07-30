@@ -17,6 +17,7 @@ import { Route as ParceirosRouteImport } from './routes/parceiros'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MotociclistaRouteImport } from './routes/motociclista'
 import { Route as InstalarRouteImport } from './routes/instalar'
+import { Route as ExcluirContaRouteImport } from './routes/excluir-conta'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -40,6 +41,7 @@ import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedChatMotociclistasRouteImport } from './routes/_authenticated/chat-motociclistas'
+import { Route as AuthenticatedChatCorridasRouteImport } from './routes/_authenticated/chat-corridas'
 import { Route as AuthenticatedChatClientesRouteImport } from './routes/_authenticated/chat-clientes'
 import { Route as AuthenticatedAuditLogRouteImport } from './routes/_authenticated/audit-log'
 import { Route as ClienteAppIndexRouteImport } from './routes/cliente.app.index'
@@ -86,6 +88,11 @@ const MotociclistaRoute = MotociclistaRouteImport.update({
 const InstalarRoute = InstalarRouteImport.update({
   id: '/instalar',
   path: '/instalar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExcluirContaRoute = ExcluirContaRouteImport.update({
+  id: '/excluir-conta',
+  path: '/excluir-conta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComoFuncionaRoute = ComoFuncionaRouteImport.update({
@@ -206,6 +213,12 @@ const AuthenticatedChatMotociclistasRoute =
     path: '/chat-motociclistas',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedChatCorridasRoute =
+  AuthenticatedChatCorridasRouteImport.update({
+    id: '/chat-corridas',
+    path: '/chat-corridas',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedChatClientesRoute =
   AuthenticatedChatClientesRouteImport.update({
     id: '/chat-clientes',
@@ -246,6 +259,7 @@ const ClienteAppChatRoute = ClienteAppChatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/como-funciona': typeof ComoFuncionaRoute
+  '/excluir-conta': typeof ExcluirContaRoute
   '/instalar': typeof InstalarRoute
   '/motociclista': typeof MotociclistaRoute
   '/painel': typeof PainelRoute
@@ -256,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/audit-log': typeof AuthenticatedAuditLogRoute
   '/chat-clientes': typeof AuthenticatedChatClientesRoute
+  '/chat-corridas': typeof AuthenticatedChatCorridasRoute
   '/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -285,6 +300,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/como-funciona': typeof ComoFuncionaRoute
+  '/excluir-conta': typeof ExcluirContaRoute
   '/instalar': typeof InstalarRoute
   '/motociclista': typeof MotociclistaRoute
   '/painel': typeof PainelRoute
@@ -295,6 +311,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/audit-log': typeof AuthenticatedAuditLogRoute
   '/chat-clientes': typeof AuthenticatedChatClientesRoute
+  '/chat-corridas': typeof AuthenticatedChatCorridasRoute
   '/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -325,6 +342,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/como-funciona': typeof ComoFuncionaRoute
+  '/excluir-conta': typeof ExcluirContaRoute
   '/instalar': typeof InstalarRoute
   '/motociclista': typeof MotociclistaRoute
   '/painel': typeof PainelRoute
@@ -335,6 +353,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/_authenticated/audit-log': typeof AuthenticatedAuditLogRoute
   '/_authenticated/chat-clientes': typeof AuthenticatedChatClientesRoute
+  '/_authenticated/chat-corridas': typeof AuthenticatedChatCorridasRoute
   '/_authenticated/chat-motociclistas': typeof AuthenticatedChatMotociclistasRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -366,6 +385,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/como-funciona'
+    | '/excluir-conta'
     | '/instalar'
     | '/motociclista'
     | '/painel'
@@ -376,6 +396,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/audit-log'
     | '/chat-clientes'
+    | '/chat-corridas'
     | '/chat-motociclistas'
     | '/clientes'
     | '/configuracoes'
@@ -405,6 +426,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/como-funciona'
+    | '/excluir-conta'
     | '/instalar'
     | '/motociclista'
     | '/painel'
@@ -415,6 +437,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/audit-log'
     | '/chat-clientes'
+    | '/chat-corridas'
     | '/chat-motociclistas'
     | '/clientes'
     | '/configuracoes'
@@ -444,6 +467,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/como-funciona'
+    | '/excluir-conta'
     | '/instalar'
     | '/motociclista'
     | '/painel'
@@ -454,6 +478,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/_authenticated/audit-log'
     | '/_authenticated/chat-clientes'
+    | '/_authenticated/chat-corridas'
     | '/_authenticated/chat-motociclistas'
     | '/_authenticated/clientes'
     | '/_authenticated/configuracoes'
@@ -485,6 +510,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ComoFuncionaRoute: typeof ComoFuncionaRoute
+  ExcluirContaRoute: typeof ExcluirContaRoute
   InstalarRoute: typeof InstalarRoute
   MotociclistaRoute: typeof MotociclistaRoute
   PainelRoute: typeof PainelRoute
@@ -558,6 +584,13 @@ declare module '@tanstack/react-router' {
       path: '/instalar'
       fullPath: '/instalar'
       preLoaderRoute: typeof InstalarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/excluir-conta': {
+      id: '/excluir-conta'
+      path: '/excluir-conta'
+      fullPath: '/excluir-conta'
+      preLoaderRoute: typeof ExcluirContaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/como-funciona': {
@@ -721,6 +754,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatMotociclistasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/chat-corridas': {
+      id: '/_authenticated/chat-corridas'
+      path: '/chat-corridas'
+      fullPath: '/chat-corridas'
+      preLoaderRoute: typeof AuthenticatedChatCorridasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/chat-clientes': {
       id: '/_authenticated/chat-clientes'
       path: '/chat-clientes'
@@ -776,6 +816,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditLogRoute: typeof AuthenticatedAuditLogRoute
   AuthenticatedChatClientesRoute: typeof AuthenticatedChatClientesRoute
+  AuthenticatedChatCorridasRoute: typeof AuthenticatedChatCorridasRoute
   AuthenticatedChatMotociclistasRoute: typeof AuthenticatedChatMotociclistasRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
@@ -794,6 +835,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAuditLogRoute: AuthenticatedAuditLogRoute,
   AuthenticatedChatClientesRoute: AuthenticatedChatClientesRoute,
+  AuthenticatedChatCorridasRoute: AuthenticatedChatCorridasRoute,
   AuthenticatedChatMotociclistasRoute: AuthenticatedChatMotociclistasRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
@@ -837,6 +879,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ComoFuncionaRoute: ComoFuncionaRoute,
+  ExcluirContaRoute: ExcluirContaRoute,
   InstalarRoute: InstalarRoute,
   MotociclistaRoute: MotociclistaRoute,
   PainelRoute: PainelRoute,
@@ -856,13 +899,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

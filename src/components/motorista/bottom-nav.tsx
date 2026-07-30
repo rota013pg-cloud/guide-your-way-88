@@ -8,6 +8,12 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { motoristaAlterarSenha, motoristaListarCorridas, motoristaSolicitarExclusao } from "@/lib/motorista.functions";
 import { motoristaListarChat, motoristaEnviarMensagem, motoristaChatUploadUrl } from "@/lib/chat-motorista.functions";
+import {
+  motoristaChatCorridaSync,
+  motoristaChatCorridaEnviar,
+  motoristaChatCorridaUploadUrl,
+  motoristaChatCorridaEnviarMidia,
+} from "@/lib/chat-corrida.functions";
 import { BotoesAnexo, MidiaMensagem } from "@/lib/chat-midia";
 import { RawPasswordInput } from "@/components/ui/password-input";
 import { motoristaListarCobrancasExtras } from "@/lib/cobrancas-extras.functions";
@@ -54,6 +60,7 @@ export function MotoristaBottomNav({
   onSair,
   online,
   emCorrida,
+  corridaId,
 }: {
   motorista: Motorista;
   token: string;
@@ -63,6 +70,7 @@ export function MotoristaBottomNav({
   onSair: () => void;
   online: boolean;
   emCorrida: boolean;
+  corridaId?: number | null;
 }) {
   const [tab, setTab] = useState<Tab>(null);
   const [unread, setUnread] = useState(0);
@@ -175,7 +183,7 @@ export function MotoristaBottomNav({
           {tab === "perfil" && <PerfilTab motorista={motorista} online={online} emCorrida={emCorrida} onAlterarSenha={() => setTab("senha")} onIndicar={() => setTab("indicar")} onSair={onSair} onExcluirConta={solicitarExclusao} />}
           {tab === "senha" && <SenhaTab codigo={motorista.codigo} token={token} onPronto={() => setTab("perfil")} />}
           {tab === "indicar" && <IndicarTab motorista={motorista} />}
-          {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} />}
+          {tab === "chat" && <ChatTab codigo={motorista.codigo} token={token} corridaId={emCorrida ? corridaId ?? null : null} />}
           {tab === "historico" && <HistoricoTab codigo={motorista.codigo} token={token} />}
           {tab === "faturamento" && <FaturamentoTab codigo={motorista.codigo} token={token} cobranca={cobranca} />}
           {tab === "pagamentos" && (
@@ -456,7 +464,37 @@ type Msg = {
   id: number; autor: string; autor_nome: string | null; texto: string | null; criado_em: string;
   midia_url?: string | null; midia_tipo?: string | null; midia_nome?: string | null;
 };
-function ChatTab({ codigo, token }: { codigo: string; token: string }) {
+function ChatTab({ codigo, token, corridaId }: { codigo: string; token: string; corridaId: number | null }) {
+  const emCorrida = corridaId != null;
+  const [aba, setAba] = useState<"passageiro" | "central">(emCorrida ? "passageiro" : "central");
+  // Ao iniciar/encerrar a corrida, ajusta a aba automaticamente.
+  useEffect(() => {
+    setAba(emCorrida ? "passageiro" : "central");
+  }, [emCorrida]);
+
+  return (
+    <div>
+      {emCorrida && (
+        <div className="moto-chat-tabs">
+          <button className={aba === "passageiro" ? "active" : ""} onClick={() => setAba("passageiro")}>
+            🏍️ Passageiro
+          </button>
+          <button className={aba === "central" ? "active" : ""} onClick={() => setAba("central")}>
+            💬 Central
+          </button>
+        </div>
+      )}
+      {emCorrida && aba === "passageiro" ? (
+        <PassageiroChat codigo={codigo} token={token} corridaId={corridaId!} />
+      ) : (
+        <CentralChat codigo={codigo} token={token} />
+      )}
+    </div>
+  );
+}
+
+// Chat com a central (comportamento original).
+function CentralChat({ codigo, token }: { codigo: string; token: string }) {
   const listarFn = useServerFn(motoristaListarChat);
   const enviarFn = useServerFn(motoristaEnviarMensagem);
   const uploadUrlFn = useServerFn(motoristaChatUploadUrl);
@@ -535,6 +573,131 @@ function ChatTab({ codigo, token }: { codigo: string; token: string }) {
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           placeholder="Digite uma mensagem…"
+          onKeyDown={(e) => e.key === "Enter" && enviar()}
+        />
+        <button onClick={enviar} disabled={enviando || !texto.trim()}>➤</button>
+      </div>
+    </div>
+  );
+}
+
+// Chat direto com o PASSAGEIRO durante a corrida (a central monitora).
+type MsgCorridaMoto = Msg & { autor: string; removida?: boolean };
+function PassageiroChat({ codigo, token, corridaId }: { codigo: string; token: string; corridaId: number }) {
+  const syncFn = useServerFn(motoristaChatCorridaSync);
+  const enviarFn = useServerFn(motoristaChatCorridaEnviar);
+  const uploadUrlFn = useServerFn(motoristaChatCorridaUploadUrl);
+  const midiaFn = useServerFn(motoristaChatCorridaEnviarMidia);
+  const [msgs, setMsgs] = useState<MsgCorridaMoto[]>([]);
+  const [clienteNome, setClienteNome] = useState("Passageiro");
+  const [texto, setTexto] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const fimRef = useRef<HTMLDivElement>(null);
+  const ultimoIdRef = useRef(0);
+  const primeiraRef = useRef(true);
+
+  useEffect(() => {
+    let cancelado = false;
+    let timeoutId: number | undefined;
+    const sincronizar = async () => {
+      try {
+        const r = await syncFn({ data: { codigo, token, corridaId } });
+        if (cancelado || !r.corridaId) return;
+        if (r.clienteNome) setClienteNome(r.clienteNome);
+        const lista = (r.mensagens as MsgCorridaMoto[]) ?? [];
+        const novas = lista.filter((m) => m.id > ultimoIdRef.current && m.autor !== "motociclista");
+        ultimoIdRef.current = lista.reduce((a, m) => (m.id > a ? m.id : a), ultimoIdRef.current);
+        setMsgs(lista);
+        if (!primeiraRef.current && novas.length > 0) playChatBeep();
+        primeiraRef.current = false;
+      } catch { /* ignore */ } finally {
+        if (!cancelado) timeoutId = window.setTimeout(sincronizar, 2500);
+      }
+    };
+    void sincronizar();
+    return () => { cancelado = true; if (timeoutId) clearTimeout(timeoutId); };
+  }, [codigo, token, corridaId, syncFn]);
+
+  useEffect(() => {
+    fimRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [msgs]);
+
+  const recarregar = async () => {
+    try {
+      const r = await syncFn({ data: { codigo, token, corridaId } });
+      if (r.corridaId) {
+        const lista = (r.mensagens as MsgCorridaMoto[]) ?? [];
+        ultimoIdRef.current = lista.reduce((a, m) => (m.id > a ? m.id : a), ultimoIdRef.current);
+        setMsgs(lista);
+      }
+    } catch { /* ignore */ }
+  };
+
+  const enviar = async () => {
+    const t = texto.trim();
+    if (!t) return;
+    setEnviando(true);
+    try {
+      await enviarFn({ data: { codigo, token, corridaId, texto: t } });
+      setTexto("");
+      await recarregar();
+    } catch { /* ignore */ } finally { setEnviando(false); }
+  };
+
+  const enviarMidia = async (m: { midiaUrl: string; midiaTipo: string; midiaNome: string }) => {
+    await midiaFn({
+      data: {
+        codigo, token, corridaId,
+        midiaUrl: m.midiaUrl,
+        midiaTipo: m.midiaTipo as "imagem" | "video" | "audio" | "arquivo",
+        midiaNome: m.midiaNome,
+      },
+    });
+    await recarregar();
+  };
+
+  return (
+    <div className="moto-chat">
+      <div className="moto-chat-passageiro-cab">Falando com {clienteNome} · a central acompanha</div>
+      <div className="moto-chat-lista">
+        {msgs.length === 0 && <div className="moto-empty">Combine os detalhes com {clienteNome}.</div>}
+        {msgs.map((m) => {
+          const isSelf = m.autor === "motociclista";
+          const isCentral = m.autor === "central";
+          return (
+            <div key={m.id} className={`moto-msg ${isSelf ? "self" : "op"}`}>
+              <div className="moto-msg-autor">
+                {isSelf ? "Você" : isCentral ? `${m.autor_nome ?? "Central"} · Central` : (m.autor_nome ?? clienteNome)}
+              </div>
+              {m.removida ? (
+                <div className="moto-msg-texto" style={{ fontStyle: "italic", opacity: 0.7 }}>
+                  Mensagem removida pela central
+                </div>
+              ) : (
+                <>
+                  {m.midia_url && (
+                    <div className="moto-msg-midia">
+                      <MidiaMensagem url={m.midia_url} tipo={m.midia_tipo} nome={m.midia_nome} />
+                    </div>
+                  )}
+                  {m.texto && <div className="moto-msg-texto">{m.texto}</div>}
+                </>
+              )}
+            </div>
+          );
+        })}
+        <div ref={fimRef} />
+      </div>
+      <div className="moto-chat-input">
+        <BotoesAnexo
+          obterUploadUrl={(ext) => uploadUrlFn({ data: { codigo, token, corridaId, ext } })}
+          onEnviar={enviarMidia}
+          disabled={enviando}
+        />
+        <input
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          placeholder={`Mensagem para ${clienteNome}…`}
           onKeyDown={(e) => e.key === "Enter" && enviar()}
         />
         <button onClick={enviar} disabled={enviando || !texto.trim()}>➤</button>
@@ -959,6 +1122,16 @@ const cssNav = `
 .moto-app .moto-chat-input button[title]:not([type="submit"]) { padding:0 3px; }
 .moto-app .moto-msg-midia { margin-bottom:4px; }
 .moto-app .moto-msg-midia img, .moto-app .moto-msg-midia video { border-radius:10px; }
+.moto-app .moto-chat-tabs { display:flex; gap:6px; margin-bottom:10px; }
+.moto-app .moto-chat-tabs button {
+  flex:1; background:#0f0f0f; border:1.5px solid #2a2a2a; border-radius:10px;
+  padding:9px 4px; color:#888; font-size:13px; font-weight:700; cursor:pointer;
+}
+.moto-app .moto-chat-tabs button.active { background:#f7c600; color:#111; border-color:#f7c600; }
+.moto-app .moto-chat-passageiro-cab {
+  background:#0f0f0f; border:1px solid #2a2a2a; border-radius:10px;
+  padding:8px 10px; margin-bottom:8px; color:#c9a84c; font-size:12px; font-weight:600; text-align:center;
+}
 
 .moto-app .moto-historico { display:flex; flex-direction:column; gap:10px; }
 .moto-app .moto-hist-item { background:#0f0f0f; border:1px solid #2a2a2a; border-radius:14px; padding:12px; }

@@ -57,7 +57,7 @@ function QuemSomosPage() {
             </div>
 
             <div className="mt-12 rounded-2xl border border-border bg-card p-6">
-              <h2 className="text-xl font-semibold">Fala com a gente</h2>
+              <h2 className="text-xl font-semibold">FALE COM A ROTA 013</h2>
               <p className="mt-2 text-sm text-muted-foreground leading-loose">
                 E-mail:{" "}
                 <a className="text-foreground underline" href="mailto:contato@rota013.com.br">

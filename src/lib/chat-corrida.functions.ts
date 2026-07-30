@@ -188,7 +188,7 @@ export const clienteChatCorridaEnviar = createServerFn({ method: "POST" })
       lido_cliente: true,
     } as never);
     if (corrida.motorista_codigo) {
-      void enviarPushMotorista([corrida.motorista_codigo], {
+      await enviarPushMotorista([corrida.motorista_codigo], {
         title: `💬 ${primeiroNome(nome) || "Passageiro"}`,
         body: t.length > 120 ? t.slice(0, 120) + "…" : t,
         data: { tipo: "chat_corrida", corridaId: String(corrida.id) },
@@ -231,7 +231,7 @@ export const clienteChatCorridaEnviarMidia = createServerFn({ method: "POST" })
       lido_cliente: true,
     } as never);
     if (corrida.motorista_codigo) {
-      void enviarPushMotorista([corrida.motorista_codigo], {
+      await enviarPushMotorista([corrida.motorista_codigo], {
         title: `💬 ${primeiroNome(nome) || "Passageiro"}`,
         body: rotuloMidia(data.midiaTipo) || "Nova mensagem",
         data: { tipo: "chat_corrida", corridaId: String(corrida.id) },
@@ -288,7 +288,7 @@ export const motoristaChatCorridaEnviar = createServerFn({ method: "POST" })
       lido_motorista: true,
     } as never);
     if (corrida.cliente_codigo) {
-      void enviarPushCliente([corrida.cliente_codigo], {
+      await enviarPushCliente([corrida.cliente_codigo], {
         title: `💬 ${nome}`,
         body: t.length > 120 ? t.slice(0, 120) + "…" : t,
         data: { tipo: "chat_corrida", corridaId: String(corrida.id) },
@@ -334,7 +334,7 @@ export const motoristaChatCorridaEnviarMidia = createServerFn({ method: "POST" }
       lido_motorista: true,
     } as never);
     if (corrida.cliente_codigo) {
-      void enviarPushCliente([corrida.cliente_codigo], {
+      await enviarPushCliente([corrida.cliente_codigo], {
         title: `💬 ${nome}`,
         body: rotuloMidia(data.midiaTipo) || "Nova mensagem",
         data: { tipo: "chat_corrida", corridaId: String(corrida.id) },
@@ -428,10 +428,10 @@ export const operadorChatCorridaEnviar = createServerFn({ method: "POST" })
       .maybeSingle();
     const preview = t.length > 120 ? t.slice(0, 120) + "…" : t;
     if (c?.cliente_codigo) {
-      void enviarPushCliente([c.cliente_codigo], { title: `💬 ${nome}`, body: preview, data: { tipo: "chat_corrida", corridaId: String(data.corridaId) } });
+      await enviarPushCliente([c.cliente_codigo], { title: `💬 ${nome}`, body: preview, data: { tipo: "chat_corrida", corridaId: String(data.corridaId) } });
     }
     if (c?.motorista_codigo) {
-      void enviarPushMotorista([c.motorista_codigo], { title: `💬 ${nome}`, body: preview, data: { tipo: "chat_corrida", corridaId: String(data.corridaId) } });
+      await enviarPushMotorista([c.motorista_codigo], { title: `💬 ${nome}`, body: preview, data: { tipo: "chat_corrida", corridaId: String(data.corridaId) } });
     }
     return { ok: true };
   });

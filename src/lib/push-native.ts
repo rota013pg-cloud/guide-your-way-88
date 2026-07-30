@@ -10,6 +10,7 @@
  */
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { toast } from "sonner";
+import { playChatBeep } from "@/lib/notification-sound";
 import { ehNativo } from "@/lib/gps-tracker";
 import { registrarPushToken } from "@/lib/motorista.functions";
 import { clienteRegistrarPushToken, clienteDesregistrarPushToken } from "@/lib/chat-cliente.functions";
@@ -32,9 +33,6 @@ async function obterTokenFcmIOS(): Promise<string | null> {
 let sistemaIniciado = false;
 let ultimoFcmToken: string | null = null;
 let registrarAtual: ((fcmToken: string) => Promise<unknown>) | null = null;
-// Com o app aberto, o próprio app já mostra a notificação interna; então
-// não repetimos com um toast do push (senão fica em dobro). O cliente desliga.
-let mostrarToastForeground = true;
 
 /** Sobe o sistema de push (permissão, canal, listeners, register) uma única vez. */
 async function garantirSistema(): Promise<void> {
@@ -79,10 +77,15 @@ async function garantirSistema(): Promise<void> {
     });
     await PushNotifications.addListener("registrationError", (e) => console.warn("[push] erro:", e));
     await PushNotifications.addListener("pushNotificationReceived", (n) => {
-      // App em foreground: não repete a notificação (o app já avisa por dentro).
-      if (!mostrarToastForeground) return;
+      // App em foreground: o sistema NÃO mostra banner sozinho. Mostramos um
+      // aviso interno (toast + bip), exceto se a pessoa já está numa tela de
+      // chat — que tem o próprio aviso — pra não duplicar.
+      const path = typeof window !== "undefined" ? window.location.pathname : "";
+      const emTelaDeChat = path.includes("/cliente/app/chat");
+      if (emTelaDeChat) return;
       const t = n.title ?? "Rota 013";
       const b = n.body ?? "";
+      try { playChatBeep(); } catch { /* áudio pode não estar liberado */ }
       toast(`${t}${b ? " — " + b : ""}`);
     });
 
@@ -114,9 +117,6 @@ export function iniciarPushMotorista(codigo: string, sessaoToken: string): Promi
 }
 
 export function iniciarPushCliente(clienteToken: string): Promise<void> {
-  // App do cliente já mostra a notificação interna (toast/beep via polling),
-  // então não duplicamos com o toast do push em foreground.
-  mostrarToastForeground = false;
   return associar((fcmToken) =>
     clienteRegistrarPushToken({ data: { token: clienteToken, fcmToken, plataforma: Capacitor.getPlatform() } }),
   );

@@ -791,6 +791,7 @@ function MotoristaApp() {
           onSair={sair}
           online={online}
           emCorrida={!!corridaAtual}
+          corridaId={corridaAtual?.id ?? null}
         />
       )}
 

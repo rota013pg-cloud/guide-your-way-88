@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { MessageSquare, ShieldCheck, Clock, MapPinned, BadgeCheck, Bike } from "lucide-react";
+import { CircleDollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/como-funciona")({
   ssr: false,
@@ -11,13 +12,13 @@ export const Route = createFileRoute("/como-funciona")({
       {
         name: "description",
         content:
-          "Peça sua corrida de moto pela plataforma Rota013. Cadastro pelo site, acompanhamento em tempo real e motociclistas verificados.",
+          "Peça sua corrida de moto pela plataforma Rota013. Cadastro pelo aplicativo, acompanhamento em tempo real e motociclistas verificados.",
       },
       { property: "og:title", content: "Como funciona — Rota013" },
       {
         property: "og:description",
         content:
-          "Solicite corridas pela plataforma web Rota013. Sem WhatsApp, sem espera — tudo direto pelo app no navegador.",
+          "Solicite corridas pela plataforma Rota013. Sem WhatsApp, sem espera — tudo direto pelo app.",
       },
     ],
     links: [{ rel: "manifest", href: "/manifest-cliente.webmanifest" }],
@@ -42,8 +43,8 @@ function ComoFuncionaPage() {
               <span className="italic text-primary">direto pelo site.</span>
             </h1>
             <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Na Rota013 você solicita corridas direto pelo site ou pode
-              solicitar via WhatsApp direto pela central.
+              Na Rota013 você solicita corridas direto pelo aplicativo, recebe as informações do
+              motociclista e tem todo o apoio da central via chat no próprio aplicativo.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/cliente/cadastro">
@@ -76,7 +77,7 @@ function ComoFuncionaPage() {
               </p>
             </div>
             <div className="grid md:grid-cols-5 sm:grid-cols-2 gap-4">
-              <Step n="1" title="Cadastro" desc="Crie sua conta gratuita pelo site em menos de 1 minuto." />
+              <Step n="1" title="Cadastro" desc="Crie sua conta gratuita pelo site ou aplicativo em menos de 1 minuto." />
               <Step n="2" title="Pedido" desc="Informe origem e destino direto na plataforma e confirme o valor." />
               <Step n="3" title="Localização" desc="A central encontra um motociclista parceiro próximo de você." />
               <Step n="4" title="Confirmação" desc="Receba os dados do motociclista, modelo e placa da moto em tempo real." />
@@ -97,13 +98,16 @@ function ComoFuncionaPage() {
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
               <ValueCard icon={<MessageSquare className="size-5" />} title="Atendimento humanizado" desc="Central de verdade acompanhando do início ao fim da corrida." />
               <ValueCard icon={<ShieldCheck className="size-5" />} title="Menos cancelamentos" desc="A central intermedia para reduzir falhas e desencontros." />
-              <ValueCard icon={<Clock className="size-5" />} title="Corridas agendadas" desc="Ideal para trabalho, consultas, rodoviária e eventos." />
+              <ValueCard icon={<CircleDollarSign className="size-5" />} title="Sem pegadinha" desc="Você sabe o valor da corrida antes de solicitar." />
               <ValueCard icon={<MapPinned className="size-5" />} title="Acompanhamento em tempo real" desc="Informação atualizada do tempo de chegada do motociclista" />
               <ValueCard icon={<BadgeCheck className="size-5" />} title="Motociclistas verificados" desc="Documentação em dia e dados enviados antes da corrida." />
               <ValueCard icon={<Bike className="size-5" />} title="Motos revisadas" desc="Motociclistas parceiros com motos revisadas e adequadas." />
             </div>
           </div>
         </section>
+        
+
+
 
         {/* CTA */}
         <section className="px-5 py-16 border-t border-border/60">
@@ -112,7 +116,7 @@ function ComoFuncionaPage() {
               Precisa se deslocar com rapidez?
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Entre na plataforma Rota013 e solicite sua corrida em segundos.
+              Acesse a plataforma Rota013 e solicite sua corrida em segundos.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/cliente/cadastro">

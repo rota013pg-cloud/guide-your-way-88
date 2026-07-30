@@ -17,6 +17,7 @@ import {
   StickyNote,
   BookOpen,
   ScrollText,
+  Bike,
 } from "lucide-react";
 import {
   Sidebar,
@@ -49,6 +50,7 @@ const operacional: Item[] = [
   { title: "Clientes", url: "/clientes", icon: UserSquare },
   { title: "Chat motociclistas", url: "/chat-motociclistas", icon: MessageSquare },
   { title: "Chat clientes", url: "/chat-clientes", icon: MessageSquare },
+  { title: "Chat corridas", url: "/chat-corridas", icon: Bike },
   { title: "Mural", url: "/mural", icon: StickyNote },
 ];
 

@@ -90,7 +90,7 @@ export function SiteFooter() {
           <Link to="/como-funciona" className="hover:text-foreground">Como funciona</Link>
           <Link to="/parceiros" className="hover:text-foreground">Quero ser parceiro</Link>
           <Link to="/quem-somos" className="hover:text-foreground">Quem somos</Link>
-          <Link to="/instalar" className="hover:text-foreground">Instalar app</Link>
+          <Link to="/instalar" className="hover:text-foreground">Baixar app</Link>
           <Link to="/termos" className="hover:text-foreground">Termos de Uso</Link>
           <Link to="/privacidade" className="hover:text-foreground">Privacidade</Link>
         </nav>

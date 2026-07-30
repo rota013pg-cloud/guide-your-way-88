@@ -20,7 +20,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { dispararOfertasCliente } from "@/lib/corridas.functions";
 import { cotarCorridaCliente } from "@/lib/cliente-cotacao.functions";
 import { clienteMotoristaCorridaInfo } from "@/lib/cliente-motorista.functions";
-import { PWAInstallBanner } from "@/components/pwa-install-banner";
 import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 
 export const Route = createFileRoute("/cliente/app/")({
@@ -281,8 +280,6 @@ function ClienteAppHome() {
 
   return (
     <div className="px-4 py-5 space-y-5 animate-fade-in">
-      <PWAInstallBanner />
-
       <div className="space-y-1.5">
         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--gold)]">Rota 013</p>
         <h2 className="font-display text-3xl font-bold text-[color:var(--gold-soft)] tracking-tight">

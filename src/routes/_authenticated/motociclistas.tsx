@@ -93,7 +93,9 @@ function MotoristasPage() {
           <p className="text-xs md:text-sm text-muted-foreground">{motoristas.length} cadastrados</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {isAdmin && (
+          {/* Botão de teste "Zerar histórico" oculto em produção.
+              Para reativar, troque `false` por `isAdmin`. */}
+          {false && (
             <Button
               variant="outline"
               size="sm"

@@ -137,6 +137,32 @@ export const salvarMotorista = createServerFn({ method: "POST" })
       prioridade_criterios: data.prioridade_criterios as any,
     };
 
+    // ── Bloqueio de cadastro duplicado (CPF / telefone / placa) ──
+    // Compara normalizado (só dígitos; placa alfanumérica maiúscula), ignora
+    // campos vazios e, na edição, não conflita com o próprio motociclista.
+    const soDigitos = (s?: string | null) => (s ?? "").replace(/\D/g, "");
+    const soPlaca = (s?: string | null) => (s ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const cpfNovo = soDigitos(data.cpf);
+    const telNovo = soDigitos(data.telefone);
+    const placaNova = soPlaca(data.placa);
+    if (cpfNovo || telNovo || placaNova) {
+      const { data: existentes } = await supabaseAdmin
+        .from("motoristas")
+        .select("codigo, cpf, telefone, placa");
+      for (const m of existentes ?? []) {
+        if (data.codigo && m.codigo === data.codigo) continue;
+        if (cpfNovo && soDigitos(m.cpf) === cpfNovo) {
+          throw new Error(`CPF já cadastrado no motociclista ${m.codigo}.`);
+        }
+        if (telNovo && soDigitos(m.telefone) === telNovo) {
+          throw new Error(`Telefone já cadastrado no motociclista ${m.codigo}.`);
+        }
+        if (placaNova && soPlaca(m.placa) === placaNova) {
+          throw new Error(`Placa já cadastrada no motociclista ${m.codigo}.`);
+        }
+      }
+    }
+
     if (data.codigo) {
       const { error } = await supabaseAdmin
         .from("motoristas")

@@ -20,6 +20,17 @@ export function AtivarRastreamento() {
   const [status, setStatus] = useState<StatusPermissoes | null>(null);
   const [aberto, setAberto] = useState(true);
   const [ocupado, setOcupado] = useState(false);
+  // Divulgação proeminente (Google Play): consentimento explícito ANTES de
+  // pedir a permissão de localização em segundo plano.
+  const [consentiu, setConsentiu] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return localStorage.getItem("rota013_bg_loc_consent") === "1"; } catch { return false; }
+  });
+
+  const aceitarDivulgacao = () => {
+    try { localStorage.setItem("rota013_bg_loc_consent", "1"); } catch { /* ignore */ }
+    setConsentiu(true);
+  };
 
   const recarregar = useCallback(async () => {
     const s = await statusPermissoes();
@@ -66,6 +77,46 @@ export function AtivarRastreamento() {
         Rastreamento incompleto — tocar para ativar
         <ChevronRight size={16} />
       </button>
+    );
+  }
+
+  // ── DIVULGAÇÃO PROEMINENTE (Google Play) ──────────────────────────
+  // Mostrada ANTES de qualquer pedido de permissão de localização. Explica
+  // que a localização é coletada em segundo plano (mesmo com o app fechado),
+  // para quê, e exige consentimento afirmativo pra prosseguir.
+  if (!consentiu) {
+    return (
+      <div className="rast-overlay">
+        <style>{estilos}</style>
+        <div className="rast-card">
+          <div className="rast-disc-ico">
+            <MapPin size={30} />
+          </div>
+          <div className="rast-titulo" style={{ textAlign: "center" }}>
+            Localização durante as corridas
+          </div>
+          <p className="rast-disc-texto">
+            O <b>Rota 013 Motociclista</b> coleta a sua localização{" "}
+            <b>em segundo plano — mesmo com o app fechado ou em uso —</b> para compartilhar
+            sua posição em tempo real com a central e com o passageiro enquanto você está{" "}
+            <b>online</b> e durante uma corrida.
+          </p>
+          <p className="rast-disc-texto2">
+            A coleta acontece somente quando você fica online. Ao ficar offline ou sair do app,
+            o envio da localização é interrompido. Você pode revisar isso na nossa{" "}
+            <a href="https://www.rota013.com.br/privacidade" target="_blank" rel="noopener noreferrer">
+              Política de Privacidade
+            </a>
+            .
+          </p>
+          <button className="rast-btn-grande" onClick={aceitarDivulgacao}>
+            Aceitar e continuar
+          </button>
+          <button className="rast-depois" onClick={() => setAberto(false)}>
+            Agora não
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -211,6 +262,14 @@ const estilos = `
 .rast-dica b{color:#f7c600;}
 .rast-depois{width:100%;margin-top:14px;background:transparent;border:none;color:#8f8f8f;font-size:13px;
   padding:8px;cursor:pointer;}
+.rast-disc-ico{width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  background:#2a2a2a;color:#f7c600;margin:4px auto 14px;}
+.rast-disc-texto{font-size:14px;color:#d5d5d5;line-height:1.6;margin:0 0 12px;text-align:left;}
+.rast-disc-texto b{color:#fff;}
+.rast-disc-texto2{font-size:12.5px;color:#9a9a9a;line-height:1.55;margin:0 0 18px;text-align:left;}
+.rast-disc-texto2 a{color:#f7c600;text-decoration:underline;}
+.rast-btn-grande{width:100%;background:#f7c600;color:#111;border:none;border-radius:14px;padding:15px;
+  font-size:15px;font-weight:800;cursor:pointer;}
 .rast-banner{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:55;
   display:flex;align-items:center;gap:8px;justify-content:center;background:#231d05;border:1px solid #4a3d0a;
   color:#f7c600;font-size:12.5px;font-weight:700;border-radius:12px;padding:11px 14px;cursor:pointer;

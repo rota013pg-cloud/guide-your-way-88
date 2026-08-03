@@ -141,8 +141,14 @@ export const motoristaLogin = createServerFn({ method: "POST" })
     if (auth.status === "Bloqueado") throw new Error("Acesso bloqueado. Contate a central.");
     if (auth.senha_hash !== hashSenha(data.senha)) throw new Error("Senha incorreta");
 
+    // Conta de teste do revisor da loja (Google/Apple): NÃO trava por
+    // dispositivo, pra o revisor conseguir logar de qualquer aparelho.
+    // Defina MOTORISTA_REVISOR_CODIGO (ex.: "M0009") nas variáveis de ambiente.
+    const revisorCodigo = (process.env.MOTORISTA_REVISOR_CODIGO || "").toUpperCase();
+    const ehRevisor = revisorCodigo !== "" && codigo === revisorCodigo;
+
     // login único por device
-    if (data.deviceId) {
+    if (data.deviceId && !ehRevisor) {
       const { data: sessaoAtiva } = await supabaseAdmin
         .from("motorista_sessoes")
         .select("id")

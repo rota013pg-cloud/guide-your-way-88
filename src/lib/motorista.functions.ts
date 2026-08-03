@@ -143,8 +143,8 @@ export const motoristaLogin = createServerFn({ method: "POST" })
 
     // Conta de teste do revisor da loja (Google/Apple): NÃO trava por
     // dispositivo, pra o revisor conseguir logar de qualquer aparelho.
-    // Defina MOTORISTA_REVISOR_CODIGO (ex.: "M0009") nas variáveis de ambiente.
-    const revisorCodigo = (process.env.MOTORISTA_REVISOR_CODIGO || "").toUpperCase();
+    // Padrão M0003; dá pra trocar via env MOTORISTA_REVISOR_CODIGO sem mexer no código.
+    const revisorCodigo = (process.env.MOTORISTA_REVISOR_CODIGO || "M0003").toUpperCase();
     const ehRevisor = revisorCodigo !== "" && codigo === revisorCodigo;
 
     // login único por device

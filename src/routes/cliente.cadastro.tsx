@@ -134,7 +134,10 @@ function ClienteCadastroPage() {
           <Field label="CPF" id="cpf" value={form.cpf} onChange={(v) => set("cpf", maskCPF(v))} required inputMode="numeric" />
 
           <div className="pt-2">
-            <p className="text-sm font-semibold mb-2">Endereço</p>
+            <p className="text-sm font-semibold">Endereço <span className="font-normal text-muted-foreground">(opcional)</span></p>
+            <p className="text-xs text-muted-foreground mb-2">
+              Não é obrigatório. Você informa o endereço de partida ao pedir cada corrida.
+            </p>
             <div>
               <Label htmlFor="logradouro" className="mb-1.5 block">Rua</Label>
               <AddressAutocomplete

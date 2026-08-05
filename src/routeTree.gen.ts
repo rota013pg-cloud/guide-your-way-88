@@ -37,6 +37,7 @@ import { Route as AuthenticatedInstrucoesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCorridasNaoAceitasRouteImport } from './routes/_authenticated/corridas-nao-aceitas'
 import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticated/corridas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
@@ -191,6 +192,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCorridasNaoAceitasRoute =
+  AuthenticatedCorridasNaoAceitasRouteImport.update({
+    id: '/corridas-nao-aceitas',
+    path: '/corridas-nao-aceitas',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCorridasRoute = AuthenticatedCorridasRouteImport.update({
   id: '/corridas',
   path: '/corridas',
@@ -275,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
+  '/corridas-nao-aceitas': typeof AuthenticatedCorridasNaoAceitasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -316,6 +324,7 @@ export interface FileRoutesByTo {
   '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
+  '/corridas-nao-aceitas': typeof AuthenticatedCorridasNaoAceitasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -358,6 +367,7 @@ export interface FileRoutesById {
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corridas': typeof AuthenticatedCorridasRoute
+  '/_authenticated/corridas-nao-aceitas': typeof AuthenticatedCorridasNaoAceitasRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/clientes'
     | '/configuracoes'
     | '/corridas'
+    | '/corridas-nao-aceitas'
     | '/dashboard'
     | '/financeiro'
     | '/historico'
@@ -442,6 +453,7 @@ export interface FileRouteTypes {
     | '/clientes'
     | '/configuracoes'
     | '/corridas'
+    | '/corridas-nao-aceitas'
     | '/dashboard'
     | '/financeiro'
     | '/historico'
@@ -483,6 +495,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clientes'
     | '/_authenticated/configuracoes'
     | '/_authenticated/corridas'
+    | '/_authenticated/corridas-nao-aceitas'
     | '/_authenticated/dashboard'
     | '/_authenticated/financeiro'
     | '/_authenticated/historico'
@@ -726,6 +739,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/corridas-nao-aceitas': {
+      id: '/_authenticated/corridas-nao-aceitas'
+      path: '/corridas-nao-aceitas'
+      fullPath: '/corridas-nao-aceitas'
+      preLoaderRoute: typeof AuthenticatedCorridasNaoAceitasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/corridas': {
       id: '/_authenticated/corridas'
       path: '/corridas'
@@ -821,6 +841,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorridasRoute: typeof AuthenticatedCorridasRoute
+  AuthenticatedCorridasNaoAceitasRoute: typeof AuthenticatedCorridasNaoAceitasRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
@@ -840,6 +861,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorridasRoute: AuthenticatedCorridasRoute,
+  AuthenticatedCorridasNaoAceitasRoute: AuthenticatedCorridasNaoAceitasRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,

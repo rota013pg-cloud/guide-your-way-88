@@ -136,7 +136,7 @@ function ChatCorridasPage() {
             onChange={(e) => setBusca(e.target.value)}
             className="mb-3"
           />
-          <div className="flex-1 overflow-y-auto space-y-1 -mx-1 px-1">
+          <div className="flex-1 overflow-y-auto space-y-1 -mx-1 px-1 pb-20 md:pb-0">
             {conversasFiltradas.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-8">Nenhuma conversa de corrida.</p>
             )}
@@ -167,14 +167,23 @@ function ChatCorridasPage() {
           </div>
         </Card>
 
-        <Card className={`flex flex-col overflow-hidden ${selecionado == null ? "hidden md:flex" : ""}`}>
+        <Card
+          className={`flex-col overflow-hidden ${
+            selecionado == null
+              ? "hidden md:flex"
+              : "flex fixed inset-0 z-[60] rounded-none md:static md:z-auto md:rounded-xl"
+          }`}
+        >
           {selecionado == null ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               Selecione uma conversa
             </div>
           ) : (
             <>
-              <div className="px-3 md:px-4 py-3 border-b border-border flex items-center gap-2">
+              <div
+                className="px-3 md:px-4 py-3 border-b border-border flex items-center gap-2 shrink-0"
+                style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+              >
                 <Button
                   variant="ghost"
                   size="icon"
@@ -252,7 +261,11 @@ function ChatCorridasPage() {
                 <div ref={fimRef} />
               </div>
 
-              <form onSubmit={enviar} className="flex items-center gap-1 p-3 border-t border-border">
+              <form
+                onSubmit={enviar}
+                className="flex items-center gap-1 p-3 border-t border-border shrink-0 bg-card"
+                style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+              >
                 <Input
                   placeholder={conversaAtual?.ativa ? "Intervir na conversa..." : "Enviar mensagem..."}
                   value={texto}

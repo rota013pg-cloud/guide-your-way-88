@@ -588,14 +588,14 @@ function CobrancasAutomaticasPanel() {
 
   return (
     <Card className="overflow-hidden">
-      <div className="p-4 border-b flex items-center justify-between">
-        <div>
+      <div className="p-4 border-b flex items-center justify-between gap-2">
+        <div className="min-w-0">
           <h2 className="font-semibold">Cobranças automáticas de hoje</h2>
           <p className="text-xs text-muted-foreground">
             App do motociclista exibe aviso ao atingir o valor da diária e bloqueia ao passar do limite configurado.
           </p>
         </div>
-        <Badge variant="outline">{ativos.length} ativa(s)</Badge>
+        <Badge variant="outline" className="shrink-0">{ativos.length} ativa(s)</Badge>
       </div>
       {/* Mobile: cards */}
       <div className="md:hidden divide-y">

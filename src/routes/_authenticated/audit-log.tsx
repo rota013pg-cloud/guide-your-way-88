@@ -215,7 +215,7 @@ function AuditLogPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border overflow-x-auto">
+      <div className="hidden md:block rounded-lg border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -263,7 +263,38 @@ function AuditLogPage() {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between text-sm">
+      {/* Mobile: registros empilhados */}
+      <div className="md:hidden space-y-2">
+        {logsQuery.isLoading && (
+          <div className="text-center text-sm text-muted-foreground py-6">Carregando…</div>
+        )}
+        {!logsQuery.isLoading && rows.length === 0 && (
+          <div className="text-center text-sm text-muted-foreground py-6">Nenhum registro</div>
+        )}
+        {rows.map((r: any) => (
+          <div key={r.id} className="rounded-lg border bg-card p-3 space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-xs text-muted-foreground break-all min-w-0">{fmtDate(r.criado_em)}</span>
+              {r.detalhes ? (
+                <Button variant="ghost" size="sm" className="h-7 px-2 shrink-0" onClick={() => setDetalhe(r)}>
+                  <Eye className="h-4 w-4" />
+                </Button>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap text-sm">
+              <span className="font-medium min-w-0 break-words">{r.usuario_nome ?? r.usuario_id ?? "—"}</span>
+              <Badge variant="outline">{r.usuario_tipo ?? "—"}</Badge>
+            </div>
+            <div className="text-sm break-words"><span className="text-muted-foreground">Ação:</span> {r.acao}</div>
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
+              <span className="break-words">Módulo: {r.modulo ?? "—"}</span>
+              <span className="min-w-0 break-all">Entidade: {r.entidade_id ?? "—"}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between flex-wrap gap-2 text-sm">
         <span className="text-muted-foreground">{total} registro(s)</span>
         <div className="flex items-center gap-2">
           <Button

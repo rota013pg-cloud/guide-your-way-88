@@ -372,7 +372,7 @@ function CorridaAtivaCard({
               ✓ Cliente avisado: chegada às {hpc.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
             </div>
           )}
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <input
               type="number" min={1} max={120} placeholder="ETA min"
               value={etaInput} onChange={(e) => setEtaInput(e.target.value)}

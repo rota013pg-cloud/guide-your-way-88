@@ -115,7 +115,7 @@ function TermosPage() {
               <Eye className="h-3 w-3" /> Pré-visualização
             </div>
             <div
-              className="prose prose-sm dark:prose-invert max-w-none border rounded p-3 bg-muted/30 max-h-[600px] overflow-y-auto"
+              className="prose prose-sm dark:prose-invert max-w-none border rounded p-3 bg-muted/30 max-h-[600px] overflow-auto break-words"
               dangerouslySetInnerHTML={{ __html: conteudo }}
             />
           </Card>

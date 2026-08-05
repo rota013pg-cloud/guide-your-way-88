@@ -128,18 +128,18 @@ function HistoricoPage() {
       {/* Filtros */}
       <Card className="p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div>
+          <div className="w-full sm:w-auto">
             <Label htmlFor="h-de" className="text-xs">De</Label>
-            <Input id="h-de" type="date" value={de} onChange={(e) => setDe(e.target.value)} className="w-40" />
+            <Input id="h-de" type="date" value={de} onChange={(e) => setDe(e.target.value)} className="w-full sm:w-40" />
           </div>
-          <div>
+          <div className="w-full sm:w-auto">
             <Label htmlFor="h-ate" className="text-xs">Até</Label>
-            <Input id="h-ate" type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="w-40" />
+            <Input id="h-ate" type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="w-full sm:w-40" />
           </div>
-          <div>
+          <div className="w-full sm:w-auto">
             <Label className="text-xs">Status</Label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-44"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Todos">Todos</SelectItem>
                 <SelectItem value="Finalizada">Finalizada</SelectItem>
@@ -150,10 +150,10 @@ function HistoricoPage() {
               </SelectContent>
             </Select>
           </div>
-          <div>
+          <div className="w-full sm:w-auto">
             <Label className="text-xs">Motociclista</Label>
             <Select value={motorista} onValueChange={setMotorista}>
-              <SelectTrigger className="w-52"><SelectValue placeholder="Todos" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-52"><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all">Todos</SelectItem>
                 {data?.motoristas.map((m) => (
@@ -164,7 +164,7 @@ function HistoricoPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex-1 min-w-[200px]">
+          <div className="w-full md:flex-1 md:min-w-[200px]">
             <Label htmlFor="h-cli" className="text-xs">Cliente (nome, código ou telefone)</Label>
             <div className="flex gap-2">
               <Input

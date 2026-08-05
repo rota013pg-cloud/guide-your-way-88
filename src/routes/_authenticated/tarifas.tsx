@@ -459,7 +459,26 @@ function TabelaDistancias({ tarifas }: { tarifas: TarifasConfig }) {
         </span>
       </div>
 
-      <div className="border rounded-lg max-h-[60vh] overflow-auto">
+      {/* Mobile: cartões empilhados */}
+      <div className="md:hidden border rounded-lg max-h-[60vh] overflow-auto divide-y">
+        {linhas.map((l, i) => (
+          <div key={i} className="p-3 flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-sm font-medium break-words">
+                {l.nO} <span className="text-muted-foreground">→</span> {l.nD}
+              </div>
+              <div className="text-xs text-muted-foreground">{l.km.toFixed(1)} km</div>
+            </div>
+            <div className="shrink-0 font-semibold text-sm">{fmtBRL(l.valor)}</div>
+          </div>
+        ))}
+        {linhas.length === 0 && (
+          <div className="p-6 text-center text-sm text-muted-foreground">Nenhum resultado</div>
+        )}
+      </div>
+
+      {/* Desktop: tabela */}
+      <div className="hidden md:block border rounded-lg max-h-[60vh] overflow-auto">
         <Table>
           <TableHeader className="sticky top-0 bg-background">
             <TableRow>

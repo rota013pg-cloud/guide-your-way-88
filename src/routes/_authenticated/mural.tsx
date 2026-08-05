@@ -89,17 +89,17 @@ function MuralPage() {
           return (
             <Card key={r.id} className={`p-4 space-y-2 ${r.fixado ? "border-primary/50 bg-primary/5" : ""}`}>
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="font-semibold">{r.autor_nome}</span>
+                <div className="flex items-center gap-2 text-sm flex-wrap min-w-0">
+                  <span className="font-semibold break-words min-w-0">{r.autor_nome}</span>
                   <span className="text-xs text-muted-foreground">
                     {new Date(r.criado_em).toLocaleString("pt-BR")}
                   </span>
                   {r.fixado && <Badge variant="outline"><Pin className="h-3 w-3 mr-1" />Fixado</Badge>}
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-wrap">
                   {!jaLi && (
                     <Button size="sm" variant="ghost" onClick={async () => { await lidoFn({ data: { id: r.id } }); qc.invalidateQueries({ queryKey: ["mural-recados"] }); }}>
-                      <Check className="h-4 w-4 mr-1" /> Marcar lido
+                      <Check className="h-4 w-4 md:mr-1" /> <span className="hidden md:inline">Marcar lido</span>
                     </Button>
                   )}
                   {sou && (
@@ -119,7 +119,7 @@ function MuralPage() {
                   )}
                 </div>
               </div>
-              <p className="text-sm whitespace-pre-wrap">{r.texto}</p>
+              <p className="text-sm whitespace-pre-wrap break-words">{r.texto}</p>
               <div className="text-xs text-muted-foreground">Lido por {lidos.length}</div>
             </Card>
           );

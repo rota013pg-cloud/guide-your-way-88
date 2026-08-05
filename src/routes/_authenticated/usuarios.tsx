@@ -122,7 +122,7 @@ function UsuariosPage() {
         <Button size="sm" onClick={() => setOpenNovo(true)}><Plus className="h-4 w-4 md:mr-1" /> <span className="hidden md:inline">Novo usuário</span></Button>
       </div>
 
-      <Card>
+      <Card className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -218,6 +218,87 @@ function UsuariosPage() {
           </TableBody>
         </Table>
       </Card>
+
+      {/* Mobile: cards empilhados */}
+      <div className="md:hidden space-y-2">
+        {usuarios.length === 0 && (
+          <Card className="p-4 text-center text-sm text-muted-foreground">Nenhum usuário.</Card>
+        )}
+        {usuarios.map((u: any) => {
+          const iniciais = (u.nome || "U").split(" ").map((p: string) => p[0]).slice(0, 2).join("").toUpperCase();
+          return (
+            <Card key={u.user_id} className="p-3 space-y-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <label className="relative group cursor-pointer block h-10 w-10 shrink-0" title="Alterar foto">
+                  <div className="h-10 w-10 rounded-full overflow-hidden bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold ring-1 ring-border">
+                    {u.foto ? <img src={u.foto} alt={u.nome} className="h-full w-full object-cover" /> : iniciais}
+                  </div>
+                  <span className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] text-white transition">Editar</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const f = e.target.files?.[0]; e.target.value = "";
+                    if (!f) return;
+                    const url = await uploadFotoUsuario(u.user_id, f);
+                    if (url) { await fotoFn({ data: { userId: u.user_id, foto: url } }); toast.success("Foto atualizada"); refresh(); }
+                  }} />
+                </label>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium break-words">{u.nome}</div>
+                  <div className="font-mono text-xs text-muted-foreground break-all">{u.login}</div>
+                  <div className="text-xs text-muted-foreground break-all">{u.email}</div>
+                </div>
+                <Badge variant={u.status === "Bloqueado" ? "destructive" : "secondary"} className="shrink-0">{u.status}</Badge>
+              </div>
+              {u.motivo_bloqueio && <div className="text-xs text-muted-foreground break-words">{u.motivo_bloqueio}</div>}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Select
+                  value={u.role}
+                  onValueChange={async (v) => {
+                    try {
+                      await roleFn({ data: { userId: u.user_id, role: v as any } });
+                      toast.success("Perfil atualizado");
+                      refresh();
+                    } catch (e: any) { toast.error(e.message); }
+                  }}
+                >
+                  <SelectTrigger className="w-32 h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">
+                      <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Admin</span>
+                    </SelectItem>
+                    <SelectItem value="operador">
+                      <span className="flex items-center gap-1"><User className="h-3 w-3" /> Operador</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-1 flex-wrap">
+                  <Button size="icon" variant="ghost" title="Ver senha" onClick={async () => {
+                    const r = await verSenhaFn({ data: { userId: u.user_id } });
+                    setSenhaRevelada({ nome: u.nome, senha: r.senha });
+                  }}><Eye className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" title="Alterar senha" onClick={() => setSenhaDialog({ userId: u.user_id, nome: u.nome })}>
+                    <Key className="h-4 w-4" />
+                  </Button>
+                  {u.status === "Bloqueado" ? (
+                    <Button size="icon" variant="ghost" title="Liberar" onClick={async () => {
+                      await desbloqFn({ data: { userId: u.user_id } }); toast.success("Liberado"); refresh();
+                    }}><Unlock className="h-4 w-4" /></Button>
+                  ) : (
+                    <Button size="icon" variant="ghost" title="Bloquear" onClick={() => setBloqDialog({ userId: u.user_id, nome: u.nome })}>
+                      <Lock className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button size="icon" variant="ghost" title="Excluir" onClick={async () => {
+                    if (!confirm(`Excluir ${u.nome}?`)) return;
+                    await excluirFn({ data: { userId: u.user_id } }); toast.success("Excluído"); refresh();
+                  }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
 
       {/* Novo */}
       <Dialog open={openNovo} onOpenChange={setOpenNovo}>

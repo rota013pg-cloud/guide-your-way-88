@@ -84,6 +84,7 @@ function ClienteAppHome() {
   const [motoristaInfo, setMotoristaInfo] = useState<MotoristaInfo | null>(null);
   const [avaliarCorridaId, setAvaliarCorridaId] = useState<number | null>(null);
   const ultimaAtivaRef = useRef<CorridaAtiva | null>(null);
+  const avisadosRef = useRef<Set<number>>(new Set());
   const cotarCorridaFn = useServerFn(cotarCorridaCliente);
 
   // Polling da corrida ativa do cliente
@@ -118,6 +119,12 @@ function ClienteAppHome() {
           (c) => c.id === anterior.id && c.status === "Finalizada" && c.avaliada_em == null,
         );
         if (finalizada) setAvaliarCorridaId(anterior.id);
+        // Corrida que estava procurando foi encerrada sem motociclista → avisa 1x.
+        const cancelada = lista.find((c) => c.id === anterior.id && c.status === "Cancelada");
+        if (cancelada && !anterior.motorista_codigo && !avisadosRef.current.has(anterior.id)) {
+          avisadosRef.current.add(anterior.id);
+          toast.error("Não localizamos nenhum motociclista online para a sua corrida. Tente novamente em alguns minutos.");
+        }
       }
       ultimaAtivaRef.current = nova;
       setCorridaAtiva(nova);
@@ -233,15 +240,24 @@ function ClienteAppHome() {
       } as any);
       if (error) throw error;
       const resp = (data ?? {}) as { corrida_id?: number; auto_aceita?: boolean };
+      let semMotorista = false;
       if (resp.auto_aceita && resp.corrida_id) {
         // Modo automático: dispara ofertas para motoristas imediatamente
         try {
-          await ofertasFn({ data: { corridaId: resp.corrida_id, clienteToken: token } });
+          const rr = await ofertasFn({ data: { corridaId: resp.corrida_id, clienteToken: token } });
+          if ((rr as { semMotorista?: boolean } | undefined)?.semMotorista) {
+            semMotorista = true;
+            avisadosRef.current.add(resp.corrida_id); // evita aviso duplicado no polling
+          }
         } catch (e) {
           console.warn("dispararOfertas auto falhou", e);
         }
       }
-      toast.success("Corrida solicitada! Procurando motociclista...");
+      if (semMotorista) {
+        toast.error("Não localizamos nenhum motociclista online por perto no momento. Tente novamente em alguns minutos.");
+      } else {
+        toast.success("Corrida solicitada! Procurando motociclista...");
+      }
       setModalOpen(false);
       setParadas([]);
       setDestino(PRACO);

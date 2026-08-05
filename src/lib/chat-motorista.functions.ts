@@ -212,6 +212,44 @@ export const operadorEnviarMensagem = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ─── OPERADOR: broadcast — mensagem para TODOS os motociclistas ───
+// Grava a mensagem no chat de cada motociclista cadastrado (em lotes) e dispara
+// push para todos os dispositivos. Só texto (aviso geral).
+export const operadorBroadcastMotorista = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ texto: z.string().min(1).max(1000) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const texto = data.texto.trim();
+    if (!texto) throw new Error("Mensagem vazia.");
+    const { data: op } = await supabaseAdmin
+      .from("usuarios_painel").select("nome").eq("user_id", context.userId as string).maybeSingle();
+    const nome = op?.nome ?? "Central";
+
+    const { data: motoristas } = await supabaseAdmin.from("motoristas").select("codigo");
+    const codigos = (motoristas ?? []).map((m) => m.codigo as string).filter(Boolean);
+    if (codigos.length === 0) return { ok: true, total: 0 };
+
+    const linhas = codigos.map((codigo) => ({
+      motorista_codigo: codigo,
+      autor: "operador",
+      autor_nome: nome,
+      texto,
+      midia_url: null,
+      midia_tipo: null,
+      midia_nome: null,
+    }));
+    for (let i = 0; i < linhas.length; i += 500) {
+      await supabaseAdmin.from("chat_motorista").insert(linhas.slice(i, i + 500) as never);
+    }
+
+    await enviarPushMotorista(codigos, {
+      title: `📢 ${nome}`,
+      body: texto.length > 120 ? texto.slice(0, 120) + "…" : texto,
+      data: { tipo: "chat" },
+    });
+    return { ok: true, total: codigos.length };
+  });
+
 async function exigirAdmin(userId: string) {
   const { data, error } = await supabaseAdmin
     .from("user_roles")

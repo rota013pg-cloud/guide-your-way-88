@@ -10,6 +10,8 @@ import {
   adminApagarConversa,
 } from "@/lib/chat-motorista.functions";
 import { BotoesAnexo, MidiaMensagem } from "@/lib/chat-midia";
+import { operadorBroadcastMotorista } from "@/lib/chat-motorista.functions";
+import { BroadcastDialog } from "@/components/painel/broadcast-dialog";
 import { listarMotoristas } from "@/lib/motoristas.functions";
 import { useRole } from "@/hooks/use-role";
 import { Input } from "@/components/ui/input";
@@ -215,6 +217,10 @@ function ChatMotoristasPage() {
               </div>
             </DialogContent>
           </Dialog>
+          <BroadcastDialog
+            publico="motociclistas"
+            onEnviar={(texto) => operadorBroadcastMotorista({ data: { texto } })}
+          />
           <Button variant="outline" size="sm" onClick={carregarConversas}>
             <RefreshCw className="h-4 w-4 md:mr-1" /> <span className="hidden md:inline">Atualizar</span>
           </Button>
@@ -230,7 +236,7 @@ function ChatMotoristasPage() {
             onChange={(e) => setBusca(e.target.value)}
             className="mb-3"
           />
-          <div className="flex-1 overflow-y-auto space-y-1 -mx-1 px-1">
+          <div className="flex-1 overflow-y-auto space-y-1 -mx-1 px-1 pb-20 md:pb-0">
             {conversasFiltradas.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-8">Nenhuma conversa.</p>
             )}
@@ -261,14 +267,23 @@ function ChatMotoristasPage() {
           </div>
         </Card>
 
-        <Card className={`flex flex-col overflow-hidden ${!selecionado ? "hidden md:flex" : ""}`}>
+        <Card
+          className={`flex-col overflow-hidden ${
+            !selecionado
+              ? "hidden md:flex"
+              : "flex fixed inset-0 z-[60] rounded-none md:static md:z-auto md:rounded-xl"
+          }`}
+        >
           {!selecionado ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               Selecione uma conversa
             </div>
           ) : (
             <>
-              <div className="px-3 md:px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+              <div
+                className="px-3 md:px-4 py-3 border-b border-border flex items-center justify-between gap-2 shrink-0"
+                style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+              >
                 <div className="flex items-center gap-2 min-w-0">
                   <Button
                     variant="ghost"
@@ -348,7 +363,11 @@ function ChatMotoristasPage() {
                 })}
                 <div ref={fimRef} />
               </div>
-              <form onSubmit={enviar} className="flex items-center gap-1 p-3 border-t border-border">
+              <form
+                onSubmit={enviar}
+                className="flex items-center gap-1 p-3 border-t border-border shrink-0 bg-card"
+                style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+              >
                 <BotoesAnexo
                   obterUploadUrl={(ext) => operadorChatUploadUrl({ data: { ext } })}
                   onEnviar={enviarMidia}

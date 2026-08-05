@@ -96,6 +96,10 @@ async function enviarParaTokens(tokens: string[], msg: PushMsg, tabela: "motoris
                   default_vibrate_timings: true,
                 },
               },
+              apns: {
+                headers: { "apns-priority": "10" },
+                payload: { aps: { sound: "default" } },
+              },
             },
           }),
         });

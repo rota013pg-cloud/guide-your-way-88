@@ -20,6 +20,7 @@ import {
   Moon,
   Bike,
   UserCircle2,
+  CircleSlash,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ import { cn } from "@/lib/utils";
 type NavItem = { title: string; url: string; icon: typeof LayoutDashboard; adminOnly?: boolean };
 
 const moreItems: NavItem[] = [
+  { title: "Corridas não aceitas", url: "/corridas-nao-aceitas", icon: CircleSlash },
   { title: "Clientes", url: "/clientes", icon: UserSquare },
   { title: "Chat motociclistas", url: "/chat-motociclistas", icon: MessageSquare },
   { title: "Chat clientes", url: "/chat-clientes", icon: MessageSquare },
@@ -56,6 +58,7 @@ const moreItems: NavItem[] = [
 const ROUTE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/corridas": "Corridas",
+  "/corridas-nao-aceitas": "Corridas não aceitas",
   "/motociclistas": "Motociclistas",
   "/clientes": "Clientes",
   "/chat-motociclistas": "Chat motociclistas",

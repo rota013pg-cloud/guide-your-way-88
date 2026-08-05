@@ -18,6 +18,7 @@ import {
   BookOpen,
   ScrollText,
   Bike,
+  CircleSlash,
 } from "lucide-react";
 import {
   Sidebar,
@@ -46,6 +47,7 @@ type Item = { title: string; url: string; icon: typeof LayoutDashboard; adminOnl
 const operacional: Item[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Corridas", url: "/corridas", icon: ListChecks },
+  { title: "Corridas não aceitas", url: "/corridas-nao-aceitas", icon: CircleSlash },
   { title: "Motociclistas", url: "/motociclistas", icon: Users },
   { title: "Clientes", url: "/clientes", icon: UserSquare },
   { title: "Chat motociclistas", url: "/chat-motociclistas", icon: MessageSquare },

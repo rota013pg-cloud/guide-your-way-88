@@ -1,7 +1,8 @@
 /**
  * Push nos apps nativos (Android via FCM). Só roda no app nativo (Capacitor).
  * Pede permissão, cria o canal de alta importância (heads-up), registra e envia
- * o token FCM pro servidor. Foreground mostra um toast.
+ * o token FCM pro servidor. Em foreground, o aviso fica por conta do app
+ * (bip + bolinha de não lidas no ícone do chat), não deste módulo.
  *
  * IMPORTANTE (privacidade): o token FCM é do APARELHO, não do usuário. Por isso
  * separamos "iniciar o sistema" (uma vez) de "associar o token ao usuário atual"
@@ -9,8 +10,6 @@
  * não continuar recebendo notificações do usuário anterior.
  */
 import { Capacitor, registerPlugin } from "@capacitor/core";
-import { toast } from "sonner";
-import { playChatBeep } from "@/lib/notification-sound";
 import { ehNativo } from "@/lib/gps-tracker";
 import { registrarPushToken } from "@/lib/motorista.functions";
 import { clienteRegistrarPushToken, clienteDesregistrarPushToken } from "@/lib/chat-cliente.functions";
@@ -76,17 +75,10 @@ async function garantirSistema(): Promise<void> {
       registrarAtual?.(fcmToken).catch((e) => console.warn("[push] registrar token:", e));
     });
     await PushNotifications.addListener("registrationError", (e) => console.warn("[push] erro:", e));
-    await PushNotifications.addListener("pushNotificationReceived", (n) => {
-      // App em foreground: o sistema NÃO mostra banner sozinho. Mostramos um
-      // aviso interno (toast + bip), exceto se a pessoa já está numa tela de
-      // chat — que tem o próprio aviso — pra não duplicar.
-      const path = typeof window !== "undefined" ? window.location.pathname : "";
-      const emTelaDeChat = path.includes("/cliente/app/chat");
-      if (emTelaDeChat) return;
-      const t = n.title ?? "Rota 013";
-      const b = n.body ?? "";
-      try { playChatBeep(); } catch { /* áudio pode não estar liberado */ }
-      toast(`${t}${b ? " — " + b : ""}`);
+    await PushNotifications.addListener("pushNotificationReceived", () => {
+      // App em foreground: quem cuida do aviso é o polling em cliente.app.tsx
+      // (bip + bolinha de não lidas no ícone do chat). Aqui não mostramos nada
+      // pra não duplicar nem aparecer fora da área segura.
     });
 
     await PushNotifications.register();

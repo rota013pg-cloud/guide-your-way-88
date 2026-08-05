@@ -25,7 +25,6 @@ import { LandscapeBlock } from "@/components/landscape-block";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureAudioUnlock, playChatBeep } from "@/lib/notification-sound";
 import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/cliente/app")({
   ssr: false,
@@ -40,7 +39,13 @@ function ClienteAppLayout() {
   const navigate = useNavigate();
   const { cliente, loading, logout } = useCliente();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [naoLidas, setNaoLidas] = useState(0);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Ao entrar na tela de chat, zera a contagem de mensagens não lidas.
+  useEffect(() => {
+    if (pathname.startsWith("/cliente/app/chat")) setNaoLidas(0);
+  }, [pathname]);
 
   useEffect(() => {
     if (!loading && !cliente) navigate({ to: "/cliente/login", replace: true });
@@ -112,6 +117,8 @@ function ClienteAppLayout() {
           return;
         }
         if (window.location.pathname.startsWith("/cliente/app/chat")) return;
+        // Aviso sutil: bip + notificação do sistema (quando suportada) e a
+        // bolinha vermelha de não lidas no ícone do chat. Sem toast interno.
         for (const m of novos) {
           playChatBeep();
           const nome = m.autor_nome ?? "Central";
@@ -123,29 +130,8 @@ function ClienteAppLayout() {
             tag: "chat-cliente-central",
             onClick: () => navigate({ to: "/cliente/app/chat" }),
           });
-          toast.custom(
-            (id) => (
-              <button
-                onClick={() => {
-                  toast.dismiss(id);
-                  navigate({ to: "/cliente/app/chat" });
-                }}
-                className="flex items-start gap-3 w-[340px] max-w-[88vw] rounded-lg border border-border bg-card text-card-foreground shadow-lg p-3 text-left hover:bg-muted/40 transition"
-              >
-                <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0">
-                  {(nome[0] ?? "C").toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold truncate">💬 {nome}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5 whitespace-pre-wrap break-words">
-                    {preview}
-                  </div>
-                </div>
-              </button>
-            ),
-            { duration: 6000 },
-          );
         }
+        if (novos.length) setNaoLidas((n) => n + novos.length);
       } finally {
         consultando = false;
         if (!cancelado) timeoutId = window.setTimeout(checar, document.hidden ? 10000 : 3000);
@@ -231,7 +217,12 @@ function ClienteAppLayout() {
                     }`}
                   >
                     <Icon className={`size-5 ${active ? "text-[color:var(--gold)]" : ""}`} />
-                    {item.label}
+                    <span>{item.label}</span>
+                    {item.to === "/cliente/app/chat" && naoLidas > 0 && (
+                      <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white">
+                        {naoLidas > 99 ? "99+" : naoLidas}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -262,11 +253,21 @@ function ClienteAppLayout() {
           <LogoRota013 className="text-2xl" />
         </Link>
 
-        <Button variant="ghost" size="icon" aria-label="Falar com a central" asChild className="text-foreground hover:bg-card hover:text-[color:var(--gold-soft)]">
-          <Link to="/cliente/app/chat">
-            <MessageCircle className="size-5" />
-          </Link>
-        </Button>
+        <div className="relative">
+          <Button variant="ghost" size="icon" aria-label="Falar com a central" asChild className="text-foreground hover:bg-card hover:text-[color:var(--gold-soft)]">
+            <Link to="/cliente/app/chat">
+              <MessageCircle className="size-5" />
+            </Link>
+          </Button>
+          {naoLidas > 0 && (
+            <span
+              aria-label={`${naoLidas} mensagens não lidas`}
+              className="pointer-events-none absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white shadow"
+            >
+              {naoLidas > 99 ? "99+" : naoLidas}
+            </span>
+          )}
+        </div>
       </header>
 
       <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain">

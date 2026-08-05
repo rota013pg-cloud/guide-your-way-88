@@ -8,6 +8,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { enviarPushMotorista } from "@/lib/push.server";
 
 const QTD_MOT = 5;
+const MAX_RODADAS = 5;
 const LAT_BASE = -24.0122;
 const LNG_BASE = -46.4097;
 
@@ -264,7 +265,17 @@ export const dispararOfertasCliente = createServerFn({ method: "POST" })
     if (!c || c.cliente_codigo !== sess.cliente_codigo) {
       throw new Error("Corrida não pertence ao cliente");
     }
-    return _executarDispararOfertas(data.corridaId, QTD_MOT, false);
+    const r = (await _executarDispararOfertas(data.corridaId, QTD_MOT, false)) as {
+      ok: boolean; ofertados: number; modo?: string; motivo?: string;
+    };
+    // Nenhum motociclista online/disponível por perto → encerra a corrida e
+    // avisa o cliente (não deixa "Procurando..." pra sempre).
+    if (r.ofertados === 0 && !r.modo) {
+      await supabaseAdmin.from("corridas").update({ status: "Cancelada" } as never).eq("id", data.corridaId);
+      await registrarLog(data.corridaId, "Não aceita", null, "Nenhum motociclista online no momento da solicitação");
+      return { ok: true, ofertados: 0, semMotorista: true };
+    }
+    return { ok: true, ofertados: r.ofertados, semMotorista: false };
   });
 
 // ─── Expirar oferta (chamado pelo app do motorista após 30s) ──────
@@ -324,6 +335,18 @@ export const expirarOferta = createServerFn({ method: "POST" })
 
     if ((count ?? 0) > 0) return { ok: true, reofertou: false };
 
+    // Limite de rodadas: após MAX_RODADAS sem ninguém aceitar, encerra e registra.
+    if ((corrida.rodada_atual ?? 1) >= MAX_RODADAS) {
+      await supabaseAdmin.from("corridas").update({ status: "Cancelada" } as never).eq("id", data.corridaId);
+      await registrarLog(
+        data.corridaId,
+        "Não aceita",
+        null,
+        `Nenhum motociclista aceitou após ${MAX_RODADAS} rodadas`,
+      );
+      return { ok: true, reofertou: false, encerrou: true };
+    }
+
     const novaRodada = (corrida.rodada_atual ?? 1) + 1;
     try {
       await supabaseAdmin
@@ -339,7 +362,13 @@ export const expirarOferta = createServerFn({ method: "POST" })
       );
 
       const quantidade = novaRodada >= 2 ? 10 : QTD_MOT;
-      await _executarDispararOfertas(data.corridaId, quantidade, true);
+      const rr = (await _executarDispararOfertas(data.corridaId, quantidade, true)) as { ofertados: number };
+      // Não há mais motociclistas novos para ofertar e nenhuma oferta pendente → encerra.
+      if ((rr.ofertados ?? 0) === 0) {
+        await supabaseAdmin.from("corridas").update({ status: "Cancelada" } as never).eq("id", data.corridaId);
+        await registrarLog(data.corridaId, "Não aceita", null, "Sem motociclistas disponíveis para reoferta");
+        return { ok: true, reofertou: false, encerrou: true };
+      }
       return { ok: true, reofertou: true, rodada: novaRodada };
     } catch (e) {
       await registrarLog(data.corridaId, "Falha reoferta", null, String((e as Error)?.message ?? e));
@@ -455,4 +484,78 @@ export const lancarCorridaAgendada = createServerFn({ method: "POST" })
 
     await registrarLog(data.corridaId, "Lançada manualmente", null, "Operador lançou corrida agendada");
     return { ok: true };
+  });
+
+// ─── Painel: corridas que NÃO foram aceitas (nenhum motociclista aceitou) ──
+// Fonte: eventos "Não aceita" no corrida_status_log + as ofertas já gravadas
+// em corrida_ofertas (mostra a quais motociclistas foi ofertada e a resposta).
+type OfertaNaoAceita = { codigo: string; nome: string; status: string; quando: string };
+type CorridaNaoAceita = {
+  corridaId: number; quando: string; motivo: string; cliente: string;
+  origem: string | null; destino: string | null; valor: number | null;
+  rodadas: number | null; ofertas: OfertaNaoAceita[];
+};
+
+export const operadorListarCorridasNaoAceitas = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ limite: z.number().int().min(1).max(200).optional().default(60) }).parse(d ?? {}),
+  )
+  .handler(async ({ data }) => {
+    const { data: logs } = await supabaseAdmin
+      .from("corrida_status_log")
+      .select("corrida_id, observacao, criado_em")
+      .eq("status", "Não aceita")
+      .order("criado_em", { ascending: false })
+      .limit(data.limite);
+    const rows = (logs ?? []) as Array<{ corrida_id: number; observacao: string | null; criado_em: string }>;
+    const ids = Array.from(new Set(rows.map((l) => l.corrida_id)));
+    if (ids.length === 0) return { corridas: [] as CorridaNaoAceita[] };
+
+    const { data: corridas } = await supabaseAdmin
+      .from("corridas")
+      .select("id, cliente, origem, destino, valor_final, rodada_atual")
+      .in("id", ids as never);
+    const cMap = new Map((corridas ?? []).map((c) => [c.id as number, c]));
+
+    const { data: ofertas } = await supabaseAdmin
+      .from("corrida_ofertas")
+      .select("corrida_id, motorista_codigo, status, criado_em")
+      .in("corrida_id", ids as never)
+      .order("criado_em", { ascending: true });
+    const ofertasRows = (ofertas ?? []) as Array<{ corrida_id: number; motorista_codigo: string; status: string; criado_em: string }>;
+
+    const codigos = Array.from(new Set(ofertasRows.map((o) => o.motorista_codigo)));
+    const { data: motos } = codigos.length
+      ? await supabaseAdmin.from("motoristas").select("codigo, nome").in("codigo", codigos as never)
+      : { data: [] as Array<{ codigo: string; nome: string }> };
+    const nomeMap = new Map((motos ?? []).map((m) => [m.codigo as string, m.nome as string]));
+
+    const lista: CorridaNaoAceita[] = ids.map((id) => {
+      const c = cMap.get(id) as {
+        cliente?: string | null; origem?: string | null; destino?: string | null;
+        valor_final?: number | null; rodada_atual?: number | null;
+      } | undefined;
+      const log = rows.find((l) => l.corrida_id === id);
+      const ofs: OfertaNaoAceita[] = ofertasRows
+        .filter((o) => o.corrida_id === id)
+        .map((o) => ({
+          codigo: o.motorista_codigo,
+          nome: nomeMap.get(o.motorista_codigo) ?? o.motorista_codigo,
+          status: o.status,
+          quando: o.criado_em,
+        }));
+      return {
+        corridaId: id,
+        quando: log?.criado_em ?? "",
+        motivo: log?.observacao ?? "Não aceita",
+        cliente: c?.cliente ?? "Cliente",
+        origem: c?.origem ?? null,
+        destino: c?.destino ?? null,
+        valor: c?.valor_final ?? null,
+        rodadas: c?.rodada_atual ?? null,
+        ofertas: ofs,
+      };
+    });
+    return { corridas: lista };
   });

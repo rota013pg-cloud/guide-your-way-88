@@ -98,7 +98,7 @@ async function enviarParaTokens(tokens: string[], msg: PushMsg, tabela: "motoris
               },
               apns: {
                 headers: { "apns-priority": "10" },
-                payload: { aps: { sound: "default" } },
+                payload: { aps: { sound: "buzina.caf" } },
               },
             },
           }),

@@ -278,6 +278,15 @@ html, body {
   padding-bottom: var(--safe-bottom);
 }
 
+/* Toasts (sonner) respeitam a safe area: não ficam sob o notch/status bar
+   (topo) nem sob o home indicator (rodapé). Vale no app e no navegador. */
+[data-sonner-toaster][data-y-position="top"] {
+  top: calc(var(--safe-top) + 16px) !important;
+}
+[data-sonner-toaster][data-y-position="bottom"] {
+  bottom: calc(var(--safe-bottom) + 16px) !important;
+}
+
 /* Trava visual de orientação (retrato) — fallback iOS onde screen.orientation.lock não funciona */
 .rotate-lock-overlay {
   display: none;

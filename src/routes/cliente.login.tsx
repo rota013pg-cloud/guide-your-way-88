@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { Capacitor } from "@capacitor/core";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -10,7 +11,7 @@ import { toast } from "sonner";
 import { getClienteToken, setClienteToken } from "@/lib/cliente-auth";
 import { clienteLoginIniciar, clienteLoginVerificar } from "@/lib/cliente-2fa.functions";
 import { LogoRota013 } from "@/components/logo-rota013";
-import { AppDownloadPrompt } from "@/components/app-download-prompt";
+import { AppGate } from "@/components/app-gate";
 
 export const Route = createFileRoute("/cliente/login")({
   ssr: false,
@@ -30,9 +31,18 @@ function ClienteLoginPage() {
   const [emailMascarado, setEmailMascarado] = useState("");
   const [loading, setLoading] = useState(false);
   const [reenviando, setReenviando] = useState(false);
+  // "checando" enquanto decide; "nativo" = mostra o login (dentro do app);
+  // "gate" = navegador → tela de baixar/abrir o app.
+  const [ambiente, setAmbiente] = useState<"checando" | "nativo" | "gate">("checando");
 
   useEffect(() => {
-    if (getClienteToken()) navigate({ to: "/cliente/app", replace: true });
+    // Já autenticado → segue direto pro app (não mostra login nem gate).
+    if (getClienteToken()) {
+      navigate({ to: "/cliente/app", replace: true });
+      return;
+    }
+    // Login só acontece dentro do app nativo. No navegador, entra o gate.
+    setAmbiente(Capacitor.isNativePlatform() ? "nativo" : "gate");
   }, [navigate]);
 
   // Passo 1: valida e-mail+senha e dispara o código
@@ -81,9 +91,18 @@ function ClienteLoginPage() {
     }
   };
 
+  // Enquanto decide o ambiente, evita piscar o formulário.
+  if (ambiente === "checando") {
+    return <div className="min-h-screen bg-background" />;
+  }
+
+  // Navegador (fora do app): mostra a tela de baixar/abrir o app.
+  if (ambiente === "gate") {
+    return <AppGate />;
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 py-8">
-      <AppDownloadPrompt />
       <Card className="w-full max-w-md p-6 rounded-2xl">
         <div className="mb-6 text-center">
           <div className="flex justify-center">

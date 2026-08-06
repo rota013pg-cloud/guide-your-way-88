@@ -253,21 +253,8 @@ function ClienteAppLayout() {
           <LogoRota013 className="text-2xl" />
         </Link>
 
-        <div className="relative">
-          <Button variant="ghost" size="icon" aria-label="Falar com a central" asChild className="text-foreground hover:bg-card hover:text-[color:var(--gold-soft)]">
-            <Link to="/cliente/app/chat">
-              <MessageCircle className="size-5" />
-            </Link>
-          </Button>
-          {naoLidas > 0 && (
-            <span
-              aria-label={`${naoLidas} mensagens não lidas`}
-              className="pointer-events-none absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white shadow"
-            >
-              {naoLidas > 99 ? "99+" : naoLidas}
-            </span>
-          )}
-        </div>
+        {/* Espaçador para manter a logo centralizada (o chat foi para a barra inferior) */}
+        <span className="w-10 shrink-0" aria-hidden="true" />
       </header>
 
       <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
@@ -276,17 +263,24 @@ function ClienteAppLayout() {
 
       {/* Bottom Navigation */}
       <nav className="app-bottom-nav-safe shrink-0 z-30 border-t hairline bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-md items-center justify-around">
-          <BottomTab to="/cliente/app" icon={Home} label="Início" active={pathname === "/cliente/app"} />
+        <div className="mx-auto grid max-w-md grid-cols-4 items-center">
+          <BottomTab to="/cliente/app" emoji="🏠" label="Início" active={pathname === "/cliente/app"} />
           <BottomTab
             to="/cliente/app/historico"
-            icon={ClipboardList}
+            emoji="📋"
             label="Histórico"
             active={pathname.startsWith("/cliente/app/historico")}
           />
           <BottomTab
+            to="/cliente/app/chat"
+            emoji="💬"
+            label="Chat"
+            active={pathname.startsWith("/cliente/app/chat")}
+            badge={naoLidas}
+          />
+          <BottomTab
             to="/cliente/app/perfil"
-            icon={User}
+            emoji="👤"
             label="Perfil"
             active={pathname.startsWith("/cliente/app/perfil")}
           />
@@ -298,23 +292,36 @@ function ClienteAppLayout() {
 
 function BottomTab({
   to,
-  icon: Icon,
+  emoji,
   label,
   active,
+  badge = 0,
 }: {
   to: string;
-  icon: typeof Home;
+  emoji: string;
   label: string;
   active: boolean;
+  badge?: number;
 }) {
   return (
     <Link
       to={to}
-      className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+      aria-current={active ? "page" : undefined}
+      className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
         active ? "text-[color:var(--gold)]" : "text-muted-foreground hover:text-foreground"
       }`}
     >
-      <Icon className="size-5" />
+      <span className="relative text-xl leading-none">
+        <span aria-hidden="true">{emoji}</span>
+        {badge > 0 && (
+          <span
+            aria-label={`${badge} mensagens não lidas`}
+            className="pointer-events-none absolute -right-3 -top-1.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold leading-none text-white shadow"
+          >
+            {badge > 99 ? "99+" : badge}
+          </span>
+        )}
+      </span>
       <span>{label}</span>
     </Link>
   );

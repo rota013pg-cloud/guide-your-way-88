@@ -195,6 +195,22 @@ function ConfiguracoesPage() {
                   Quando o faturamento do motociclista atingir <b>valor da diária × (1 + %)</b> sem pagar, o app trava com aviso de pagamento. Padrão: 50%.
                 </p>
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="raioMaxKm">Raio máximo de oferta (km)</Label>
+                <Input
+                  id="raioMaxKm"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="200"
+                  value={form.raioMaxKm}
+                  disabled={!isAdmin}
+                  onChange={(e) => upd("raioMaxKm", Math.max(0, Number(e.target.value) || 0))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  A corrida só é ofertada a motociclistas dentro deste raio a partir do <b>local de partida</b>. Use <b>0</b> para não limitar. Padrão: 15 km.
+                </p>
+              </div>
             </div>
 
             {data?.atualizadoEm && (

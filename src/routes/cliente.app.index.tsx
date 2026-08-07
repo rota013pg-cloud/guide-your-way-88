@@ -68,6 +68,12 @@ const STATUS_ATIVO = new Set([
   "Parada",
 ]);
 
+// Privacidade: o passageiro vê apenas o PRIMEIRO NOME do motociclista.
+function primeiroNome(nome?: string | null): string | null {
+  if (!nome) return nome ?? null;
+  return nome.trim().split(/\s+/)[0] || nome;
+}
+
 function ClienteAppHome() {
   const [origem, setOrigem] = useState<AddressValue>(PRACO);
   const [destino, setDestino] = useState<AddressValue>(PRACO);
@@ -101,7 +107,7 @@ function ClienteAppHome() {
         ? {
             id: ativa.id,
             status: ativa.status,
-            motorista: ativa.motorista,
+            motorista: primeiroNome(ativa.motorista),
             motorista_codigo: ativa.motorista_codigo,
             origem: ativa.origem,
             destino: ativa.destino,
@@ -523,7 +529,7 @@ function CorridaAtivaCard({
       if (!alive) return;
       const row = (data as Array<{ motorista_codigo: string; nome: string | null; lat: number | null; lng: number | null }> | null)?.[0];
       if (row && row.lat != null && row.lng != null) {
-        setPosMot({ codigo: row.motorista_codigo, nome: row.nome ?? "Motociclista", lat: Number(row.lat), lng: Number(row.lng), status: "Em corrida" });
+        setPosMot({ codigo: row.motorista_codigo, nome: primeiroNome(row.nome) ?? "Motociclista", lat: Number(row.lat), lng: Number(row.lng), status: "Em corrida" });
       }
     };
     void buscar();

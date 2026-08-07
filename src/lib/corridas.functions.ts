@@ -158,7 +158,17 @@ async function _executarDispararOfertas(
     let codigosFinais = codigos;
 
     if (corrida.despacho === "Automatico") {
-      // Ordena por proximidade e pega top N
+      // Raio máximo (km) configurável no painel; 0 = sem limite.
+      const { data: cfgRow } = await supabaseAdmin
+        .from("app_config")
+        .select("config_json")
+        .eq("id", 1)
+        .maybeSingle();
+      const raioMaxKm = Number(
+        (cfgRow?.config_json as { raioMaxKm?: number } | null)?.raioMaxKm ?? 15,
+      );
+
+      // Ordena por proximidade da PARTIDA e pega top N (dentro do raio, se houver)
       const { data: gpsRows } = await supabaseAdmin
         .from("motorista_gps")
         .select("motorista_codigo, lat, lng, criado_em")
@@ -184,17 +194,25 @@ async function _executarDispararOfertas(
       codigosFinais = codigos
         .map((codigo) => {
           const g = gpsMap.get(codigo);
-          const lat = g?.lat ?? LAT_BASE;
-          const lng = g?.lng ?? LNG_BASE;
-          return {
-            codigo,
-            distancia: haversine(lat, lng, origemLat, origemLng),
-          };
+          // Sem GPS recente: com raio ativo a distância é desconhecida (fica de fora);
+          // sem raio, mantém o comportamento antigo (usa a base como aproximação).
+          const distancia = g
+            ? haversine(g.lat, g.lng, origemLat, origemLng)
+            : raioMaxKm > 0
+              ? Infinity
+              : haversine(LAT_BASE, LNG_BASE, origemLat, origemLng);
+          return { codigo, distancia };
         })
+        .filter((c) => raioMaxKm <= 0 || c.distancia <= raioMaxKm)
         .sort((a, b) => a.distancia - b.distancia)
         .slice(0, qtd)
         .map((c) => c.codigo);
 
+      // Ninguém dentro do raio → trata como "sem motociclista por perto"
+      // (o wrapper encerra a corrida e avisa o cliente).
+      if (codigosFinais.length === 0) {
+        return { ok: true, ofertados: 0, motivo: "nenhum motociclista dentro do raio" };
+      }
     }
 
     const rows = codigosFinais.map((codigo) => ({

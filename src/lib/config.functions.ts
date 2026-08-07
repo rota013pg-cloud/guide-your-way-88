@@ -29,6 +29,7 @@ export type AppConfig = {
   valorParadaExtra: number;
   alertaAgendadaMin: number;
   percentualBloqueio: number;
+  raioMaxKm: number;
   templates: MensagemTemplate[];
   termos: TermosDoc;
 };
@@ -50,6 +51,7 @@ const CONFIG_DEFAULT: AppConfig = {
   valorParadaExtra: 3,
   alertaAgendadaMin: 15,
   percentualBloqueio: 50,
+  raioMaxKm: 15,
   templates: [],
   termos: TERMOS_DEFAULT,
 };
@@ -75,6 +77,9 @@ const ConfigSchema = z.object({
   valorParadaExtra: z.number().min(0).max(999),
   alertaAgendadaMin: z.number().int().min(1).max(180),
   percentualBloqueio: z.number().int().min(0).max(500).default(50),
+  // Raio máximo (km) para ofertar a corrida a motociclistas próximos da PARTIDA.
+  // 0 = sem limite.
+  raioMaxKm: z.number().min(0).max(200).default(15),
   templates: z.array(TemplateSchema).max(50).optional().default([]),
 });
 
@@ -105,11 +110,16 @@ export const salvarConfig = createServerFn({ method: "POST" })
     const ehAdmin = (roles ?? []).some((r) => r.role === "admin");
     if (!ehAdmin) throw new Error("Apenas administradores podem alterar a configuração.");
 
+    // Preserva o que não vem neste formulário (ex.: termos) — evita apagá-los ao salvar.
+    const { data: atual } = await supabaseAdmin
+      .from("app_config").select("config_json").eq("id", 1).maybeSingle();
+    const merged = { ...((atual?.config_json ?? {}) as Record<string, unknown>), ...data };
+
     const { error } = await supabaseAdmin
       .from("app_config")
-      .upsert({ id: 1, config_json: data, atualizado_em: new Date().toISOString() });
+      .upsert({ id: 1, config_json: merged, atualizado_em: new Date().toISOString() });
     if (error) throw new Error(error.message);
-    return { ok: true, config: data };
+    return { ok: true, config: merged as AppConfig };
   });
 
 // ─── SALVAR APENAS TEMPLATES (operador) ──────────────────
@@ -156,6 +166,17 @@ export const salvarTermos = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true, termos: cfg.termos };
   });
+
+// ─── LER RAIO (público — usado no app do cliente p/ filtrar o mapa) ──
+export const lerRaioPublico = createServerFn({ method: "GET" }).handler(async () => {
+  const { data } = await supabaseAdmin
+    .from("app_config")
+    .select("config_json")
+    .eq("id", 1)
+    .maybeSingle();
+  const cfg = { ...CONFIG_DEFAULT, ...((data?.config_json ?? {}) as Partial<AppConfig>) };
+  return { raioKm: Number(cfg.raioMaxKm ?? 15) };
+});
 
 // ─── LER TERMOS (público — usado no cadastro) ────────────
 export const lerTermosPublico = createServerFn({ method: "GET" }).handler(async () => {

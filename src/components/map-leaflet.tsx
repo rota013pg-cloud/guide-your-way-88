@@ -14,11 +14,14 @@ export function MapLeaflet({
   motoristas,
   hideLabels,
   seguir,
+  centro,
 }: {
   motoristas: MapMotorista[];
   hideLabels?: boolean;
   /** Faz o mapa acompanhar (pan) o primeiro motorista sempre que ele se move. */
   seguir?: boolean;
+  /** Centro fixo do mapa [lat, lng] (ex.: local de partida do cliente). */
+  centro?: [number, number];
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -27,7 +30,7 @@ export function MapLeaflet({
   }
   return (
     <Suspense fallback={<div className="h-full w-full rounded-lg bg-muted/30 animate-pulse" />}>
-      <MapInner motoristas={motoristas} hideLabels={hideLabels} seguir={seguir} />
+      <MapInner motoristas={motoristas} hideLabels={hideLabels} seguir={seguir} centro={centro} />
     </Suspense>
   );
 }

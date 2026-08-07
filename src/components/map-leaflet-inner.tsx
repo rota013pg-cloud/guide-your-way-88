@@ -46,13 +46,20 @@ export default function MapInner({
   motoristas,
   hideLabels,
   seguir,
+  centro,
 }: {
   motoristas: MapMotorista[];
   hideLabels?: boolean;
   seguir?: boolean;
+  centro?: [number, number];
 }) {
+  // Prioridade: centro fixo (partida) > primeiro motorista > base.
   const center: [number, number] =
-    motoristas.length > 0 ? [Number(motoristas[0].lat), Number(motoristas[0].lng)] : CENTRO;
+    centro && Number.isFinite(centro[0]) && Number.isFinite(centro[1])
+      ? centro
+      : motoristas.length > 0
+        ? [Number(motoristas[0].lat), Number(motoristas[0].lng)]
+        : CENTRO;
 
   return (
     <MapContainer

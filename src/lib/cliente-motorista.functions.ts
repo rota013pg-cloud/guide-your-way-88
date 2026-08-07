@@ -36,5 +36,9 @@ export const clienteMotoristaCorridaInfo = createServerFn({ method: "POST" })
       .select("codigo,nome,foto,moto,cor,placa,telefone")
       .eq("codigo", corrida.motorista_codigo)
       .maybeSingle();
-    return m ?? null;
+    if (!m) return null;
+    // Privacidade: o passageiro recebe apenas o PRIMEIRO NOME do motociclista.
+    // As demais informações (foto, moto, cor, placa, telefone) seguem iguais.
+    const primeiroNome = (m.nome ?? "").trim().split(/\s+/)[0] || m.nome;
+    return { ...m, nome: primeiroNome };
   });

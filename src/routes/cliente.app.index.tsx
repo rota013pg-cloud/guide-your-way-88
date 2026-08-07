@@ -20,6 +20,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { dispararOfertasCliente } from "@/lib/corridas.functions";
 import { cotarCorridaCliente } from "@/lib/cliente-cotacao.functions";
 import { clienteMotoristaCorridaInfo } from "@/lib/cliente-motorista.functions";
+import { lerRaioPublico } from "@/lib/config.functions";
 import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
 
 export const Route = createFileRoute("/cliente/app/")({
@@ -74,6 +75,18 @@ function primeiroNome(nome?: string | null): string | null {
   return nome.trim().split(/\s+/)[0] || nome;
 }
 
+// Distância em km entre dois pontos (Haversine) — usada no filtro do mapa.
+function distKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const R = 6371;
+  const toRad = (v: number) => (v * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+}
+
 function ClienteAppHome() {
   const [origem, setOrigem] = useState<AddressValue>(PRACO);
   const [destino, setDestino] = useState<AddressValue>(PRACO);
@@ -83,6 +96,7 @@ function ClienteAppHome() {
   const [pagamento, setPagamento] = useState<"Pix" | "Dinheiro" | "Cartão">("Pix");
   const ofertasFn = useServerFn(dispararOfertasCliente);
   const [motoristas, setMotoristas] = useState<MapMotorista[]>([]);
+  const [raioKm, setRaioKm] = useState(15);
   const [solicitando, setSolicitando] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [cotacao, setCotacao] = useState<{ distancia: number; valor: number } | null>(null);
@@ -185,6 +199,13 @@ function ClienteAppHome() {
     };
   }, [corridaAtiva]);
 
+  // Raio máximo (km) configurado no painel — usado pra filtrar o mapa/"por perto".
+  useEffect(() => {
+    lerRaioPublico()
+      .then((r) => setRaioKm(Number(r.raioKm) || 0))
+      .catch(() => {});
+  }, []);
+
   // Origem inicia vazia — cliente preenche manualmente.
 
   const adicionarParada = () => setParadas((p) => [...p, { text: "" }]);
@@ -280,6 +301,15 @@ function ClienteAppHome() {
 
   const especiaisLabels = especiais.map((v) => ESPECIAIS.find((e) => e.v === v)?.t ?? v);
 
+  // Ancora o mapa e o "por perto" no LOCAL DE PARTIDA: só mostra motociclistas
+  // dentro do raio configurado. Sem partida definida (ou raio 0), mostra todos.
+  const origemCoords: [number, number] | undefined =
+    origem.lat != null && origem.lng != null ? [origem.lat, origem.lng] : undefined;
+  const motoristasProximos =
+    origemCoords && raioKm > 0
+      ? motoristas.filter((m) => distKm(m.lat, m.lng, origemCoords[0], origemCoords[1]) <= raioKm)
+      : motoristas;
+
   const avaliacaoDialog = avaliarCorridaId != null ? (
     <AvaliacaoCorridaDialog
       corridaId={avaliarCorridaId}
@@ -309,13 +339,13 @@ function ClienteAppHome() {
         </h2>
         <p className="text-sm text-muted-foreground flex items-center gap-1.5">
           <Bike className="size-4 text-[color:var(--gold)]" />
-          {motoristas.length} motociclista{motoristas.length === 1 ? "" : "s"} por perto
+          {motoristasProximos.length} motociclista{motoristasProximos.length === 1 ? "" : "s"} por perto
         </p>
       </div>
 
       <Card className="rounded-3xl overflow-hidden border hairline bg-card shadow-[var(--shadow-elegant)]">
         <div className="h-60 w-full relative">
-          <MapLeaflet motoristas={motoristas} hideLabels />
+          <MapLeaflet motoristas={motoristasProximos} hideLabels centro={origemCoords} />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[color:var(--noir)] to-transparent" />
         </div>
       </Card>

@@ -862,6 +862,21 @@ function LoginTela({
           {carregando ? "Entrando..." : "Entrar"}
         </button>
         {erro && <p className="erro-msg">{erro}</p>}
+        {/* Ainda não tem cadastro? Fala com a central pelo WhatsApp (envia os documentos e a central cadastra) */}
+        <div className="login-sem-cadastro">Ainda não tem cadastro?</div>
+        <a
+          className="btn-whatsapp-cadastro"
+          href={`https://wa.me/551340423331?text=${encodeURIComponent(
+            "Olá! Sou motociclista e quero me cadastrar na Rota 013. Ainda não tenho acesso ao app — posso enviar meus documentos por aqui?",
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg viewBox="0 0 32 32" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M16.04 3.2c-7.1 0-12.86 5.76-12.86 12.86 0 2.27.6 4.49 1.73 6.44L3.1 28.8l5.47-1.43a12.8 12.8 0 0 0 6.46 1.65h.01c7.09 0 12.85-5.76 12.85-12.86 0-3.44-1.34-6.67-3.77-9.1a12.8 12.8 0 0 0-9.09-3.76zm0 23.48h-.01a10.6 10.6 0 0 1-5.4-1.48l-.39-.23-3.25.85.87-3.17-.25-.4a10.62 10.62 0 0 1-1.63-5.66c0-5.87 4.78-10.65 10.66-10.65 2.85 0 5.52 1.11 7.53 3.12a10.57 10.57 0 0 1 3.12 7.54c0 5.87-4.78 10.65-10.65 10.65zm5.84-7.97c-.32-.16-1.9-.94-2.2-1.04-.29-.11-.5-.16-.72.16-.21.32-.82 1.03-1 1.25-.19.21-.37.24-.68.08-.32-.16-1.35-.5-2.57-1.59-.95-.85-1.59-1.89-1.78-2.21-.19-.32-.02-.5.14-.66.14-.14.32-.37.48-.56.16-.19.21-.32.32-.53.11-.21.05-.4-.03-.56-.08-.16-.72-1.73-.98-2.37-.26-.62-.52-.54-.72-.55l-.61-.01c-.21 0-.56.08-.85.4-.29.32-1.11 1.09-1.11 2.66 0 1.57 1.14 3.08 1.3 3.29.16.21 2.25 3.44 5.45 4.82.76.33 1.36.53 1.82.68.76.24 1.46.21 2.01.13.61-.09 1.9-.78 2.17-1.53.27-.75.27-1.39.19-1.53-.08-.13-.29-.21-.61-.37z" />
+          </svg>
+          Falar com a central no WhatsApp
+        </a>
       </div>
     </div>
   );
@@ -1520,6 +1535,17 @@ const cssMotorista = `
 .moto-app .btn-primary:active { transform:scale(0.98); }
 .moto-app .btn-primary:disabled { opacity:.6; }
 .moto-app .erro-msg { color:var(--red); font-size:13px; text-align:center; margin-top:12px; }
+.moto-app .login-sem-cadastro {
+  text-align:center; color:var(--muted); font-size:13px; margin-top:26px; margin-bottom:10px;
+}
+.moto-app .btn-whatsapp-cadastro {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; background:#25D366; color:#08331f; font-weight:800; font-size:15px;
+  border:none; border-radius:16px; padding:14px 16px; cursor:pointer; text-decoration:none;
+  transition:transform 180ms ease-out, filter 180ms ease-out;
+}
+.moto-app .btn-whatsapp-cadastro:hover { filter:brightness(1.05); }
+.moto-app .btn-whatsapp-cadastro:active { transform:scale(0.98); }
 
 .moto-app .header {
   display:flex; align-items:center; justify-content:space-between;

@@ -56,6 +56,7 @@ export function MotoristaBottomNav({
   token,
   corridasHoje,
   cobranca,
+  creditos,
   onAbrirCobranca,
   onSair,
   online,
@@ -66,6 +67,7 @@ export function MotoristaBottomNav({
   token: string;
   corridasHoje: Corrida[];
   cobranca: Cobranca;
+  creditos: number;
   onAbrirCobranca: () => void;
   onSair: () => void;
   online: boolean;
@@ -191,6 +193,7 @@ export function MotoristaBottomNav({
               codigo={motorista.codigo}
               token={token}
               cobranca={cobranca}
+              creditos={creditos}
               onAbrirCobranca={() => { onAbrirCobranca(); fechar(); }}
             />
           )}
@@ -915,11 +918,12 @@ function FaturamentoTab({ codigo, token, cobranca }: { codigo: string; token: st
 
 // ─── PAGAMENTOS ─────────────────────────────────────────
 function PagamentosTab({
-  codigo, token, cobranca, onAbrirCobranca,
+  codigo, token, cobranca, creditos, onAbrirCobranca,
 }: {
   codigo: string;
   token: string;
   cobranca: Cobranca;
+  creditos: number;
   onAbrirCobranca: () => void;
 }) {
   const status = cobranca?.status ?? "Pendente";
@@ -938,6 +942,15 @@ function PagamentosTab({
 
   return (
     <div className="moto-pag">
+      <div className="moto-creditos">
+        <div className="moto-creditos-num">{creditos}</div>
+        <div className="moto-creditos-label">
+          {creditos === 1 ? "crédito de diária disponível" : "créditos de diária disponíveis"}
+        </div>
+        <div className="moto-creditos-sub">
+          Cada crédito paga 1 diária automaticamente na sua 1ª corrida do dia.
+        </div>
+      </div>
       <div className="moto-pag-status" style={{ color: cor }}>{status}</div>
       <div className="moto-pag-row"><span>Faturamento do dia</span><b>{brl(Number(cobranca?.faturamento_dia ?? 0))}</b></div>
       <div className="moto-pag-row"><span>Valor da diária</span><b>{brl(Number(cobranca?.valor_diaria ?? 0))}</b></div>
@@ -1158,6 +1171,14 @@ const cssNav = `
 .moto-app .moto-fat-status b { color:#f1f1f1; }
 
 .moto-app .moto-pag { display:flex; flex-direction:column; gap:10px; }
+.moto-app .moto-creditos {
+  background:linear-gradient(135deg,#c9a84c 0%,#f0d78c 100%); color:#0d0d0d;
+  border-radius:16px; padding:16px; text-align:center; margin-bottom:2px;
+  box-shadow:0 10px 24px -10px rgba(201,168,76,.5);
+}
+.moto-app .moto-creditos-num { font-size:40px; font-weight:900; line-height:1; }
+.moto-app .moto-creditos-label { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+.moto-app .moto-creditos-sub { font-size:11.5px; font-weight:600; opacity:.75; margin-top:6px; }
 .moto-app .moto-pag-status {
   text-align:center; font-size:24px; font-weight:900; padding:14px;
   background:#0f0f0f; border-radius:14px; border:1px solid #2a2a2a;

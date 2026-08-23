@@ -231,6 +231,28 @@ function MotoristaApp() {
       if (ctx.oferta && !oferta) setOferta(ctx.oferta);
       if (ctx.corridaAtual && tela !== "corrida") setTela("corrida");
     } catch (e) {
+      // Sessão morreu no servidor (encerrada por novo login / ação da central /
+      // token trocado). Sem tratar isto, o app engolia o erro e ficava com
+      // "ONLINE FALSO": mostrava online enquanto a central via offline, e só o
+      // logout+login resolvia. Agora limpamos a sessão e mandamos pro login com
+      // aviso — o efeito [sessao, online] já para o GPS. Só dispara no erro
+      // específico de sessão inválida (validarToken), NUNCA em falha de rede.
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("faça login novamente") || msg.includes("Sessão inválida")) {
+        try {
+          localStorage.removeItem(STORAGE);
+        } catch {
+          /* ignore */
+        }
+        intencaoOnlineRef.current = false;
+        setOnline(false);
+        setOferta(null);
+        setCorridaAtual(null);
+        setSessao(null);
+        setTela("login");
+        setLoginErro("Sua sessão expirou ou foi encerrada. Entre novamente.");
+        return;
+      }
       console.error("contexto:", e);
     }
   }, [sessao, contextoFn, toggleFn, oferta, tela]);

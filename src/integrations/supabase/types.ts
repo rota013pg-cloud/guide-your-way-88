@@ -830,6 +830,41 @@ export type Database = {
           },
         ]
       }
+      motorista_online_sessoes: {
+        Row: {
+          criado_em: string
+          duracao_seg: number | null
+          fim: string | null
+          id: number
+          inicio: string
+          motorista_codigo: string
+        }
+        Insert: {
+          criado_em?: string
+          duracao_seg?: number | null
+          fim?: string | null
+          id?: number
+          inicio?: string
+          motorista_codigo: string
+        }
+        Update: {
+          criado_em?: string
+          duracao_seg?: number | null
+          fim?: string | null
+          id?: number
+          inicio?: string
+          motorista_codigo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motorista_online_sessoes_motorista_codigo_fkey"
+            columns: ["motorista_codigo"]
+            isOneToOne: false
+            referencedRelation: "motoristas"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       motorista_sessoes: {
         Row: {
           criado_em: string

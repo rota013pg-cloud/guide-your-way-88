@@ -9,6 +9,8 @@ import { ChatClienteNotifier } from "@/components/chat-cliente-notifier";
 import { CobrancaNotifier } from "@/components/cobranca-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
 import { NovaSolicitacaoNotifier } from "@/components/nova-solicitacao-notifier";
+import { MotoristaOnlineNotifier } from "@/components/motorista-online-notifier";
+import { SomAlertasToggle } from "@/components/painel/som-alertas-toggle";
 import { ModoAutomaticoToggle } from "@/components/modo-automatico-toggle";
 import { MobileShell } from "@/components/painel/mobile-shell";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -120,12 +122,14 @@ function AuthenticatedLayout() {
           <header className="app-header-safe flex items-center gap-2 border-b border-border bg-card px-3 sticky top-0 z-30">
             <SidebarTrigger />
             <div className="flex-1" />
+            <SomAlertasToggle />
             <ModoAutomaticoToggle />
             <CobrancaNotifier />
             <ChatNotifier />
             <ChatClienteNotifier />
             <AlertaNotifier />
             <NovaSolicitacaoNotifier />
+            <MotoristaOnlineNotifier />
 
 
             {email && !email.endsWith("@painel.local") && (

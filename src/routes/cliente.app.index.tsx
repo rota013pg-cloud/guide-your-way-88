@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getClienteToken } from "@/lib/cliente-auth";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { dispararOfertasCliente } from "@/lib/corridas.functions";
+import { dispararOfertasCliente, clienteRevisarCorrida } from "@/lib/corridas.functions";
 import { cotarCorridaCliente } from "@/lib/cliente-cotacao.functions";
 import { clienteMotoristaCorridaInfo } from "@/lib/cliente-motorista.functions";
 import { lerRaioPublico } from "@/lib/config.functions";
@@ -95,6 +95,7 @@ function ClienteAppHome() {
   const [observacao, setObservacao] = useState("");
   const [pagamento, setPagamento] = useState<"Pix" | "Dinheiro" | "Cartão">("Pix");
   const ofertasFn = useServerFn(dispararOfertasCliente);
+  const revisarFn = useServerFn(clienteRevisarCorrida);
   const [motoristas, setMotoristas] = useState<MapMotorista[]>([]);
   const [raioKm, setRaioKm] = useState(15);
   const [solicitando, setSolicitando] = useState(false);
@@ -156,6 +157,26 @@ function ClienteAppHome() {
       clearInterval(id);
     };
   }, []);
+
+  // Revisão periódica enquanto procura motociclista (Pendente/Ofertada):
+  // pede ao servidor pra expirar ofertas "fantasma" (motociclista que saiu do ar
+  // sem o app expirar a oferta) e reofertar/encerrar. Se encerrar, o polling
+  // acima detecta "Cancelada" e mostra o aviso — sem depender do app do motociclista.
+  useEffect(() => {
+    const token = getClienteToken();
+    const cid = corridaAtiva?.id;
+    const st = corridaAtiva?.status;
+    if (!token || !cid || (st !== "Pendente" && st !== "Ofertada")) return;
+    let vivo = true;
+    const revisar = () => {
+      revisarFn({ data: { clienteToken: token, corridaId: cid } }).catch(() => {});
+    };
+    const id = window.setInterval(() => vivo && revisar(), 15000);
+    return () => {
+      vivo = false;
+      window.clearInterval(id);
+    };
+  }, [corridaAtiva?.id, corridaAtiva?.status, revisarFn]);
 
   // Buscar dados do motociclista (foto/codigo/placa/moto/cor/telefone) quando aceitar
   useEffect(() => {

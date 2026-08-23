@@ -31,6 +31,8 @@ import { ChatNotifier } from "@/components/chat-notifier";
 import { ChatClienteNotifier } from "@/components/chat-cliente-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
 import { NovaSolicitacaoNotifier } from "@/components/nova-solicitacao-notifier";
+import { MotoristaOnlineNotifier } from "@/components/motorista-online-notifier";
+import { SomAlertasToggle } from "@/components/painel/som-alertas-toggle";
 import { useRole } from "@/hooks/use-role";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,12 +100,14 @@ export function MobileShell({ children, email }: { children: ReactNode; email: s
       <header className="app-header-safe sticky top-0 z-30 flex items-center gap-2 border-b border-border bg-card/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <LogoRota013 className="text-lg shrink-0" />
         <div className="min-w-0 flex-1" />
+        <SomAlertasToggle />
         <ModoAutomaticoToggle />
         <CobrancaNotifier />
         <ChatNotifier />
         <ChatClienteNotifier />
         <AlertaNotifier />
         <NovaSolicitacaoNotifier />
+        <MotoristaOnlineNotifier />
       </header>
 
       {/* Conteúdo */}

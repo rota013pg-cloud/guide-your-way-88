@@ -31,6 +31,7 @@ import { Route as ClienteAppRouteImport } from './routes/cliente.app'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedTermosConfigRouteImport } from './routes/_authenticated/termos-config'
 import { Route as AuthenticatedTarifasRouteImport } from './routes/_authenticated/tarifas'
+import { Route as AuthenticatedRelatorioOnlineRouteImport } from './routes/_authenticated/relatorio-online'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedMotociclistasRouteImport } from './routes/_authenticated/motociclistas'
 import { Route as AuthenticatedInstrucoesRouteImport } from './routes/_authenticated/instrucoes'
@@ -161,6 +162,12 @@ const AuthenticatedTarifasRoute = AuthenticatedTarifasRouteImport.update({
   path: '/tarifas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedRelatorioOnlineRoute =
+  AuthenticatedRelatorioOnlineRouteImport.update({
+    id: '/relatorio-online',
+    path: '/relatorio-online',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMuralRoute = AuthenticatedMuralRouteImport.update({
   id: '/mural',
   path: '/mural',
@@ -289,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/mural': typeof AuthenticatedMuralRoute
+  '/relatorio-online': typeof AuthenticatedRelatorioOnlineRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
   '/termos-config': typeof AuthenticatedTermosConfigRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -331,6 +339,7 @@ export interface FileRoutesByTo {
   '/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/mural': typeof AuthenticatedMuralRoute
+  '/relatorio-online': typeof AuthenticatedRelatorioOnlineRoute
   '/tarifas': typeof AuthenticatedTarifasRoute
   '/termos-config': typeof AuthenticatedTermosConfigRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -374,6 +383,7 @@ export interface FileRoutesById {
   '/_authenticated/instrucoes': typeof AuthenticatedInstrucoesRoute
   '/_authenticated/motociclistas': typeof AuthenticatedMotociclistasRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
+  '/_authenticated/relatorio-online': typeof AuthenticatedRelatorioOnlineRoute
   '/_authenticated/tarifas': typeof AuthenticatedTarifasRoute
   '/_authenticated/termos-config': typeof AuthenticatedTermosConfigRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
@@ -418,6 +428,7 @@ export interface FileRouteTypes {
     | '/instrucoes'
     | '/motociclistas'
     | '/mural'
+    | '/relatorio-online'
     | '/tarifas'
     | '/termos-config'
     | '/usuarios'
@@ -460,6 +471,7 @@ export interface FileRouteTypes {
     | '/instrucoes'
     | '/motociclistas'
     | '/mural'
+    | '/relatorio-online'
     | '/tarifas'
     | '/termos-config'
     | '/usuarios'
@@ -502,6 +514,7 @@ export interface FileRouteTypes {
     | '/_authenticated/instrucoes'
     | '/_authenticated/motociclistas'
     | '/_authenticated/mural'
+    | '/_authenticated/relatorio-online'
     | '/_authenticated/tarifas'
     | '/_authenticated/termos-config'
     | '/_authenticated/usuarios'
@@ -697,6 +710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTarifasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/relatorio-online': {
+      id: '/_authenticated/relatorio-online'
+      path: '/relatorio-online'
+      fullPath: '/relatorio-online'
+      preLoaderRoute: typeof AuthenticatedRelatorioOnlineRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/mural': {
       id: '/_authenticated/mural'
       path: '/mural'
@@ -848,6 +868,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedInstrucoesRoute: typeof AuthenticatedInstrucoesRoute
   AuthenticatedMotociclistasRoute: typeof AuthenticatedMotociclistasRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
+  AuthenticatedRelatorioOnlineRoute: typeof AuthenticatedRelatorioOnlineRoute
   AuthenticatedTarifasRoute: typeof AuthenticatedTarifasRoute
   AuthenticatedTermosConfigRoute: typeof AuthenticatedTermosConfigRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
@@ -868,6 +889,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedInstrucoesRoute: AuthenticatedInstrucoesRoute,
   AuthenticatedMotociclistasRoute: AuthenticatedMotociclistasRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
+  AuthenticatedRelatorioOnlineRoute: AuthenticatedRelatorioOnlineRoute,
   AuthenticatedTarifasRoute: AuthenticatedTarifasRoute,
   AuthenticatedTermosConfigRoute: AuthenticatedTermosConfigRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,

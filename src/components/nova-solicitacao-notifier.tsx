@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Bike } from "lucide-react";
-import { playChatBeep } from "@/lib/notification-sound";
+import { playNovaCorridaPainel } from "@/lib/notification-sound";
+import { getAlertasSom } from "@/lib/alertas-som";
 import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";
 import {
   NovaCorridaDialog,
@@ -75,7 +76,7 @@ export function NovaSolicitacaoNotifier() {
       const lista = (data ?? []) as Solicitacao[];
       const novas = lista.filter((s) => !idsVistos.current.has(s.id));
       if (!primeiraCarga.current && novas.length > 0) {
-        playChatBeep();
+        if (getAlertasSom()) playNovaCorridaPainel();
         const s = novas[0];
         showDesktopNotification({
           id: `solic-${s.id}`,

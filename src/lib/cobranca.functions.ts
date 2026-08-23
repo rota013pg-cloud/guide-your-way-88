@@ -182,7 +182,7 @@ export const motoristaMinhaCobranca = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await validarTokenMotorista(data.codigo, data.token);
     const diaOp = await diaOpHoje();
-    const [{ data: cobr }, { data: cfg }] = await Promise.all([
+    const [{ data: cobr }, { data: cfg }, { data: mot }] = await Promise.all([
       supabaseAdmin
         .from("motorista_cobranca")
         .select("*")
@@ -190,6 +190,11 @@ export const motoristaMinhaCobranca = createServerFn({ method: "POST" })
         .eq("dia_op", diaOp)
         .maybeSingle(),
       supabaseAdmin.from("app_config").select("config_json").eq("id", 1).maybeSingle(),
+      supabaseAdmin
+        .from("motoristas")
+        .select("creditos_diaria")
+        .eq("codigo", data.codigo)
+        .maybeSingle(),
     ]);
     const config = (cfg?.config_json ?? {}) as {
       pixChave?: string;
@@ -198,7 +203,7 @@ export const motoristaMinhaCobranca = createServerFn({ method: "POST" })
       valorDiaria?: number;
       empresa?: string;
     };
-    return { cobranca: cobr, config };
+    return { cobranca: cobr, config, creditos: Number(mot?.creditos_diaria ?? 0) };
   });
 
 // ─── MOTORISTA: envia comprovante e solicita liberação ───

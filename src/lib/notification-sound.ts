@@ -164,6 +164,58 @@ export function playOfertaSom() {
   }
 }
 
+/** Painel: som suave de "motociclista ficou online" — duas notas ascendentes. */
+export function playMotoristaOnline() {
+  try {
+    const ac = getCtx();
+    if (!ac) return;
+    if (ac.state === "suspended") void ac.resume();
+    const now = ac.currentTime;
+    const tones = [523.25, 783.99]; // C5 → G5
+    tones.forEach((freq, i) => {
+      const t = now + i * 0.12;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.16, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(t);
+      osc.stop(t + 0.24);
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Painel: alerta de NOVA CORRIDA (solicitação do cliente) — três toques chamativos. */
+export function playNovaCorridaPainel() {
+  try {
+    const ac = getCtx();
+    if (!ac) return;
+    if (ac.state === "suspended") void ac.resume();
+    const now = ac.currentTime;
+    const seq = [987.77, 987.77, 1318.51]; // B5, B5, E6
+    seq.forEach((freq, i) => {
+      const t = now + i * 0.16;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(t);
+      osc.stop(t + 0.28);
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
 export function playChatBeep() {
   try {
     const ac = getCtx();

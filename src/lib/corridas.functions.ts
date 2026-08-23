@@ -296,6 +296,130 @@ export const dispararOfertasCliente = createServerFn({ method: "POST" })
     return { ok: true, ofertados: r.ofertados, semMotorista: false };
   });
 
+// ─── Revisão de ofertas "fantasma" ────────────────────────────────
+// Corrige o caso em que a corrida fica "Ofertada" para um motociclista que
+// saiu do ar (fechou o app / perdeu conexão) sem o app chamar expirarOferta.
+// Expira ofertas pendentes cujo motociclista NÃO está mais disponível (offline,
+// pausado, em corrida) ou cuja oferta já está velha; se não sobrar ninguém
+// pendente, reoferta (se ainda há rodada) ou encerra avisando "sem motociclista".
+// É ADITIVA: não altera o fluxo normal (aceite / expirarOferta do motorista).
+async function _revisarOfertasParadas(
+  corridaId: number,
+): Promise<{ semMotorista: boolean }> {
+  const { data: corrida } = await supabaseAdmin
+    .from("corridas")
+    .select("id, status, rodada_atual")
+    .eq("id", corridaId)
+    .maybeSingle();
+  if (!corrida) return { semMotorista: false };
+  if (corrida.status !== "Ofertada" && corrida.status !== "Pendente") {
+    return { semMotorista: false };
+  }
+
+  const { data: pend } = await supabaseAdmin
+    .from("corrida_ofertas")
+    .select("id, motorista_codigo, criado_em")
+    .eq("corrida_id", corridaId)
+    .eq("status", "pendente");
+  const pendentes = pend ?? [];
+
+  if (pendentes.length > 0) {
+    const codigos = Array.from(new Set(pendentes.map((o) => o.motorista_codigo as string)));
+    // Motoristas dessas ofertas que ainda estão realmente online e livres
+    const { data: disp } = await supabaseAdmin
+      .from("motoristas")
+      .select("codigo")
+      .in("codigo", codigos)
+      .eq("status", "Online")
+      .eq("pausado", false);
+    const dispSet = new Set((disp ?? []).map((m) => m.codigo as string));
+    const { data: ocup } = await supabaseAdmin
+      .from("corridas")
+      .select("motorista_codigo")
+      .in("motorista_codigo", codigos)
+      .in("status", ["Aceita", "A caminho", "Chegou", "Em viagem", "Parada"] as never);
+    const ocupSet = new Set(
+      (ocup ?? []).map((o) => o.motorista_codigo).filter(Boolean) as string[],
+    );
+
+    const limiteVelho = Date.now() - 45_000; // pendente há mais de 45s = presa
+    const expirar = pendentes
+      .filter((o) => {
+        const disponivel =
+          dispSet.has(o.motorista_codigo as string) && !ocupSet.has(o.motorista_codigo as string);
+        const velha = new Date(o.criado_em as string).getTime() < limiteVelho;
+        return !disponivel || velha;
+      })
+      .map((o) => o.id as number);
+
+    if (expirar.length > 0) {
+      await supabaseAdmin
+        .from("corrida_ofertas")
+        .update({ status: "expirada" } as never)
+        .in("id", expirar)
+        .eq("status", "pendente");
+    }
+  }
+
+  // Ainda resta alguma oferta pendente (com motorista disponível)? segue aguardando.
+  const { count } = await supabaseAdmin
+    .from("corrida_ofertas")
+    .select("id", { count: "exact", head: true })
+    .eq("corrida_id", corridaId)
+    .eq("status", "pendente");
+  if ((count ?? 0) > 0) return { semMotorista: false };
+
+  // Ninguém pendente → reoferta (se ainda há rodada) ou encerra.
+  if ((corrida.rodada_atual ?? 1) >= MAX_RODADAS) {
+    await supabaseAdmin.from("corridas").update({ status: "Cancelada" } as never).eq("id", corridaId);
+    await registrarLog(corridaId, "Não aceita", null, `Encerrada por inatividade após ${MAX_RODADAS} rodadas`);
+    return { semMotorista: true };
+  }
+  const novaRodada = (corrida.rodada_atual ?? 1) + 1;
+  await supabaseAdmin
+    .from("corridas")
+    .update({ rodada_atual: novaRodada, status: "Pendente" } as never)
+    .eq("id", corridaId);
+  await registrarLog(corridaId, "Reofertando", null, `Ofertas expiradas — rodada ${novaRodada}`);
+  const quantidade = novaRodada >= 2 ? 10 : QTD_MOT;
+  const rr = (await _executarDispararOfertas(corridaId, quantidade, true)) as {
+    ofertados: number;
+  };
+  if ((rr.ofertados ?? 0) === 0) {
+    await supabaseAdmin.from("corridas").update({ status: "Cancelada" } as never).eq("id", corridaId);
+    await registrarLog(corridaId, "Não aceita", null, "Nenhum motociclista disponível na reoferta");
+    return { semMotorista: true };
+  }
+  return { semMotorista: false };
+}
+
+// Chamado periodicamente pelo APP DO CLIENTE enquanto ele espera (corrida
+// Pendente/Ofertada). Valida a sessão e a posse da corrida e revisa as ofertas.
+export const clienteRevisarCorrida = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({ clienteToken: z.string().min(10), corridaId: z.number().int().positive() })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { data: sess } = await supabaseAdmin
+      .from("cliente_sessoes")
+      .select("cliente_codigo")
+      .eq("token", data.clienteToken)
+      .eq("status", "ativa")
+      .maybeSingle();
+    if (!sess) throw new Error("Sessão inválida");
+    const { data: c } = await supabaseAdmin
+      .from("corridas")
+      .select("cliente_codigo")
+      .eq("id", data.corridaId)
+      .maybeSingle();
+    if (!c || c.cliente_codigo !== sess.cliente_codigo) {
+      throw new Error("Corrida não pertence ao cliente");
+    }
+    return await _revisarOfertasParadas(data.corridaId);
+  });
+
 // ─── Expirar oferta (chamado pelo app do motorista após 30s) ──────
 // Se não restar nenhuma oferta pendente para a corrida, dispara automaticamente
 // uma nova rodada (reoferta) para os próximos motoristas mais próximos.

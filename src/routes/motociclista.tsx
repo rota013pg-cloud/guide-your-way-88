@@ -134,6 +134,7 @@ function MotoristaApp() {
   const [loginErro, setLoginErro] = useState("");
   const [cobranca, setCobranca] = useState<{ status: string; faturamento_dia: number; valor_diaria: number; comprovante_enviado_em: string | null } | null>(null);
   const [cobrancaCfg, setCobrancaCfg] = useState<{ pixChave?: string; tipoChavePix?: string; whatsappCentral?: string; empresa?: string }>({});
+  const [creditos, setCreditos] = useState(0);
   const [enviandoLib, setEnviandoLib] = useState(false);
   const [forcarCobranca, setForcarCobranca] = useState(false);
   const minhaCobrancaFn = useServerFn(motoristaMinhaCobranca);
@@ -319,6 +320,7 @@ function MotoristaApp() {
             const r = await minhaCobrancaFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } });
             setCobranca(r.cobranca as typeof cobranca);
             setCobrancaCfg(r.config);
+            setCreditos(Number(r.creditos ?? 0));
           } catch { /* ignore */ }
         },
       )
@@ -326,7 +328,7 @@ function MotoristaApp() {
 
     // carrega cobrança inicial
     minhaCobrancaFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } })
-      .then((r) => { setCobranca(r.cobranca as typeof cobranca); setCobrancaCfg(r.config); })
+      .then((r) => { setCobranca(r.cobranca as typeof cobranca); setCobrancaCfg(r.config); setCreditos(Number(r.creditos ?? 0)); })
       .catch(() => {});
 
     // Fallback: recarrega contexto a cada 8s, caso o realtime falhe (rede instável, sleep, proxy).
@@ -337,7 +339,7 @@ function MotoristaApp() {
       // (conecta como anon, sem SELECT nessa tabela), então sem isto o app ficava
       // travado na tela da taxa mesmo após a central confirmar o pagamento.
       minhaCobrancaFn({ data: { codigo: sessao.motorista.codigo, token: sessao.token } })
-        .then((r) => { setCobranca(r.cobranca as typeof cobranca); setCobrancaCfg(r.config); })
+        .then((r) => { setCobranca(r.cobranca as typeof cobranca); setCobrancaCfg(r.config); setCreditos(Number(r.creditos ?? 0)); })
         .catch(() => {});
     }, 8000);
 
@@ -787,6 +789,7 @@ function MotoristaApp() {
           token={sessao.token}
           corridasHoje={corridasHoje}
           cobranca={cobranca}
+          creditos={creditos}
           onAbrirCobranca={() => setForcarCobranca(true)}
           onSair={sair}
           online={online}

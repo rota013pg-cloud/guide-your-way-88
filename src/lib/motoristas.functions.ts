@@ -355,16 +355,23 @@ export const retomarMotorista = createServerFn({ method: "POST" })
   });
 
 // ─── AUTO-OFFLINE POR INATIVIDADE ────────────────────────
-// Marca como Offline motoristas cujo app travou/fechou em background:
-//   - status='Online' e
-//   - sem ping de GPS nos últimos 90s e
-//   - sessão ativa com mais de 90s (ou nenhuma sessão ativa)
+// Marca como Offline motoristas cujo app fechou de vez ou ficou muito tempo
+// sem sinal. O sinal de vida é o PING DE GPS NATIVO (TransistorSoft), que
+// segue enviando em segundo plano — inclusive parado (heartbeat nativo ~60s).
+//
+// A janela é TOLERANTE (240s) de propósito: interrupções curtas (trocar de
+// app, blip de sinal, uma janela de Doze) NÃO devem derrubar o motociclista.
+// Só marca offline quem passou de 4 min sem NENHUM ping. Isso, somado à
+// isenção da otimização de bateria no app, elimina o "piscar" no painel.
+// (NÃO usa heartbeat em JavaScript: no app nativo o JS congela em segundo
+// plano, então um heartbeat-JS marcaria offline por engano justamente quando
+// o motociclista minimiza o app.)
 //
 // Chamada pelo painel a cada poll. Não toca em "Em corrida".
 export const marcarStaleOffline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
-    const JANELA_MS = 180_000;
+    const JANELA_MS = 240_000; // 4 min sem ping = offline (tolerante a Doze/sinal)
     const cutoffIso = new Date(Date.now() - JANELA_MS).toISOString();
 
     const { data: onlineMot } = await supabaseAdmin

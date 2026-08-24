@@ -34,3 +34,10 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Ferramentas locais de deploy (não versionar)
+/verificar-git.bat
+/1-preparar-deploy.bat
+/2-enviar-deploy.bat
+/git-diag.txt
+/deploy-preview.txt

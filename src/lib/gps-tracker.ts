@@ -98,6 +98,28 @@ async function iniciarNativo(auth: AuthRastreio) {
 
   await BackgroundGeolocation.start();
 
+  // ── Isenção da otimização de bateria (Android) ──
+  // Sem isso o Doze/economia de bateria CONGELA o envio em segundo plano: os
+  // pontos ficam represados, passa dos ~4 min sem ping e a central marca o
+  // motociclista como OFFLINE — mesmo com ele online e o app aberto atrás.
+  // Quando ele volta pra tela, destrava e volta online: é o "piscar" no painel.
+  // Pedimos a isenção uma vez (respeita se já foi mostrada nos últimos 7 dias).
+  // Best-effort: no iOS (sem esse conceito) as chamadas simplesmente falham e
+  // caem no catch, sem efeito. É config de runtime — não exige novo build.
+  try {
+    const jaIsento = await BackgroundGeolocation.deviceSettings.isIgnoringBatteryOptimizations();
+    if (!jaIsento) {
+      const req = await BackgroundGeolocation.deviceSettings.showIgnoreBatteryOptimizations();
+      const SETE_DIAS = 7 * 24 * 60 * 60 * 1000;
+      const ultima = Number(req?.lastSeenAt ?? 0);
+      if (!ultima || Date.now() - ultima > SETE_DIAS) {
+        await BackgroundGeolocation.deviceSettings.show(req);
+      }
+    }
+  } catch {
+    /* best-effort: iOS ou plugin sem suporte — ignora */
+  }
+
   // Heartbeat: mesmo parado, força um ponto periódico para manter o motociclista
   // Online (a central marca offline se ficar >90s sem ping) e a posição do cliente
   // atualizada. getCurrentPosition grava e o autoSync envia pela camada nativa.

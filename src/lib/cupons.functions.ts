@@ -129,24 +129,21 @@ export const registrarUsoCupom = createServerFn({ method: "POST" })
       return { ok: false, motivo: "Cupom indisponível." };
     }
 
-    // Anexa SÓ o cupom_codigo. Quem aplica o desconto no valor_final é o TRIGGER
-    // do banco (corridas_aplicar_desconto_cupom, migração 20260824180000): ele
-    // calcula em cima do valor cheio e é blindado contra descontar 2x. O app NÃO
-    // escreve valor_final/valor_original/desconto — senão briga com o gatilho
-    // (era isso que causava desconto duplo em umas corridas e nenhum em outras).
+    // O valor_final da corrida JÁ está com desconto: a cotação aplicou o cupom
+    // na tarifa e a RPC gravou esse valor. Aqui só ANOTAMOS o cupom para o
+    // histórico/relatório — NUNCA tocamos no valor_final (senão descontaria 2x).
+    const valorComDesconto = Number(corrida.valor_final ?? 0);
+    const valorCheio = Math.max(valorComDesconto, Number(data.valorOriginal) || valorComDesconto);
+    const descontoValor = Math.max(0, valorCheio - valorComDesconto);
+
     await supabaseAdmin
       .from("corridas")
-      .update({ cupom_codigo: cupom.codigo })
+      .update({
+        cupom_codigo: cupom.codigo,
+        valor_original: valorCheio,
+        desconto_valor: descontoValor,
+      })
       .eq("id", data.corridaId);
-
-    // Relê o que o trigger gravou, só para registrar o uso do cupom.
-    const { data: pos } = await supabaseAdmin
-      .from("corridas")
-      .select("valor_original, desconto_valor")
-      .eq("id", data.corridaId)
-      .maybeSingle();
-    const valorCheio = Number(pos?.valor_original ?? corrida.valor_final ?? 0);
-    const descontoValor = Number(pos?.desconto_valor ?? 0);
 
     // conta o uso (respeita o limite global; best-effort read-then-write)
     const { data: incrementado } = await supabaseAdmin

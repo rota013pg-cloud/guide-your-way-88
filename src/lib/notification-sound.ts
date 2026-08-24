@@ -93,8 +93,9 @@ export function ensureAudioUnlock() {
   window.addEventListener("keydown", handler);
 }
 
-// Prepara o áudio de oferta (mp3) no primeiro gesto — SÓ deve ser chamado no
-// app do motociclista. Assim o "Nova corrida!" nunca é tocado no cliente/operador.
+// Prepara o áudio de oferta (mp3) no primeiro gesto. Chamado no app do
+// motociclista E no painel da central (nova solicitação). NÃO deve ser chamado
+// no app do cliente/passageiro — lá o "Nova corrida!" não faz sentido.
 let ofertaBound = false;
 export function ensureOfertaAudio() {
   if (typeof window === "undefined" || ofertaBound) return;

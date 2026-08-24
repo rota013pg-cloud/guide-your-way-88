@@ -302,12 +302,10 @@ function ClienteAppHome() {
         _destino_lng: destino.lng ?? 0,
         _paradas: paradas.map((p) => ({ text: p.text, lat: p.lat, lng: p.lng })),
         _distancia_km: Number(cotacao.distancia.toFixed(2)),
-        // Manda o valor CHEIO (sem desconto). A RPC grava esse valor em
-        // valor_final; quando há cupom, quem aplica o desconto no valor_final é
-        // o gatilho do banco (ao anexar o cupom). Assim o valor nunca é
-        // descontado duas vezes. cotacao.valorOriginal == cotacao.valor quando
-        // não há cupom, então corridas sem cupom continuam iguais.
-        _valor: cotacao.valorOriginal,
+        // Manda o valor JÁ COM DESCONTO. A cotação aplica o cupom na tarifa e
+        // devolve cotacao.valor descontado; a RPC grava isso em valor_final.
+        // Esse é o valor final, ponto — nada mexe nele depois (sem gatilho).
+        _valor: cotacao.valor,
         _observacoes: observacao,
         _solicitacoes_especiais: especiais,
         _forma_pagamento: pagamento,

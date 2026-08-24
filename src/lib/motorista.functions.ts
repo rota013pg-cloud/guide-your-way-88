@@ -357,20 +357,17 @@ export const motoristaAceitarOferta = createServerFn({ method: "POST" })
 
     const corridaId = aceita.corrida_id;
 
-    // cancela demais ofertas
-    await supabaseAdmin
-      .from("corrida_ofertas")
-      .update({ status: "cancelada" })
-      .eq("corrida_id", corridaId)
-      .neq("id", data.ofertaId)
-      .eq("status", "pendente");
-
     const { data: motorista } = await supabaseAdmin
       .from("motoristas")
       .select("nome")
       .eq("codigo", data.codigo)
       .maybeSingle();
 
+    // CLAIM ATÔMICO da corrida: só reivindica se ela ainda NÃO tem dono E ainda
+    // está procurando (Pendente/Ofertada). Se dois motociclistas tocam "aceitar"
+    // quase juntos, só o PRIMEIRO leva — o segundo cai no if abaixo e NÃO fica
+    // preso "Em corrida". Também evita reviver uma corrida já cancelada.
+    // (Não afeta a reatribuição manual do operador, que usa outro caminho.)
     const { data: corrida, error: e2 } = await supabaseAdmin
       .from("corridas")
       .update({
@@ -379,9 +376,28 @@ export const motoristaAceitarOferta = createServerFn({ method: "POST" })
         status: "Aceita",
       })
       .eq("id", corridaId)
+      .is("motorista_codigo", null)
+      .in("status", ["Pendente", "Ofertada"])
       .select("*")
       .maybeSingle();
     if (e2) throw new Error(e2.message);
+    if (!corrida) {
+      // Outro motociclista ganhou o claim nesse instante (ou a corrida já saiu
+      // de procura) → desfaz a aceitação desta oferta e avisa. NÃO seta "Em corrida".
+      await supabaseAdmin
+        .from("corrida_ofertas")
+        .update({ status: "cancelada" })
+        .eq("id", data.ofertaId);
+      throw new Error("Corrida já não está mais disponível.");
+    }
+
+    // Ganhou o claim → agora cancela as ofertas dos outros motociclistas.
+    await supabaseAdmin
+      .from("corrida_ofertas")
+      .update({ status: "cancelada" })
+      .eq("corrida_id", corridaId)
+      .neq("id", data.ofertaId)
+      .eq("status", "pendente");
 
     // Push pro cliente: motociclista aceitou
     if (corrida?.cliente_codigo) {

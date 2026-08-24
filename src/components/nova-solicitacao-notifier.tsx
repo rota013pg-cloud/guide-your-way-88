@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Bike } from "lucide-react";
-import { playNovaCorridaPainel } from "@/lib/notification-sound";
+import { playOfertaSom, ensureOfertaAudio } from "@/lib/notification-sound";
 import { getAlertasSom } from "@/lib/alertas-som";
 import { ensureNotificationPermission, showDesktopNotification } from "@/lib/desktop-notification";
 import {
@@ -63,6 +63,9 @@ export function NovaSolicitacaoNotifier() {
 
   useEffect(() => {
     ensureNotificationPermission();
+    // Prepara a voz "Nova corrida!" (mesmo mp3 do app do motociclista) para
+    // poder tocar a partir de um evento de realtime no painel da central.
+    ensureOfertaAudio();
     let cancelado = false;
 
     const carregar = async () => {
@@ -76,7 +79,7 @@ export function NovaSolicitacaoNotifier() {
       const lista = (data ?? []) as Solicitacao[];
       const novas = lista.filter((s) => !idsVistos.current.has(s.id));
       if (!primeiraCarga.current && novas.length > 0) {
-        if (getAlertasSom()) playNovaCorridaPainel();
+        if (getAlertasSom()) playOfertaSom();
         const s = novas[0];
         showDesktopNotification({
           id: `solic-${s.id}`,

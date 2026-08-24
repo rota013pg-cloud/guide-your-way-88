@@ -37,12 +37,31 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   });
 }
 
+// Impede a WebView do app nativo (e o navegador) de cachear o HTML do app.
+// Como o app nativo é um shell fino que carrega o site ao vivo (server.url),
+// se a WebView guardar o HTML antigo ela continua carregando o bundle antigo
+// mesmo depois do deploy — e o usuário precisa limpar o cache pra atualizar.
+// Com "no-cache" na CASCA HTML, a WebView revalida e sempre pega os bundles
+// novos. NÃO afeta os arquivos JS/CSS (que têm hash e são servidos à parte),
+// nem as chamadas de server function.
+function semCacheNoHtml(response: Response): Response {
+  const ct = response.headers.get("content-type") ?? "";
+  if (!ct.includes("text/html")) return response;
+  const headers = new Headers(response.headers);
+  headers.set("cache-control", "no-cache, must-revalidate");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return semCacheNoHtml(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

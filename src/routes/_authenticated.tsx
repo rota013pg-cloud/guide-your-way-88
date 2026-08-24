@@ -9,6 +9,7 @@ import { ChatClienteNotifier } from "@/components/chat-cliente-notifier";
 import { CobrancaNotifier } from "@/components/cobranca-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
 import { NovaSolicitacaoNotifier } from "@/components/nova-solicitacao-notifier";
+import { NovaCorridaSomNotifier } from "@/components/nova-corrida-som-notifier";
 import { MotoristaOnlineNotifier } from "@/components/motorista-online-notifier";
 import { SomAlertasToggle } from "@/components/painel/som-alertas-toggle";
 import { ModoAutomaticoToggle } from "@/components/modo-automatico-toggle";
@@ -129,6 +130,7 @@ function AuthenticatedLayout() {
             <ChatClienteNotifier />
             <AlertaNotifier />
             <NovaSolicitacaoNotifier />
+            <NovaCorridaSomNotifier />
             <MotoristaOnlineNotifier />
 
 

@@ -309,16 +309,22 @@ function ClienteAppHome() {
       } as any);
       if (error) throw error;
       const resp = (data ?? {}) as { corrida_id?: number; auto_aceita?: boolean };
-      // Registra o uso do cupom (grava desconto na corrida + conta o uso).
+      // Registra o uso do cupom: aplica o desconto no valor_final da corrida.
+      // AWAIT de propósito — precisa estar aplicado ANTES de ofertar aos
+      // motociclistas, senão a oferta (e o histórico) sai com o valor cheio.
       if (resp.corrida_id && cotacao.cupomCodigo) {
-        registrarCupomFn({
-          data: {
-            token,
-            corridaId: resp.corrida_id,
-            cupomCodigo: cotacao.cupomCodigo,
-            valorOriginal: cotacao.valorOriginal,
-          },
-        }).catch(() => {});
+        try {
+          await registrarCupomFn({
+            data: {
+              token,
+              corridaId: resp.corrida_id,
+              cupomCodigo: cotacao.cupomCodigo,
+              valorOriginal: cotacao.valorOriginal,
+            },
+          });
+        } catch {
+          /* ignore */
+        }
       }
       let semMotorista = false;
       if (resp.auto_aceita && resp.corrida_id) {

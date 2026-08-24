@@ -169,6 +169,34 @@ export const motoristaLogin = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!motorista) throw new Error("Motorista não cadastrado");
 
+    // REAPROVEITA a sessão ativa DESTE mesmo aparelho, se já existir. Assim,
+    // quando o app volta de outro app / reabre e reloga, a sessão NÃO é trocada:
+    // mantém o MESMO token vivo (o GPS nativo continua aceito) e evita o "online
+    // fantasma" causado pelo churn de sessão. Só cria sessão nova de verdade
+    // quando não há sessão ativa neste device. Revisor segue o fluxo normal.
+    if (data.deviceId && !ehRevisor) {
+      const { data: sessaoDoDevice } = await supabaseAdmin
+        .from("motorista_sessoes")
+        .select("token")
+        .eq("motorista_codigo", codigo)
+        .eq("device_id", data.deviceId)
+        .eq("status", "ativa")
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (sessaoDoDevice?.token) {
+        await supabaseAdmin
+          .from("motoristas")
+          .update({ status: "Online" })
+          .eq("codigo", codigo);
+        await supabaseAdmin
+          .from("motorista_auth")
+          .update({ ultimo_acesso: new Date().toISOString() })
+          .eq("motorista_codigo", codigo);
+        return { token: sessaoDoDevice.token, motorista };
+      }
+    }
+
     // encerrar sessões antigas
     await supabaseAdmin
       .from("motorista_sessoes")

@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { dispararOfertasCliente, clienteRevisarCorrida } from "@/lib/corridas.functions";
 import { cotarCorridaCliente } from "@/lib/cliente-cotacao.functions";
+import { registrarUsoCupom } from "@/lib/cupons.functions";
 import { clienteMotoristaCorridaInfo } from "@/lib/cliente-motorista.functions";
 import { lerRaioPublico } from "@/lib/config.functions";
 import { AvaliacaoCorridaDialog } from "@/components/avaliacao-corrida-dialog";
@@ -100,13 +101,23 @@ function ClienteAppHome() {
   const [raioKm, setRaioKm] = useState(15);
   const [solicitando, setSolicitando] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [cotacao, setCotacao] = useState<{ distancia: number; valor: number } | null>(null);
+  const [cotacao, setCotacao] = useState<{
+    distancia: number;
+    valor: number;
+    valorOriginal: number;
+    descontoValor: number;
+    cupomCodigo: string | null;
+    cupomPct: number;
+  } | null>(null);
+  const [cupomInput, setCupomInput] = useState("");
+  const [cupomMsg, setCupomMsg] = useState<string | null>(null);
   const [corridaAtiva, setCorridaAtiva] = useState<CorridaAtiva | null>(null);
   const [motoristaInfo, setMotoristaInfo] = useState<MotoristaInfo | null>(null);
   const [avaliarCorridaId, setAvaliarCorridaId] = useState<number | null>(null);
   const ultimaAtivaRef = useRef<CorridaAtiva | null>(null);
   const avisadosRef = useRef<Set<number>>(new Set());
   const cotarCorridaFn = useServerFn(cotarCorridaCliente);
+  const registrarCupomFn = useServerFn(registrarUsoCupom);
 
   // Polling da corrida ativa do cliente
   useEffect(() => {
@@ -237,7 +248,7 @@ function ClienteAppHome() {
   const toggleEspecial = (v: string) =>
     setEspeciais((arr) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]));
 
-  const cotar = async () => {
+  const cotar = async (cupomCodigo?: string) => {
     const token = getClienteToken();
     if (!token) return toast.error("Sessão inválida — faça login novamente.");
     if (!origem.lat || !origem.lng) return toast.error("Selecione um endereço de origem válido.");
@@ -245,12 +256,14 @@ function ClienteAppHome() {
     for (const p of paradas) {
       if (!p.lat || !p.lng) return toast.error("Selecione um endereço válido para todas as paradas.");
     }
+    const cupom = (cupomCodigo ?? cupomInput).trim();
     const data = await cotarCorridaFn({
       data: {
         token,
         origem: { lat: origem.lat, lng: origem.lng },
         destino: { lat: destino.lat, lng: destino.lng },
         paradas: paradas.map((p) => ({ lat: p.lat!, lng: p.lng! })),
+        cupom: cupom || undefined,
       },
     }).catch((error) => {
       toast.error(error instanceof Error ? error.message : "Falha ao calcular tarifa.");
@@ -261,7 +274,15 @@ function ClienteAppHome() {
       toast.error("Não foi possível calcular a rota para esses endereços.");
       return;
     }
-    setCotacao({ distancia: data.distancia, valor: data.valor });
+    setCotacao({
+      distancia: data.distancia,
+      valor: data.valor,
+      valorOriginal: data.valorOriginal ?? data.valor,
+      descontoValor: data.descontoValor ?? 0,
+      cupomCodigo: data.cupomCodigo ?? null,
+      cupomPct: data.cupomPct ?? 0,
+    });
+    setCupomMsg(data.cupomErro ?? null);
     setModalOpen(true);
   };
 
@@ -288,6 +309,17 @@ function ClienteAppHome() {
       } as any);
       if (error) throw error;
       const resp = (data ?? {}) as { corrida_id?: number; auto_aceita?: boolean };
+      // Registra o uso do cupom (grava desconto na corrida + conta o uso).
+      if (resp.corrida_id && cotacao.cupomCodigo) {
+        registrarCupomFn({
+          data: {
+            token,
+            corridaId: resp.corrida_id,
+            cupomCodigo: cotacao.cupomCodigo,
+            valorOriginal: cotacao.valorOriginal,
+          },
+        }).catch(() => {});
+      }
       let semMotorista = false;
       if (resp.auto_aceita && resp.corrida_id) {
         // Modo automático: dispara ofertas para motoristas imediatamente
@@ -473,7 +505,7 @@ function ClienteAppHome() {
         </div>
 
         <Button
-          onClick={cotar}
+          onClick={() => cotar()}
           size="lg"
           className="btn-gold w-full rounded-2xl font-display text-base h-12 hover:bg-transparent"
         >
@@ -503,9 +535,44 @@ function ClienteAppHome() {
                   <p className="font-display font-semibold text-lg">{cotacao.distancia.toFixed(1)} km</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Valor estimado</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {cotacao.descontoValor > 0 ? "Valor com desconto" : "Valor estimado"}
+                  </p>
+                  {cotacao.descontoValor > 0 && (
+                    <p className="text-sm text-muted-foreground line-through leading-tight">
+                      R$ {cotacao.valorOriginal.toFixed(2)}
+                    </p>
+                  )}
                   <p className="font-display text-3xl font-bold text-[color:var(--gold)]">R$ {cotacao.valor.toFixed(2)}</p>
                 </div>
+              </div>
+
+              {/* Cupom de desconto */}
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Cupom de desconto
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    value={cupomInput}
+                    onChange={(e) => setCupomInput(e.target.value.toUpperCase().replace(/\s/g, ""))}
+                    placeholder="Tem um cupom?"
+                    className="flex-1 min-w-0 rounded-xl border border-[color:var(--border)] bg-background px-3 py-2 text-sm font-semibold tracking-wide uppercase placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[color:var(--gold)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => cotar(cupomInput)}
+                    className="shrink-0 rounded-xl border border-[color:var(--gold)]/50 px-4 py-2 text-sm font-bold text-[color:var(--gold)] active:scale-[0.96] transition"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+                {cupomMsg && <p className="text-[11px] font-semibold text-red-500">{cupomMsg}</p>}
+                {cotacao.descontoValor > 0 && (
+                  <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    ✓ Cupom {cotacao.cupomCodigo} aplicado — {cotacao.cupomPct}% OFF. Você economiza R$ {cotacao.descontoValor.toFixed(2)}.
+                  </p>
+                )}
               </div>
             </div>
           )}

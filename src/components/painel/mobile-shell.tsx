@@ -33,6 +33,7 @@ import { ChatNotifier } from "@/components/chat-notifier";
 import { ChatClienteNotifier } from "@/components/chat-cliente-notifier";
 import { AlertaNotifier } from "@/components/alerta-notifier";
 import { NovaSolicitacaoNotifier } from "@/components/nova-solicitacao-notifier";
+import { NovaCorridaSomNotifier } from "@/components/nova-corrida-som-notifier";
 import { MotoristaOnlineNotifier } from "@/components/motorista-online-notifier";
 import { SomAlertasToggle } from "@/components/painel/som-alertas-toggle";
 import { useRole } from "@/hooks/use-role";
@@ -113,6 +114,7 @@ export function MobileShell({ children, email }: { children: ReactNode; email: s
         <ChatClienteNotifier />
         <AlertaNotifier />
         <NovaSolicitacaoNotifier />
+        <NovaCorridaSomNotifier />
         <MotoristaOnlineNotifier />
       </header>
 

@@ -570,7 +570,7 @@ function ClienteAppHome() {
                 {cupomMsg && <p className="text-[11px] font-semibold text-red-500">{cupomMsg}</p>}
                 {cotacao.descontoValor > 0 && (
                   <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                    ✓ Cupom {cotacao.cupomCodigo} aplicado — {cotacao.cupomPct}% OFF. Você economiza R$ {cotacao.descontoValor.toFixed(2)}.
+                    ✓ Cupom {cotacao.cupomCodigo} aplicado!
                   </p>
                 )}
               </div>

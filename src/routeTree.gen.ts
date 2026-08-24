@@ -38,6 +38,7 @@ import { Route as AuthenticatedInstrucoesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCuponsRouteImport } from './routes/_authenticated/cupons'
 import { Route as AuthenticatedCorridasNaoAceitasRouteImport } from './routes/_authenticated/corridas-nao-aceitas'
 import { Route as AuthenticatedCorridasRouteImport } from './routes/_authenticated/corridas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
@@ -199,6 +200,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCuponsRoute = AuthenticatedCuponsRouteImport.update({
+  id: '/cupons',
+  path: '/cupons',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedCorridasNaoAceitasRoute =
   AuthenticatedCorridasNaoAceitasRouteImport.update({
     id: '/corridas-nao-aceitas',
@@ -290,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
   '/corridas-nao-aceitas': typeof AuthenticatedCorridasNaoAceitasRoute
+  '/cupons': typeof AuthenticatedCuponsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -333,6 +340,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corridas': typeof AuthenticatedCorridasRoute
   '/corridas-nao-aceitas': typeof AuthenticatedCorridasNaoAceitasRoute
+  '/cupons': typeof AuthenticatedCuponsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -377,6 +385,7 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corridas': typeof AuthenticatedCorridasRoute
   '/_authenticated/corridas-nao-aceitas': typeof AuthenticatedCorridasNaoAceitasRoute
+  '/_authenticated/cupons': typeof AuthenticatedCuponsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
@@ -422,6 +431,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corridas'
     | '/corridas-nao-aceitas'
+    | '/cupons'
     | '/dashboard'
     | '/financeiro'
     | '/historico'
@@ -465,6 +475,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corridas'
     | '/corridas-nao-aceitas'
+    | '/cupons'
     | '/dashboard'
     | '/financeiro'
     | '/historico'
@@ -508,6 +519,7 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes'
     | '/_authenticated/corridas'
     | '/_authenticated/corridas-nao-aceitas'
+    | '/_authenticated/cupons'
     | '/_authenticated/dashboard'
     | '/_authenticated/financeiro'
     | '/_authenticated/historico'
@@ -759,6 +771,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cupons': {
+      id: '/_authenticated/cupons'
+      path: '/cupons'
+      fullPath: '/cupons'
+      preLoaderRoute: typeof AuthenticatedCuponsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/corridas-nao-aceitas': {
       id: '/_authenticated/corridas-nao-aceitas'
       path: '/corridas-nao-aceitas'
@@ -862,6 +881,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorridasRoute: typeof AuthenticatedCorridasRoute
   AuthenticatedCorridasNaoAceitasRoute: typeof AuthenticatedCorridasNaoAceitasRoute
+  AuthenticatedCuponsRoute: typeof AuthenticatedCuponsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
@@ -883,6 +903,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorridasRoute: AuthenticatedCorridasRoute,
   AuthenticatedCorridasNaoAceitasRoute: AuthenticatedCorridasNaoAceitasRoute,
+  AuthenticatedCuponsRoute: AuthenticatedCuponsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,

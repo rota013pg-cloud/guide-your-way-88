@@ -13,8 +13,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const floor = (v: number) => (Number.isFinite(v) && v > 0 ? Math.floor(v) : 0);
-
 // ─── LISTAR (painel) ────────────────────────────────────
 export const listarCupons = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -131,27 +129,24 @@ export const registrarUsoCupom = createServerFn({ method: "POST" })
       return { ok: false, motivo: "Cupom indisponível." };
     }
 
-    // A RPC de solicitar corrida recalcula a tarifa e grava o valor CHEIO em
-    // valor_final (ela ignora o _valor com desconto que o app envia). Por isso o
-    // desconto é aplicado AQUI: sobrescrevemos valor_final com o valor já com
-    // desconto. Assim o motociclista vê/recebe o valor correto (tela de
-    // confirmação de recebimento e histórico de ganhos), igual ao que o
-    // passageiro paga. Baseia no valor_final do servidor (não confia em valor
-    // do cliente). Idempotente: o guard de cupom_codigo acima evita reaplicar.
-    const valorCheio = Number(corrida.valor_final ?? 0);
-    const pct = Number(cupom.desconto_pct) || 0;
-    const valorComDesconto = Math.max(0, floor(valorCheio * (1 - pct / 100)));
-    const descontoValor = valorCheio - valorComDesconto;
-
+    // Anexa SÓ o cupom_codigo. Quem aplica o desconto no valor_final é o TRIGGER
+    // do banco (corridas_aplicar_desconto_cupom, migração 20260824180000): ele
+    // calcula em cima do valor cheio e é blindado contra descontar 2x. O app NÃO
+    // escreve valor_final/valor_original/desconto — senão briga com o gatilho
+    // (era isso que causava desconto duplo em umas corridas e nenhum em outras).
     await supabaseAdmin
       .from("corridas")
-      .update({
-        valor_final: valorComDesconto,
-        valor_original: valorCheio,
-        cupom_codigo: cupom.codigo,
-        desconto_valor: descontoValor,
-      })
+      .update({ cupom_codigo: cupom.codigo })
       .eq("id", data.corridaId);
+
+    // Relê o que o trigger gravou, só para registrar o uso do cupom.
+    const { data: pos } = await supabaseAdmin
+      .from("corridas")
+      .select("valor_original, desconto_valor")
+      .eq("id", data.corridaId)
+      .maybeSingle();
+    const valorCheio = Number(pos?.valor_original ?? corrida.valor_final ?? 0);
+    const descontoValor = Number(pos?.desconto_valor ?? 0);
 
     // conta o uso (respeita o limite global; best-effort read-then-write)
     const { data: incrementado } = await supabaseAdmin

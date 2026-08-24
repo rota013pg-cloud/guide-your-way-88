@@ -956,8 +956,16 @@ function HomeTela({
         <span className="status-texto">
           {online ? "Online — aguardando corridas" : "Offline"}
         </span>
-        <button className={`btn-status ${online ? "is-online" : ""}`} onClick={onToggle}>
-          {online ? "Ficar Offline" : "Ficar Online"}
+        <button
+          type="button"
+          className={`status-toggle ${online ? "is-online" : ""}`}
+          onClick={onToggle}
+          role="switch"
+          aria-checked={online}
+          aria-label={online ? "Ficar offline" : "Ficar online"}
+          title={online ? "Toque para ficar offline" : "Toque para ficar online"}
+        >
+          <span className="status-toggle-knob" />
         </button>
       </div>
 
@@ -1612,6 +1620,22 @@ const cssMotorista = `
 .moto-app .btn-status.is-online {
   background:transparent; color:var(--red); border:1px solid var(--red);
 }
+/* Toggle online/offline (estilo do Switch do modo automático da central) */
+.moto-app .status-toggle {
+  position:relative; flex-shrink:0; width:52px; height:30px; border-radius:999px;
+  border:1px solid var(--line); background:var(--card); cursor:pointer; padding:0;
+  transition:background .2s ease, border-color .2s ease; -webkit-tap-highlight-color:transparent;
+}
+.moto-app .status-toggle.is-online {
+  background:var(--green); border-color:var(--green);
+}
+.moto-app .status-toggle-knob {
+  position:absolute; top:50%; left:3px; transform:translateY(-50%);
+  width:24px; height:24px; border-radius:50%; background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.45); transition:left .2s ease;
+}
+.moto-app .status-toggle.is-online .status-toggle-knob { left:25px; }
+.moto-app .status-toggle:active { transform:scale(0.96); }
 
 .moto-app .cards-row {
   display:grid; grid-template-columns:1fr 1fr; gap:10px;

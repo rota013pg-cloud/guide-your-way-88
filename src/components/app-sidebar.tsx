@@ -7,6 +7,7 @@ import {
   UserSquare,
   DollarSign,
   Tag,
+  Ticket,
   History,
   Clock,
   Settings,
@@ -60,6 +61,7 @@ const operacional: Item[] = [
 const gestao: Item[] = [
   { title: "Financeiro", url: "/financeiro", icon: DollarSign },
   { title: "Tarifas", url: "/tarifas", icon: Tag, adminOnly: true },
+  { title: "Cupons", url: "/cupons", icon: Ticket },
   { title: "Histórico", url: "/historico", icon: History },
   { title: "Tempo online", url: "/relatorio-online", icon: Clock },
   { title: "Termos e Condições", url: "/termos-config", icon: MessageSquare, adminOnly: true },

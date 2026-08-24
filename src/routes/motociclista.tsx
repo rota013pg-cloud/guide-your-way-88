@@ -146,6 +146,10 @@ function MotoristaApp() {
   // restaurar status ao voltar do background (visibilitychange/pagehide).
   const intencaoOnlineRef = useRef<boolean>(false);
   const forcadoOfflineBgRef = useRef<boolean>(false);
+  // Trava do toggle online/offline: enquanto um comando está em andamento (e por
+  // um curto período depois), ignora novos toques. Sem isso, como a resposta
+  // demora um pouco, o motociclista clica várias vezes e o status fica oscilando.
+  const alternandoRef = useRef<boolean>(false);
 
   // Trava orientação em retrato (funciona em Android Chrome / PWA).
   // iOS Safari ignora — o <LandscapeBlock /> exibe overlay nesse caso.
@@ -624,19 +628,32 @@ function MotoristaApp() {
 
   const alternarStatus = async () => {
     if (!sessao) return;
+    // Trava anti clique-múltiplo: ignora toques enquanto o comando anterior
+    // ainda está sendo processado (e por um curto cooldown depois).
+    if (alternandoRef.current) return;
+    alternandoRef.current = true;
+
     const novo = !online;
+    // Feedback imediato: o toggle vira na hora, tirando a sensação de "não fez
+    // nada" que leva o motociclista a clicar várias vezes. Se falhar, desfaz.
+    intencaoOnlineRef.current = novo;
+    forcadoOfflineBgRef.current = false;
+    setOnline(novo);
+    // GPS é controlado pelo useEffect [sessao, online].
     try {
       await toggleFn({
         data: { codigo: sessao.motorista.codigo, token: sessao.token, online: novo },
       });
-      // Marca a intenção do motorista — usado para restaurar Online quando
-      // ele voltar do background depois de um auto-offline.
-      intencaoOnlineRef.current = novo;
-      forcadoOfflineBgRef.current = false;
-      setOnline(novo);
-      // GPS é controlado pelo useEffect [sessao, online].
     } catch (e: unknown) {
+      // Falhou → desfaz o toggle otimista.
+      intencaoOnlineRef.current = !novo;
+      setOnline(!novo);
       mostrarToast(e instanceof Error ? e.message : "Erro");
+    } finally {
+      // Cooldown: mesmo após concluir, ignora clique-duplo por ~600ms.
+      setTimeout(() => {
+        alternandoRef.current = false;
+      }, 600);
     }
   };
 

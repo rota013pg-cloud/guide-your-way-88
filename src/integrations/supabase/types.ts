@@ -361,6 +361,81 @@ export type Database = {
           },
         ]
       }
+      cupons: {
+        Row: {
+          id: number
+          codigo: string
+          desconto_pct: number
+          aplicacao: string
+          limite_usos: number | null
+          usos: number
+          valido_de: string | null
+          valido_ate: string | null
+          compensacao: string
+          ativo: boolean
+          criado_em: string
+        }
+        Insert: {
+          id?: number
+          codigo: string
+          desconto_pct: number
+          aplicacao?: string
+          limite_usos?: number | null
+          usos?: number
+          valido_de?: string | null
+          valido_ate?: string | null
+          compensacao?: string
+          ativo?: boolean
+          criado_em?: string
+        }
+        Update: {
+          id?: number
+          codigo?: string
+          desconto_pct?: number
+          aplicacao?: string
+          limite_usos?: number | null
+          usos?: number
+          valido_de?: string | null
+          valido_ate?: string | null
+          compensacao?: string
+          ativo?: boolean
+          criado_em?: string
+        }
+        Relationships: []
+      }
+      cupom_usos: {
+        Row: {
+          id: number
+          cupom_id: number | null
+          cupom_codigo: string
+          corrida_id: number | null
+          cliente_codigo: string | null
+          valor_original: number
+          valor_desconto: number
+          criado_em: string
+        }
+        Insert: {
+          id?: number
+          cupom_id?: number | null
+          cupom_codigo: string
+          corrida_id?: number | null
+          cliente_codigo?: string | null
+          valor_original: number
+          valor_desconto: number
+          criado_em?: string
+        }
+        Update: {
+          id?: number
+          cupom_id?: number | null
+          cupom_codigo?: string
+          corrida_id?: number | null
+          cliente_codigo?: string | null
+          valor_original?: number
+          valor_desconto?: number
+          criado_em?: string
+        }
+        Relationships: []
+      }
       corridas: {
         Row: {
           agendada_para: string | null
@@ -403,6 +478,9 @@ export type Database = {
           tipo: string | null
           valor_final: number
           valor_paradas: number
+          cupom_codigo: string | null
+          valor_original: number | null
+          desconto_valor: number | null
         }
         Insert: {
           agendada_para?: string | null
@@ -445,6 +523,9 @@ export type Database = {
           tipo?: string | null
           valor_final?: number
           valor_paradas?: number
+          cupom_codigo?: string | null
+          valor_original?: number | null
+          desconto_valor?: number | null
         }
         Update: {
           agendada_para?: string | null
@@ -487,6 +568,9 @@ export type Database = {
           tipo?: string | null
           valor_final?: number
           valor_paradas?: number
+          cupom_codigo?: string | null
+          valor_original?: number | null
+          desconto_valor?: number | null
         }
         Relationships: [
           {

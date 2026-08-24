@@ -131,14 +131,24 @@ export const registrarUsoCupom = createServerFn({ method: "POST" })
       return { ok: false, motivo: "Cupom indisponível." };
     }
 
-    const valorFinal = Number(corrida.valor_final ?? 0);
-    const descontoValor = Math.max(0, floor(data.valorOriginal) - valorFinal);
+    // A RPC de solicitar corrida recalcula a tarifa e grava o valor CHEIO em
+    // valor_final (ela ignora o _valor com desconto que o app envia). Por isso o
+    // desconto é aplicado AQUI: sobrescrevemos valor_final com o valor já com
+    // desconto. Assim o motociclista vê/recebe o valor correto (tela de
+    // confirmação de recebimento e histórico de ganhos), igual ao que o
+    // passageiro paga. Baseia no valor_final do servidor (não confia em valor
+    // do cliente). Idempotente: o guard de cupom_codigo acima evita reaplicar.
+    const valorCheio = Number(corrida.valor_final ?? 0);
+    const pct = Number(cupom.desconto_pct) || 0;
+    const valorComDesconto = Math.max(0, floor(valorCheio * (1 - pct / 100)));
+    const descontoValor = valorCheio - valorComDesconto;
 
     await supabaseAdmin
       .from("corridas")
       .update({
+        valor_final: valorComDesconto,
+        valor_original: valorCheio,
         cupom_codigo: cupom.codigo,
-        valor_original: floor(data.valorOriginal),
         desconto_valor: descontoValor,
       })
       .eq("id", data.corridaId);
@@ -157,7 +167,7 @@ export const registrarUsoCupom = createServerFn({ method: "POST" })
       cupom_codigo: cupom.codigo,
       corrida_id: data.corridaId,
       cliente_codigo: sessao.cliente_codigo,
-      valor_original: floor(data.valorOriginal),
+      valor_original: valorCheio,
       valor_desconto: descontoValor,
     });
 

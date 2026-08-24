@@ -280,6 +280,29 @@ function MotoristaApp() {
         distancia: corrida.distancia_km as number | null,
       });
       // som + vibração ficam no efeito que acompanha `oferta` (toca repetido).
+
+      // Cupom: a oferta pode chegar ao motociclista ANTES de o desconto ser
+      // gravado na corrida (a aplicação do cupom acontece logo após o pedido).
+      // Nesse caso o card mostraria o valor cheio. Rebuscamos o valor algumas
+      // vezes em segundo plano para exibir o valor_final já descontado, sem
+      // depender da ordem das chamadas no app do cliente.
+      for (const atraso of [1200, 3000, 6000]) {
+        setTimeout(async () => {
+          try {
+            const { corrida: fresca } = await carregarCorridaFn({
+              data: { codigo: sessao.motorista.codigo, token: sessao.token, corridaId },
+            });
+            if (!fresca) return;
+            setOferta((cur) =>
+              cur && cur.ofertaId === ofertaId
+                ? { ...cur, valor: Number(fresca.valor_final ?? cur.valor) }
+                : cur,
+            );
+          } catch {
+            /* ignore */
+          }
+        }, atraso);
+      }
     };
 
     // Realtime: novas ofertas para este motorista

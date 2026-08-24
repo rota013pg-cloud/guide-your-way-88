@@ -39,5 +39,6 @@ dist-ssr
 /verificar-git.bat
 /1-preparar-deploy.bat
 /2-enviar-deploy.bat
+/trocar-conta-github.bat
 /git-diag.txt
 /deploy-preview.txt

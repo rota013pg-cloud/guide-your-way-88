@@ -359,10 +359,13 @@ export const retomarMotorista = createServerFn({ method: "POST" })
 // sem sinal. O sinal de vida é o PING DE GPS NATIVO (TransistorSoft), que
 // segue enviando em segundo plano — inclusive parado (heartbeat nativo ~60s).
 //
-// A janela é TOLERANTE (240s) de propósito: interrupções curtas (trocar de
-// app, blip de sinal, uma janela de Doze) NÃO devem derrubar o motociclista.
-// Só marca offline quem passou de 4 min sem NENHUM ping. Isso, somado à
-// isenção da otimização de bateria no app, elimina o "piscar" no painel.
+// A janela é BEM TOLERANTE (15 min) de propósito: em vários aparelhos o
+// gerenciador de bateria (Xiaomi/Samsung/Motorola) sufoca o serviço de GPS
+// em segundo plano, então o ping nativo pode demorar minutos pra voltar.
+// Interrupções curtas (trocar de app, blip de sinal, Doze, bateria agressiva)
+// NÃO devem derrubar o motociclista. Só marca offline quem passou de 15 min
+// sem NENHUM ping — praticamente só quem desligou o celular ou fechou o app
+// de vez. Isso, somado à isenção de bateria no app, elimina o "piscar".
 // (NÃO usa heartbeat em JavaScript: no app nativo o JS congela em segundo
 // plano, então um heartbeat-JS marcaria offline por engano justamente quando
 // o motociclista minimiza o app.)
@@ -371,7 +374,7 @@ export const retomarMotorista = createServerFn({ method: "POST" })
 export const marcarStaleOffline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
-    const JANELA_MS = 240_000; // 4 min sem ping = offline (tolerante a Doze/sinal)
+    const JANELA_MS = 900_000; // 15 min sem ping = offline (tolerante a Doze/bateria agressiva)
     const cutoffIso = new Date(Date.now() - JANELA_MS).toISOString();
 
     const { data: onlineMot } = await supabaseAdmin

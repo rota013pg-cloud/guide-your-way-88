@@ -72,8 +72,9 @@ export default function MapInner({
         <SeguirPin lat={Number(motoristas[0].lat)} lng={Number(motoristas[0].lng)} />
       )}
       <TileLayer
-        attribution='&copy; OpenStreetMap &copy; CARTO'
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        attribution='&copy; OpenStreetMap contributors'
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        maxZoom={19}
       />
       {motoristas.map((m) => (
         <Marker key={m.codigo} position={[Number(m.lat), Number(m.lng)]} icon={buildIcon(m.codigo, m.status, !!hideLabels)}>

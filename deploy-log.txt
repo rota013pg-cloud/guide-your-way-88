@@ -1,26 +1,16 @@
-===== DEPLOY LOG =====
-Data: 25/08/2026 23:12:50,35
+===== FORCAR DEPLOY =====
+Data: 25/08/2026 23:35:31,40
 
---- git remote -v ---
-origin	https://github.com/rota013pg-cloud/guide-your-way-88.git (fetch)
-origin	https://github.com/rota013pg-cloud/guide-your-way-88.git (push)
+--- git log origin/main (ultimo commit ANTES) ---
+de6a54d deploy: reaproveitar sessao do mesmo aparelho (online estavel)
 
---- git status -s ---
-AM deploy-log.txt
-M  src/lib/motoristas.functions.ts
-
---- commits locais ainda NAO enviados (origin/main..HEAD) ---
-
---- git commit ---
-[main a8df46c] deploy: reaproveitar sessao do mesmo aparelho (online estavel)
- 2 files changed, 28 insertions(+), 5 deletions(-)
- create mode 100644 deploy-log.txt
-
+--- git commit --allow-empty ---
+[main 8f04841] chore: forcar novo deploy (rebuild do main atual)
 
 --- git push origin main ---
-remote: Permission to rota013pg-cloud/guide-your-way-88.git denied to bololoconvenienciapg-2k.
-fatal: unable to access 'https://github.com/rota013pg-cloud/guide-your-way-88.git/': The requested URL returned error: 403
-(codigo de saida do push: 128)
+To https://github.com/rota013pg-cloud/guide-your-way-88.git
+   de6a54d..8f04841  main -> main
+(codigo de saida do push: 0)
 
-===== RESULTADO: FALHOU no push =====
+===== RESULTADO: SUCESSO =====
 ===== FIM =====

@@ -1,15 +1,26 @@
-===== FORCAR DEPLOY =====
-Data: 25/08/2026 23:35:31,40
+===== DEPLOY LOG =====
+Data: 26/08/2026 12:16:30,38
 
---- git log origin/main (ultimo commit ANTES) ---
-de6a54d deploy: reaproveitar sessao do mesmo aparelho (online estavel)
+--- git remote -v ---
+origin	https://github.com/rota013pg-cloud/guide-your-way-88.git (fetch)
+origin	https://github.com/rota013pg-cloud/guide-your-way-88.git (push)
 
---- git commit --allow-empty ---
-[main 8f04841] chore: forcar novo deploy (rebuild do main atual)
+--- git status -s ---
+MM deploy-log.txt
+A  forcar-deploy.bat
+M  src/components/map-leaflet-inner.tsx
+
+--- commits locais ainda NAO enviados (origin/main..HEAD) ---
+
+--- git commit ---
+[main 4ba0585] deploy: reaproveitar sessao do mesmo aparelho (online estavel)
+ 3 files changed, 70 insertions(+), 22 deletions(-)
+ create mode 100644 forcar-deploy.bat
+
 
 --- git push origin main ---
 To https://github.com/rota013pg-cloud/guide-your-way-88.git
-   de6a54d..8f04841  main -> main
+   8f04841..4ba0585  main -> main
 (codigo de saida do push: 0)
 
 ===== RESULTADO: SUCESSO =====

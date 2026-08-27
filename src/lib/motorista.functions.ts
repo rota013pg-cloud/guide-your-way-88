@@ -130,7 +130,10 @@ export const motoristaLogin = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data }) => {
-    const codigo = data.codigo.toUpperCase();
+    // Normaliza o código: MAIÚSCULO, troca a letra "O" pelo número "0" (erro de
+    // digitação clássico — M0020 digitado como MO020) e mantém só "M" + dígitos
+    // (remove espaços, traços, etc.). Assim o motociclista loga mesmo trocando O por 0.
+    const codigo = data.codigo.toUpperCase().replace(/O/g, "0").replace(/[^M0-9]/g, "");
 
     const { data: auth } = await supabaseAdmin
       .from("motorista_auth")

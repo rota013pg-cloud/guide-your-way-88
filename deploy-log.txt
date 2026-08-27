@@ -1,5 +1,5 @@
 ===== DEPLOY LOG =====
-Data: 26/08/2026 12:16:30,38
+Data: 26/08/2026 22:21:44,45
 
 --- git remote -v ---
 origin	https://github.com/rota013pg-cloud/guide-your-way-88.git (fetch)
@@ -7,20 +7,18 @@ origin	https://github.com/rota013pg-cloud/guide-your-way-88.git (push)
 
 --- git status -s ---
 MM deploy-log.txt
-A  forcar-deploy.bat
-M  src/components/map-leaflet-inner.tsx
+M  src/lib/motorista.functions.ts
 
 --- commits locais ainda NAO enviados (origin/main..HEAD) ---
 
 --- git commit ---
-[main 4ba0585] deploy: reaproveitar sessao do mesmo aparelho (online estavel)
- 3 files changed, 70 insertions(+), 22 deletions(-)
- create mode 100644 forcar-deploy.bat
+[main a718900] deploy: reaproveitar sessao do mesmo aparelho (online estavel)
+ 2 files changed, 22 insertions(+), 8 deletions(-)
 
 
 --- git push origin main ---
 To https://github.com/rota013pg-cloud/guide-your-way-88.git
-   8f04841..4ba0585  main -> main
+   4ba0585..a718900  main -> main
 (codigo de saida do push: 0)
 
 ===== RESULTADO: SUCESSO =====

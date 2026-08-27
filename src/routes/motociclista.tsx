@@ -910,7 +910,7 @@ function LoginTela({
           <input
             value={codigo}
             onChange={(e) => onCodigo(e.target.value.toUpperCase())}
-            placeholder="Ex: M001"
+            placeholder="Ex: M0001"
             autoCapitalize="characters"
           />
         </div>

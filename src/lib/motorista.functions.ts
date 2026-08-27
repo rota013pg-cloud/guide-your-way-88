@@ -172,6 +172,18 @@ export const motoristaLogin = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!motorista) throw new Error("Motorista não cadastrado");
 
+    // Se o motociclista já está numa corrida em andamento, ao (re)logar/reconectar
+    // ele deve continuar "Em corrida" — NUNCA voltar pra "Online" —, senão o
+    // despacho Auto pode oferecer uma 2ª corrida no meio de uma viagem.
+    const { data: corridaEmAndamento } = await supabaseAdmin
+      .from("corridas")
+      .select("id")
+      .eq("motorista_codigo", codigo)
+      .in("status", ["Aceita", "A caminho", "Chegou", "Em viagem", "Parada"])
+      .limit(1)
+      .maybeSingle();
+    const statusAoLogar = corridaEmAndamento ? "Em corrida" : "Online";
+
     // REAPROVEITA a sessão ativa DESTE mesmo aparelho, se já existir. Assim,
     // quando o app volta de outro app / reabre e reloga, a sessão NÃO é trocada:
     // mantém o MESMO token vivo (o GPS nativo continua aceito) e evita o "online
@@ -190,7 +202,7 @@ export const motoristaLogin = createServerFn({ method: "POST" })
       if (sessaoDoDevice?.token) {
         await supabaseAdmin
           .from("motoristas")
-          .update({ status: "Online" })
+          .update({ status: statusAoLogar })
           .eq("codigo", codigo);
         await supabaseAdmin
           .from("motorista_auth")
@@ -214,7 +226,7 @@ export const motoristaLogin = createServerFn({ method: "POST" })
 
     await supabaseAdmin
       .from("motoristas")
-      .update({ status: "Online" })
+      .update({ status: statusAoLogar })
       .eq("codigo", codigo);
 
     await supabaseAdmin
